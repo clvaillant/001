@@ -1,0 +1,10 @@
+{
+  "manifest_format_version": 1,
+  "app": "Unflatten Offline",
+  "app_version": "0.1.0-dev",
+  "generated_by": "this build's engineering process, not an automated model-packaging tool (none is needed -- see below)",
+  "models": [],
+  "note": "This manifest is intentionally empty. No trained/learned ML model (segmentation, amodal completion, appearance completion, depth estimation, OCR, or any other) is bundled with this build. All on-device 'inference' is deterministic, non-learned computer-vision code (heuristic color-prior segmentation, diffusion inpainting) implemented directly in android/app/src/main/cpp/engine/fallback/, with no model weights, no ML runtime, and nothing to hash or version-pin here. See DECISIONS.md and MODEL_CARD.md for why, and INFERENCE_CARD.md for the interfaces already in place to receive a real model later -- at which point this manifest gains real entries with sha256, license, precision, and runtime backend per brief section 41, and the app validates each hash before inference exactly as specified there.",
+  "inference_runtime": "none linked (no ExecuTorch / ONNX Runtime Mobile / QNN SDK in this build -- see DECISIONS.md #3)",
+  "hash_validation_policy": "not applicable while models[] is empty; will be enforced (fail-safe on mismatch) the moment a real model entry is added here"
+}

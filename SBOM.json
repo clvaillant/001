@@ -1,0 +1,31 @@
+{
+  "sbom_format": "unflatten-offline-simple-sbom-v1",
+  "note": "Not a full SPDX/CycloneDX document -- a plain, hand-maintained inventory reflecting exactly what android/app/build.gradle.kts and the native CMakeLists.txt actually declare, kept in sync with those files. See THIRD_PARTY_NOTICES.md for license text pointers.",
+  "app": { "name": "Unflatten Offline", "version": "0.1.0-dev" },
+  "components": [
+    { "name": "androidx.core:core-ktx", "version": "1.15.0", "license": "Apache-2.0", "scope": "runtime" },
+    { "name": "androidx.lifecycle:lifecycle-runtime-ktx", "version": "2.8.7", "license": "Apache-2.0", "scope": "runtime" },
+    { "name": "androidx.lifecycle:lifecycle-viewmodel-compose", "version": "2.8.7", "license": "Apache-2.0", "scope": "runtime" },
+    { "name": "androidx.activity:activity-compose", "version": "1.9.3", "license": "Apache-2.0", "scope": "runtime" },
+    { "name": "androidx.compose:compose-bom", "version": "2024.12.01", "license": "Apache-2.0", "scope": "runtime-bom" },
+    { "name": "androidx.compose.ui:ui", "version": "bom-managed", "license": "Apache-2.0", "scope": "runtime" },
+    { "name": "androidx.compose.ui:ui-graphics", "version": "bom-managed", "license": "Apache-2.0", "scope": "runtime" },
+    { "name": "androidx.compose.ui:ui-tooling-preview", "version": "bom-managed", "license": "Apache-2.0", "scope": "runtime" },
+    { "name": "androidx.compose.material3:material3", "version": "bom-managed", "license": "Apache-2.0", "scope": "runtime" },
+    { "name": "androidx.exifinterface:exifinterface", "version": "1.3.7", "license": "Apache-2.0", "scope": "runtime" },
+    { "name": "org.jetbrains.kotlin:kotlin-stdlib", "version": "2.0.21", "license": "Apache-2.0", "scope": "runtime" },
+    { "name": "zlib", "version": "NDK-provided (libz.so, NDK r27c sysroot)", "license": "Zlib", "scope": "runtime, native" },
+    { "name": "junit:junit", "version": "4.13.2", "license": "EPL-1.0", "scope": "test-only" },
+    { "name": "com.google.truth:truth", "version": "1.4.4", "license": "Apache-2.0", "scope": "test-only" },
+    { "name": "org.robolectric:robolectric", "version": "4.14", "license": "MIT", "scope": "test-only, declared-not-yet-exercised" },
+    { "name": "androidx.test:core", "version": "1.6.1", "license": "Apache-2.0", "scope": "test-only" },
+    { "name": "androidx.test.ext:junit", "version": "1.2.1", "license": "Apache-2.0", "scope": "androidTest-only, not run this session (no device)" },
+    { "name": "androidx.test.espresso:espresso-core", "version": "3.6.1", "license": "Apache-2.0", "scope": "androidTest-only, not run this session (no device)" },
+    { "name": "com.android.tools.build:gradle (AGP)", "version": "8.7.3", "license": "Apache-2.0", "scope": "build-tooling-only" },
+    { "name": "Gradle", "version": "8.14.3", "license": "Apache-2.0", "scope": "build-tooling-only" },
+    { "name": "Android NDK", "version": "27.2.12479018 (r27c)", "license": "Android SDK/NDK License + component licenses", "scope": "build-tooling-only" },
+    { "name": "CMake", "version": "3.22.1", "license": "BSD-3-Clause", "scope": "build-tooling-only" }
+  ],
+  "models": [],
+  "models_note": "Intentionally empty -- no trained ML model ships in this build. See MODEL_MANIFEST.json / MODEL_CARD.md."
+}

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Unflatten Offline manifest.
+
+    Deliberately absent: android.permission.INTERNET, and any network-related
+    permission. There is no networking code anywhere in this app; the absence
+    of the permission is a hard capability boundary, not a policy on paper
+    (Android will deny socket creation entirely without it), and is verified
+    by SecurityAuditTest at build/test time (see DECISIONS.md #9).
+
+    No ACCESS_NETWORK_STATE, no WAKE_LOCK for a "sync service" (there is no
+    service to sync), no account-manager permissions, no analytics SDK
+    manifest merges.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Scoped-storage-era: no broad storage permission requested. Import
+         uses the system Photo Picker (no permission required on API 26+ via
+         the ACTION_PICK_IMAGES compat shim on this project's minSdk path,
+         see ImportScreen.kt) and export uses MediaStore's app-scoped
+         collection, also requiring no runtime permission. -->
+
+    <application
+        android:name=".UnflattenApplication"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.Unflatten"
+        android:hardwareAccelerated="true"
+        android:largeHeap="true"
+        android:usesCleartextTraffic="false"
+        tools:targetApi="35">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.Unflatten">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- "Share to Unflatten" from Gallery/Files, per brief §31 -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+        </activity>
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge" />
+
+    </application>
+</manifest>
