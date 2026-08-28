@@ -11,3 +11,4 @@ android/**/build/
 .DS_Store
 node_modules/
 android/native_host_tests/build/
+android/native_host_tests/build-asan/

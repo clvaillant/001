@@ -55,16 +55,22 @@ repeating everything.
   test loop to catch RLE bugs against, at the cost of larger PSD file
   size.
 
-## Testing gaps (see `TEST_REPORT.md` §5)
+## Testing gaps (see `TEST_REPORT.md` §5-7)
 
 - No physical device or emulator testing at all (see
   `DEVICE_VALIDATION_CHECKLIST.md` — every item unverified).
 - No PSD interoperability test against real Photoshop/Photopea/Affinity/
-  Krita (none available in this environment); verified only by an
-  independent from-scratch parser test.
-- No ASan/UBSan/leak-detection instrumented run, no fuzzing harness for
-  the UF7P/PSD/PNG parsers (time budget, not inapplicability — the
-  bounds-checked reader design makes this straightforward to add).
+  Krita (none available in this environment); verified instead by an
+  independent from-scratch parser test PLUS two independent third-party
+  Python PSD parsers (psd-tools, Pillow), both of which successfully open,
+  parse, and composite a real PSD from this pipeline
+  (`scripts/validate_psd_with_python.sh`) — real signal, not a substitute
+  for the named target software.
+- ASan/UBSan/LeakSanitizer *was* run this session and found+fixed a real
+  heap-use-after-free (see `SECURITY.md`, `TEST_REPORT.md` §5). No
+  dedicated fuzzing harness (e.g. libFuzzer) exists yet for the UF7P/PSD/
+  PNG parsers (time budget, not inapplicability — the bounds-checked
+  reader design makes this straightforward to add).
 - No amodal-reconstruction benchmark (brief §36) — no amodal model exists
   in this build to benchmark.
 - `org.robolectric:robolectric` and the `androidTest` dependencies

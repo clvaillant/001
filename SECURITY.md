@@ -58,12 +58,23 @@ fatal errors rather than undefined behavior; all binary parsing
 (`ByteReader`/`BigEndianReader`) bounds-checks every read and throws a
 catchable exception on underrun rather than reading out of bounds.
 
-**Not done in this session** (see `KNOWN_LIMITATIONS.md`): no
-ASan/UBSan/leak-detection instrumented test run, no fuzzing harness for
-the UF7P/PSD/PNG parsers. The parsers' bounds-checked-read design (every
-`ByteReader`/`BigEndianReader` call validates length before reading) makes
-adding a libFuzzer harness straightforward later; none was set up due to
-time budget in this build, not because it's considered unnecessary.
+**AddressSanitizer + UndefinedBehaviorSanitizer + LeakSanitizer**: the full
+35-case native test suite was rebuilt with GCC's `-fsanitize=address,
+undefined` and run (`ASAN_OPTIONS=detect_leaks=1`). The first run caught a
+real heap-use-after-free in `EngineSession::mergeLayers` (a dangling
+`Layer*` re-dereferenced after the object it pointed to had been deleted)
+— found, root-caused from the sanitizer's exact allocation/free/use stack
+traces, and fixed. Re-run after the fix: **35/35 pass, zero sanitizer
+errors, zero leaks.** See TEST_REPORT.md §5 for the reproduction command
+and full detail.
+
+**Not done in this session** (see `KNOWN_LIMITATIONS.md`): no dedicated
+fuzzing harness (e.g. libFuzzer) for the UF7P/PSD/PNG parsers. The
+parsers' bounds-checked-read design makes adding one straightforward
+later; none was set up due to time budget in this build, not because it's
+considered unnecessary. Clang's ASan runtime is not installed in this
+environment (`libclang_rt.asan*` missing); GCC's built-in sanitizers were
+used instead and cover the same defect classes.
 
 ## Physical device security posture
 

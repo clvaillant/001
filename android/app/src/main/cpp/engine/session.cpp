@@ -184,11 +184,18 @@ std::optional<LayerId> EngineSession::mergeLayers(const std::vector<LayerId>& id
         }
     }
 
+    // Captured before `targets` (raw Layer* into the still-live project_
+    // layer vector at this point) is invalidated by the removeLayer loop
+    // below, which deletes the Layer objects those pointers point to.
+    // Re-dereferencing targets.back() after that loop is a use-after-free
+    // (caught by AddressSanitizer -- see KNOWN_LIMITATIONS.md / SECURITY.md).
+    int32_t topmostDepthIndex = targets.back()->depthIndex;
+
     auto newLayer = std::make_unique<Layer>();
     newLayer->id = newLayerId();
     newLayer->name = newName.empty() ? (targets.back()->name + " (merged)") : newName;
     newLayer->type = targets.back()->type;
-    newLayer->depthIndex = targets.back()->depthIndex;
+    newLayer->depthIndex = topmostDepthIndex;
     newLayer->rgba = TiledImage::fromDenseBuffer(merged, unionBounds.x, unionBounds.y);
     TiledImage mask;
     for (int32_t y = 0; y < merged.height(); ++y)
@@ -208,7 +215,7 @@ std::optional<LayerId> EngineSession::mergeLayers(const std::vector<LayerId>& id
     auto it = std::find_if(layers.begin(), layers.end(), [&](auto& l) { return l->id == newId; });
     auto ptr = std::move(*it);
     layers.erase(it);
-    size_t insertAt = std::min(static_cast<size_t>(targets.back()->depthIndex), layers.size());
+    size_t insertAt = std::min(static_cast<size_t>(topmostDepthIndex), layers.size());
     layers.insert(layers.begin() + insertAt, std::move(ptr));
     renumberDepthIndices();
 

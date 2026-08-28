@@ -39,7 +39,7 @@ provisioned at session start from `dl.google.com` (reachable). See
   host tests is confirmed to cross-compile cleanly for the target ABI. It
   has not been *run* on that ABI.
 - **Bugs found and fixed during this build (not merely "tested, none
-  found"):** the test suite caught two real defects before any commit —
+  found"):** the test suite caught three real defects before any commit —
   (1) `Project::drawOrder()` trusted an empty occlusion graph's trivial
   "topological order" (= plain insertion order) instead of falling back to
   `depthIndex`, which silently drew every newly-created Background layer
@@ -47,10 +47,14 @@ provisioned at session start from `dl.google.com` (reachable). See
   structural-edit renumbering logic (`EngineSession::renumberDepthIndices`)
   assumed layer-vector order already matched intended depth order, which
   wasn't true immediately after decomposition, so the first edit after
-  import would have reintroduced bug (1). Both are fixed, and a regression
-  test (`Session_StructuralEditDoesNotInvertDrawOrder`) now guards the
-  fix. See `git log` / inline comments in `project.h`, `api.cpp`,
-  `session.cpp` for detail.
+  import would have reintroduced bug (1); (3) a heap-use-after-free in
+  `EngineSession::mergeLayers`, caught immediately by an AddressSanitizer
+  run of the same test suite (see TEST_REPORT.md §5) — the function
+  re-dereferenced a raw `Layer*` after the layer it pointed to had already
+  been deleted. All three are fixed, with regression tests
+  (`Session_StructuralEditDoesNotInvertDrawOrder`) and a clean
+  ASan+UBSan+LeakSanitizer run guarding them. See inline comments in
+  `project.h`, `api.cpp`, `session.cpp` for detail.
 
 ## 2. Deterministic CV fallback pipeline
 
@@ -122,11 +126,19 @@ provisioned at session start from `dl.google.com` (reachable). See
   that validates header fields, per-layer rect/channel-count/name, and
   round-trips actual pixel bytes.
 - **Device-tested:** no.
+- **Additionally verified:** `scripts/validate_psd_with_python.sh` opens a
+  real PSD produced by the actual fallback pipeline with two independent
+  third-party parsers unrelated to this project — `psd-tools` and
+  Pillow's built-in PSD plugin. Both open it, correctly enumerate all
+  layers with correct names/bounds, decode pixel data, and composite it
+  correctly (see TEST_REPORT.md §6). This is real, reproducible
+  cross-validation from tooling this project doesn't control.
 - **NOT verified:** opening the exported PSD in real Photoshop-family
   software (Adobe Photoshop, Photopea, Affinity Photo, Krita) as brief §30
   explicitly asks for — none of those tools are available in this
-  environment. This is stated plainly rather than claimed. See
-  `KNOWN_LIMITATIONS.md`.
+  environment. This is stated plainly rather than claimed; the
+  independent-parser validation above is real evidence but not a
+  substitute for it. See `KNOWN_LIMITATIONS.md`.
 - **Confidence maps:** brief §30 asks for a per-layer `confidence.png`. No
   model in this build produces a numeric per-pixel confidence score (there
   is no model at all — see above), so exporting one would be fabrication
