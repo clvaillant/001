@@ -4,7 +4,7 @@
 const LW=globalThis.LW,V=LW.V,G=LW.gfx,E=LW.env,P=LW.planet,B=LW.build;
 const App=LW.app={world:null,draft:null,preview:null,cam:null,terrain:null,scene:null,store:null,storeKind:'none',
   tool:{cat:'nav',id:'nav',r:400,s:40,lockR:false,biome:6,plant:'sp_broadleaf',creature:'sp_grazer',person:'sp_human',count:1,template:'cottage',comp:'bed',carveR:2.5},
-  sel:null,speed:0,opts:{studio:false,clouds:true,quality:'auto',hints:true},stats:{fps:0,ms:0,ticksPerSec:0},acc:0,stroke:null,pending:null,
+  sel:null,speed:0,opts:{studio:false,clouds:true,shadows:true,quality:'auto',hints:true},stats:{fps:0,ms:0,ticksPerSec:0},acc:0,stroke:null,pending:null,
   dirtySince:0,lastSnapRev:-1,lastSnapTick:-1,phase:'boot',listeners:[]};
 App.SPEEDS=[0,2,16,120,1200];App.SPEED_LABELS=['⏸','1×','8×','60×','600×'];
 App.view=()=>App.preview||App.world||App.draft;
@@ -327,7 +327,7 @@ App.frame=function(now){
       else if(s.type==='settlement'&&ww.settlements[s.id])rings.push({n:ww.settlements[s.id].n,r:Math.max(40,c.dist*0.03),col:[255,200,120]});}
     if(App.isBrush()&&(App.hover||App.stroke&&App.stroke.last))rings.push({n:(App.stroke&&App.stroke.last)||App.hover,r:App.tool.r,col:[255,120,90]});
   }
-  G.render(w,c,App.terrain,App.scene,dt,{studio:App.opts.studio||App.phase!=='play',clouds:App.opts.clouds,rings});
+  G.render(w,c,App.terrain,App.scene,dt,{studio:App.opts.studio||App.phase!=='play',clouds:App.opts.clouds,shadows:App.opts.shadows,rings});
   // bookkeeping
   fpsN++;fpsT+=dt;if(fpsT>=0.5){App.stats.fps=fpsN/fpsT;App.stats.ms=fpsT/fpsN*1000;App.stats.ticksPerSec=tickN/fpsT;fpsN=0;fpsT=0;tickN=0;}
   if(now-uiT>250){uiT=now;App.changed('tick');}

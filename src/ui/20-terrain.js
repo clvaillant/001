@@ -3,7 +3,7 @@
 // chunk centre and drawn camera-relative (floating origin) to keep GPU precision at any planet size.
 ;(function(){'use strict';
 const LW=globalThis.LW,V=LW.V,G=LW.gfx,E=LW.env,P=LW.planet;
-const GN=16,GV=GN+1,NV=GV*GV+4*GV;
+const GN=20,GV=GN+1,NV=GV*GV+4*GV;
 let IDX=null;
 function indices(){
   if(IDX)return IDX;const a=[];
@@ -40,16 +40,30 @@ G.terrainColor=function(world,n,h,wl,slope,d,amp){
   if(h-wl<amp*0.006+0.5&&cl.temp>-2)c=mix(c,[228,210,164],0.65);
   return c;
 };
-const TRUNK=[104,78,60];
-function plant(mb,form,c1,s,rnd){
-  const j=0.85+rnd*0.3,c=[c1[0]*j,c1[1]*j,c1[2]*j];
+const TRUNK=[112,84,62];
+const tone=(c,k)=>[c[0]*k,c[1]*k,c[2]*k];
+// rounded, smooth-shaded flora. `lod` true = distant clump: fewer parts.
+function plant(mb,form,c1,s,rnd,lod){
+  const j=0.85+rnd*0.3,c=tone(c1,j),hh=0.85+rnd*0.4;
   switch(form){
-    case 'broadleaf':mb.box(0,1.4*s,0,0.5*s,2.8*s,0.5*s,TRUNK);mb.blob(0,4.6*s,0,2.6*s,2.3*s,2.6*s,6,c);mb.blob(1.2*s,3.4*s,0.6*s,1.5*s,1.3*s,1.5*s,5,[c[0]*0.9,c[1]*0.9,c[2]*0.9]);break;
-    case 'conifer':mb.box(0,0.9*s,0,0.4*s,1.8*s,0.4*s,TRUNK);mb.cone(0,1.4*s,0,2.2*s,3.2*s,6,c);mb.cone(0,3.4*s,0,1.6*s,2.8*s,6,c);mb.cone(0,5.2*s,0,1.0*s,2.2*s,6,c);break;
-    case 'cactus':mb.box(0,1.5*s,0,0.6*s,3*s,0.6*s,c);mb.box(0.7*s,1.9*s,0,0.8*s,0.35*s,0.35*s,c);mb.box(1.0*s,2.5*s,0,0.35*s,1.3*s,0.35*s,c);break;
-    case 'glowcap':mb.cyl(0,0,0,0.28*s,2.4*s,5,[220,210,230]);mb.cone(0,2.2*s,0,1.7*s,1.1*s,7,c,110);break;
-    case 'crystal':mb.blob(0,1.8*s,0,0.7*s,2.4*s,0.7*s,5,c,90);mb.blob(0.8*s,0.9*s,0.3*s,0.4*s,1.2*s,0.4*s,4,c,90);break;
-    default:mb.cone(0,0,0,0.5*s,0.9*s,4,c);
+    case 'broadleaf':
+      mb.taper(0,0,0,0.34*s,0.2*s,3.2*s*hh,6,TRUNK);
+      mb.ball(0,4.5*s*hh,0,2.5*s,2.0*s,2.5*s,lod?6:10,c,0,lod?2:4);
+      if(!lod){mb.ball(1.5*s,3.8*s*hh,0.5*s,1.6*s,1.35*s,1.6*s,7,tone(c,0.9),0,3);mb.ball(-1.3*s,3.9*s*hh,-0.7*s,1.5*s,1.25*s,1.5*s,7,tone(c,1.08),0,3);
+        mb.ball(0.3*s,5.7*s*hh,0.3*s,1.5*s,1.15*s,1.5*s,7,tone(c,1.12),0,3);mb.taper(0.2*s,2.2*s*hh,0,0.12*s,0.06*s,1.6*s,4,TRUNK);}
+      break;
+    case 'conifer':
+      mb.taper(0,0,0,0.26*s,0.14*s,2.2*s,6,TRUNK);
+      for(let k=0;k<(lod?2:4);k++){const y=(1.3+k*(lod?2.2:1.25))*s*hh,r=(2.3-k*(lod?0.9:0.48))*s;mb.taper(0,y,0,r,r*0.12,(lod?3.4:2.3)*s*hh,lod?6:8,tone(c,0.9+k*0.06));}
+      break;
+    case 'cactus':
+      mb.taper(0,0,0,0.34*s,0.3*s,3*s*hh,8,c);mb.ball(0,3*s*hh,0,0.3*s,0.3*s,0.3*s,8,c,0,2);
+      if(!lod){mb.ball(0.6*s,1.7*s,0,0.42*s,0.2*s,0.2*s,6,c,0,2);mb.taper(0.9*s,1.7*s,0,0.2*s,0.18*s,1.2*s,6,c);mb.ball(0.9*s,2.9*s,0,0.19*s,0.19*s,0.19*s,6,c,0,2);}
+      break;
+    case 'glowcap':mb.taper(0,0,0,0.3*s,0.2*s,2.3*s,6,[226,216,236]);mb.ball(0,2.4*s,0,1.7*s,0.75*s,1.7*s,9,c,110,3);break;
+    case 'crystal':mb.taper(0,0,0,0.6*s,0,3.2*s*hh,5,c,90);mb.taper(0.7*s,0,0.3*s,0.35*s,0,1.7*s,5,tone(c,0.9),90);mb.taper(-0.5*s,0,-0.4*s,0.3*s,0,1.3*s,5,tone(c,1.1),90);break;
+    case 'bush':mb.ball(0,0.4*s,0,0.75*s,0.5*s,0.75*s,9,c,0,3);mb.ball(0.5*s,0.32*s,0.3*s,0.48*s,0.38*s,0.48*s,8,tone(c,0.92),0,3);mb.ball(-0.4*s,0.3*s,-0.3*s,0.42*s,0.34*s,0.42*s,8,tone(c,1.06),0,3);break;
+    default:for(let k=0;k<6;k++)mb.taper((k%3-1)*0.16*s+rnd*0.05,0,((k>>1)-1)*0.14*s,0.035*s,0,(0.12+rnd*0.14+k*0.02)*s,3,tone(c,0.92+k*0.04));
   }
 }
 class Terrain{
@@ -82,14 +96,23 @@ class Terrain{
       ex[k*2]=W[k]-H[k];
       for(const v of vols){const l=LW.volumes.contains(world,v,N[k]);if(l&&Math.abs(l[0])<v.nx*v.cell/2-ql*1.1&&Math.abs(l[1])<v.nz*v.cell/2-ql*1.1)ex[k*2+1]=1;}
     }
+    // smooth per-vertex normals from the sampled surface (flat on water)
+    const nrm=new Int8Array(NV*3);
+    for(let y=0;y<GV;y++)for(let x=0;x<GV;x++){
+      const k=y*GV+x,a=y*GV+Math.max(0,x-1),b=y*GV+Math.min(GN,x+1),c=Math.max(0,y-1)*GV+x,e=Math.min(GN,y+1)*GV+x,n=N[k];
+      const ux=pos[b*3]-pos[a*3],uy=pos[b*3+1]-pos[a*3+1],uz=pos[b*3+2]-pos[a*3+2],vx=pos[e*3]-pos[c*3],vy=pos[e*3+1]-pos[c*3+1],vz=pos[e*3+2]-pos[c*3+2];
+      let nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;const l=Math.hypot(nx,ny,nz)||1,sg=(nx*n[0]+ny*n[1]+nz*n[2])<0?-127/l:127/l;
+      nrm[k*3]=Math.round(nx*sg);nrm[k*3+1]=Math.round(ny*sg);nrm[k*3+2]=Math.round(nz*sg);
+    }
     const S=GV*GV,sk=edge*0.06+1,edgeIx=[k=>k,k=>GN*GV+k,k=>k*GV,k=>k*GV+GN];
     for(let e=0;e<4;e++)for(let k=0;k<GV;k++){
       const a=edgeIx[e](k),s=S+e*GV+k,n=N[a];
+      nrm[s*3]=nrm[a*3];nrm[s*3+1]=nrm[a*3+1];nrm[s*3+2]=nrm[a*3+2];
       pos[s*3]=pos[a*3]-n[0]*sk;pos[s*3+1]=pos[a*3+1]-n[1]*sk;pos[s*3+2]=pos[a*3+2]-n[2]*sk;
       col[s*4]=col[a*4];col[s*4+1]=col[a*4+1];col[s*4+2]=col[a*4+2];ex[s*2]=ex[a*2];ex[s*2+1]=ex[a*2+1];
     }
     G.free(nd.mesh);G.free(nd.props);
-    nd.mesh=G.mesh(pos,col,ex,indices());nd.c=C;nd.rad=edge*0.75+(mx-mn)+sk;nd.edge=edge;nd.props=null;
+    nd.mesh=G.mesh(pos,col,ex,indices(),nrm);nd.c=C;nd.off=new Float32Array([((C[0]%256)+256)%256,((C[1]%256)+256)%256,((C[2]%256)+256)%256]);nd.rad=edge*0.75+(mx-mn)+sk;nd.edge=edge;nd.props=null;
     // scale-appropriate flora and boulders, deterministic per chunk; larger "clump" scale on coarser chunks
     if(edge<=700){
       const mb=new G.MB(),seed=LW.hashInt(nd.f,nd.l,nd.i,nd.j),s=LW.clamp(edge/90,1,5),cnt=LW.clamp(Math.round(edge*edge/120),3,44),blds=Object.values(world.buildings).filter(b=>V.dist(b.n,nd.nMid)*R<edge+40);
@@ -98,9 +121,18 @@ class Terrain{
         if(h<P.waterLevel(world,n)+0.3||LW.volumes.at(world,n)||blds.some(b=>V.dist(b.n,n)*R<LW.build.radius(b)+3.5*s))continue;
         const vg=vegAt(world,n,d),r=LW.hrand(seed,k,3,0);
         const f=LW.frame(n);mb.T={o:[n[0]*(R+h)-C[0],n[1]*(R+h)-C[1],n[2]*(R+h)-C[2]],e:f.e,u:n,t:f.t};
-        if(vg.sp&&vg.sp.plant.tree&&r<vg.v/255*1.1)plant(mb,vg.sp.plant.form,vg.sp.body.c1,s*(0.7+LW.hrand(seed,k,4,0)*0.6),LW.hrand(seed,k,5,0));
+        if(vg.sp&&vg.sp.plant.tree&&r<vg.v/255*1.1)plant(mb,vg.sp.plant.form,vg.sp.body.c1,s*(0.7+LW.hrand(seed,k,4,0)*0.6),LW.hrand(seed,k,5,0),s>1.8);
         else if(vg.sp&&!vg.sp.plant.tree&&edge<120&&r<vg.v/255)plant(mb,'tuft',vg.sp.body.c1,s,LW.hrand(seed,k,5,0));
-        else if(r>0.93)mb.blob(0,0.3*s,0,0.9*s,0.7*s,0.8*s,5,[112,104,112]);
+        else if(r>0.93)mb.ball(0,0.25*s,0,0.9*s,0.6*s,0.8*s,7,[124,118,122],0,2);
+      }
+      // close-up ground cover: grass tufts and bushes where plants actually live
+      if(edge<90)for(let k=0;k<70;k++){
+        const n=LW.faceDir(nd.f,u0+LW.hrand(seed,k,11,0)*nd.size,v0+LW.hrand(seed,k,12,0)*nd.size),h=P.height(world,n);
+        if(h<P.waterLevel(world,n)+0.15||LW.volumes.at(world,n)||blds.some(b=>V.dist(b.n,n)*R<LW.build.radius(b)+0.6))continue;
+        const vg=vegAt(world,n,d),r=LW.hrand(seed,k,13,0);if(!vg.sp||r>vg.v/200)continue;
+        const f=LW.frame(n),c1=vg.sp.body.c1,g=vg.sp.plant.tree?[c1[0]*0.9+30,c1[1]*0.95+30,c1[2]*0.8+10]:c1;
+        mb.T={o:[n[0]*(R+h)-C[0],n[1]*(R+h)-C[1],n[2]*(R+h)-C[2]],e:f.e,u:n,t:f.t};
+        plant(mb,LW.hrand(seed,k,14,0)<0.14&&vg.sp.plant.form!=='cactus'&&vg.sp.plant.form!=='crystal'?'bush':'tuft',g,0.7+LW.hrand(seed,k,15,0)*0.7,LW.hrand(seed,k,16,0));
       }
       nd.props=mb.build();
     }
@@ -116,7 +148,7 @@ class Terrain{
     this.frame++;const R=world.body.radius,amp=P.amplitude(world.body);
     const sig=world.id+'|'+world.body.seaLevel+'|'+world.colorEpoch+'|'+world.genEpoch+'|'+world.body.atmosphere.baseTemp+'|'+world.body.axialTilt;
     if(sig!==this.sig){this.sig=sig;this.invalidateAll();}
-    const maxL=Math.max(1,Math.floor(Math.log2(R*Math.PI/2/12))),K=2.3*this.quality;
+    const maxL=Math.max(1,Math.floor(Math.log2(R*Math.PI/2/8))),K=2.5*this.quality;
     const rc=V.len(cam.pos),cd=V.mul(cam.pos,1/rc);
     const hz=Math.acos(LW.clamp((R-amp)/rc,-1,1))+Math.acos(LW.clamp((R-amp)/(R+amp+1),-1,1))+0.02;
     const vols=Object.values(world.volumes).filter(v=>V.dist(P.surface(world,v.n),cam.pos)<500);
@@ -148,11 +180,12 @@ class Terrain{
     this.pending=this.queue.length-n;
     if(this.nodes.size>900)for(const [k,nd] of this.nodes)if(nd.last<this.frame-90&&nd.l>0){G.free(nd.mesh);G.free(nd.props);this.nodes.delete(k);}
   }
-  draw(cam,propDist){
+  draw(cam,propDist,maxDist){
     for(const nd of this.visible){
       const m=G.translate(nd.c[0]-cam.pos[0],nd.c[1]-cam.pos[1],nd.c[2]-cam.pos[2]);
-      G.gl.uniform1i(G.main.u.uMode,0);G.draw(nd.mesh,m);
-      if(nd.props&&nd.dist<propDist){G.gl.uniform1i(G.main.u.uMode,1);G.draw(nd.props,m);}
+      if(maxDist&&nd.dist>maxDist)continue;
+      G.gl.uniform1i(G.cur.u.uMode||null,0);G.draw(nd.mesh,m,null,1,nd.off);
+      if(nd.props&&nd.dist<propDist){G.gl.uniform1i(G.cur.u.uMode||null,1);G.draw(nd.props,m);}
     }
   }
 }

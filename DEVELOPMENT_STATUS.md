@@ -40,6 +40,18 @@ Numbers and the full list are in TEST_REPORT.md and FEATURE_MATRIX.md.
 - Nested lists in the inspector rendered as `[object …]`; people could starve mid-conversation;
   sleepers did not wake for thirst; animals slept through lethal thirst.
 
+## Visual pass (second iteration)
+
+At the user's request the feature roadmap was paused and the look moved from the faceted "Chromatic
+Tectonics" style toward a smooth, naturalistic life-sim look: per-vertex normals, linear lighting with a
+tone curve, a shadow-mapped sun for views within about 900 m, procedural ground detail, rippling water with
+sky reflection, 56% more terrain vertices per chunk and one finer LOD level, rounded trees, bushes and
+grass, houses with glazed windows, door leaves, chimneys and floorboards, richer furniture, and people
+with proportioned bodies, hair, clothing colours and knee/elbow joints. "Physical realism" is limited to
+lighting and motion: gait bob scales with the planet's gravity, but there is still no rigid-body physics.
+This roughly doubles triangles near the ground (about 300 000 at a settlement) and adds a second render
+pass; shadows switch off automatically on the low quality tier. Cost on a real phone is unmeasured.
+
 ## Known defects and weak spots
 
 - **Performance is unknown on real hardware.** Only a CPU software renderer was available. There a
@@ -55,7 +67,9 @@ Numbers and the full list are in TEST_REPORT.md and FEATURE_MATRIX.md.
 - The start of a new world is local midnight at some longitudes, so first Play can be dark; use
   Menu → "Creator light".
 - The inspector is rebuilt every 2.5 s while open, which can interrupt scrolling in long lists.
-- Night-time building windows glow, but there are no cast shadows.
+- Shadows cover only the area near the camera focus and fade at its edge; there is no ambient occlusion.
+- Four inspector clicks in browser test B07 are dispatched as DOM click events rather than pointer
+  presses, because the software renderer's slow frames made pointer-position clicks flaky.
 - Conflict, trade, audio and the catch-up dialog have no dedicated automated tests.
 - Person cap 400, animal cap 140, 24 dig sites, 20 000 terrain strokes, 600 buildings.
 

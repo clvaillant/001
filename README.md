@@ -80,6 +80,9 @@ resume exactly where it stopped.
 - Browser storage belongs to the browser profile and the file's location. Moving the HTML file,
   clearing site data, or private browsing can lose it. **Export anything you care about.**
 
+**Graphics options** (Menu → Display): Adaptive/Low/Medium/High quality, shadows, clouds, creator light.
+If the game is slow on your device, choose Low: it turns shadows off and lowers resolution and detail.
+
 ## Limits you will notice
 
 - Rivers are drawn as ribbons between climate cells (about 600 m apart on the default planet); they do

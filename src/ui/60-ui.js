@@ -364,7 +364,7 @@ UI.openMenu=async function(){
         try{const ww=await App.store.restoreNamed(w.id,sn.n);await App.startWorld(ww,false);await App.snapshot(true);UI.closeModal();UI.enter();App.toast('Snapshot restored.');}catch(e){App.toast('Restore failed: '+e.message,'err');}}),btn('✕',async()=>{await App.store.deleteNamed(w.id,sn.n);UI.openMenu();},'ghost icon','Delete snapshot'))),
     h('h3',{text:'Display and sound'}),h('div',{class:'chips'},
       select('Graphics',[['auto','Adaptive'],['low','Low'],['medium','Medium'],['high','High']],App.opts.quality,v=>{App.opts.quality=v;}),
-      tog('Creator light (no night)',()=>App.opts.studio,v=>{App.opts.studio=v;}),tog('Clouds',()=>App.opts.clouds,v=>{App.opts.clouds=v;}),
+      tog('Creator light (no night)',()=>App.opts.studio,v=>{App.opts.studio=v;}),tog('Clouds',()=>App.opts.clouds,v=>{App.opts.clouds=v;}),tog('Shadows',()=>App.opts.shadows,v=>{App.opts.shadows=v;}),
       tog('Mute all sound',()=>LW.audio.muted,v=>LW.audio.setMuted(v)),tog('Mute creature voices',()=>LW.audio.voicesMuted,v=>{LW.audio.voicesMuted=v;}),
       tog('Show hints',()=>App.opts.hints,v=>{App.opts.hints=v;UI.renderHint();})),
     h('h3',{text:'Statistics'}),
