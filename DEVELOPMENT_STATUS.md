@@ -74,6 +74,25 @@ are still no image files):
 "Stardew Valley level" was read as a target for charm and density of detail; that game is 2D pixel art,
 so there is no polygon count to match, and none of its art was copied.
 
+## Characters and animation pass (fourth iteration)
+
+Asked for PS4 / latest-Sims realism using Sketchfab assets. Not done, and not achievable this way:
+
+- That level of realism comes from artist-sculpted, skinned meshes with painted or scanned textures.
+  Generated shapes cannot reach it.
+- The Sketchfab link was a search page, not specific models. Downloads need an account, each model has
+  its own licence, and realistic rigged characters are tens of megabytes each, which does not fit a
+  single offline HTML file. The practical route is a glTF loader in the source/Android build that reads
+  model files the user has chosen and has the rights to use. That loader does not exist yet.
+
+What was done instead: body meshes have roughly 60% more vertices; every person has their own height,
+girth, shoulder width, leg length and head size, skin, hair colour and style (short, long, bun, thinning),
+beard, iris colour, hat, jacket, sleeve and trouser length, skirt or dress, shoe colour and cloth pattern
+(plain, striped, plaid). Movement is individual: cadence, stride, arm swing, sway and lean differ per
+person, and standing people breathe, shift weight and look around. People gesture and move their mouths
+when talking, swing tools when building or gathering, bend to forage, farm and drink, and lift a hand to
+eat. Animals lower their heads to graze, bob them when walking and wag their tails.
+
 ## Known defects and weak spots
 
 - **Performance is unknown on real hardware.** Only a CPU software renderer was available. There a

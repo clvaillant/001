@@ -235,10 +235,18 @@ function volumeMesh(world,v){
 const tint=(c,em)=>new Float32Array([c[0]/255,c[1]/255,c[2]/255,em||0]);
 const SKIN=[[243,208,182],[228,178,144],[202,148,110],[156,106,76],[110,74,54]],HAIR=[[44,32,26],[92,62,38],[150,108,62],[212,182,122],[128,46,34],[28,26,30]];
 const TOPS=[[196,70,70],[70,120,190],[84,160,120],[230,190,90],[150,100,180],[236,236,240],[60,70,90],[230,130,90]],BOTS=[[52,62,96],[70,66,62],[120,96,70],[40,44,52],[110,120,140]];
+const EYES=[[70,50,36],[52,84,120],[60,110,80],[96,74,50],[40,40,46]],JACK=[[60,56,66],[120,84,60],[40,70,96],[96,40,44],[84,96,70]];
+// every individual gets their own build, face, hair, outfit and way of moving, fixed by their id
 G.lookOf=function(world,ent,sp){
-  const h=LW.hashStr(ent.id),human=sp.id==='sp_human',age=LW.life.ageYears(world,ent),m=Math.max(0.5,sp.lifecycle.mature),old=age>sp.lifecycle.span*0.72;
-  return {skin:tint(human?SKIN[h%5]:sp.body.c1),hair:tint(old?[206,206,210]:human?HAIR[(h>>>3)%6]:sp.body.c2||sp.body.c1),top:tint(human||sp.kind==='person'?TOPS[(h>>>6)%8]:sp.body.c2||sp.body.c1),
-    bot:tint(BOTS[(h>>>9)%5]),shoe:tint([46,40,38]),eye:tint([30,26,30]),scale:age<m?0.5+0.5*age/m:1,long:ent.sex==='f'?(h>>>12)%3>0:(h>>>12)%5===0,fem:ent.sex==='f',skirt:ent.sex==='f'&&human&&(h>>>15)%2===0};
+  const h=LW.hashStr(ent.id),r=k=>LW.hrand(h,k,7,1),human=sp.id==='sp_human',person=sp.kind==='person',age=LW.life.ageYears(world,ent),m=Math.max(0.5,sp.lifecycle.mature),old=age>sp.lifecycle.span*0.72,fem=ent.sex==='f';
+  const skin=human?SKIN[h%5]:sp.body.c1,hair=old?[208,208,212]:human?HAIR[(h>>>3)%6]:sp.body.c2||sp.body.c1,top=person?TOPS[(h>>>6)%8]:sp.body.c2||sp.body.c1;
+  const style=!person?0:old&&!fem&&r(1)<0.4?3:fem?(r(2)<0.45?1:r(2)<0.75?2:0):(r(2)<0.12?1:0);
+  return {skin:tint(skin),hair:tint(hair),top:tint(top),bot:tint(BOTS[(h>>>9)%5]),shoe:tint([[46,40,38],[96,70,50],[30,34,44],[150,150,156]][(h>>>11)%4]),eye:tint([30,26,30]),iris:tint(EYES[(h>>>13)%5]),
+    lip:tint([skin[0]*0.78,skin[1]*0.52,skin[2]*0.5]),jacket:person&&r(3)<0.3?tint(JACK[(h>>>16)%5]):null,
+    scale:age<m?0.5+0.5*age/m:1,fem,style,long:style===1,beard:person&&!fem&&age>m*1.4&&r(4)<0.3,hat:person?(r(5)<0.12?1:r(5)<0.2?2:0):0,
+    skirt:fem&&human&&r(6)<0.4,dress:fem&&human&&r(6)<0.15,shorts:person&&r(7)<0.25,sleeves:person&&r(8)<0.55,pattern:person?[5,5,15,16][(h>>>19)%4]:0,
+    build:{h:0.93+r(9)*0.14,g:0.84+r(10)*0.42,sh:0.92+r(11)*0.16,leg:0.96+r(12)*0.08,head:0.94+r(13)*0.12},
+    gait:{cad:0.82+r(14)*0.4,stride:0.42+r(15)*0.26,arm:0.25+r(16)*0.45,sway:0.4+r(17)*1.2,lean:r(18)*0.12,o:r(19)*40,fidget:0.4+r(20)*1.2}};
 };
 const M_FAB=5,M_FUR=9,M_HAIR=10;
 // two-segment limb with shaped (lofted) upper and lower parts; returns the lower joint matrix
@@ -247,38 +255,64 @@ function limb2(U,base,x,y,z,r1,r2,rz,w,l1,l2,c1,c2,m1,m2){
   const k=G.part(j,0,-l1,0,r2,0,1,1,1);G.draw(U.dot,G.part(k,0,0,0,0,0,w*0.8,w*0.8,w*0.8),c1,1,null,m1);
   G.draw(U.lower,G.part(k,0,-l2/2,0,0,0,w*0.92,l2,w*0.92),c2,1,null,m2);return k;
 }
-function creature(sp,base,ph,moving,posture,simple,look,bob){
-  const U=G.unit(),b=sp.body,L=look||{skin:tint(b.c1),hair:tint(b.c2||b.c1),top:tint(b.c2||b.c1),bot:tint(b.c2||b.c1),shoe:tint([46,40,38]),eye:tint([30,26,30]),scale:1},S=b.size*(L.scale||1);
-  const c1=tint(b.c1),c2=tint(b.c2||b.c1),sw=moving?Math.sin(ph):0,g=bob||1,WHITE=G.WHITE;
+function creature(sp,base,ph,moving,posture,simple,look,bob,A){
+  A=A||{t:0,anim:null,shadow:false};
+  const U=G.unit(),b=sp.body,L=look||{skin:tint(b.c1),hair:tint(b.c2||b.c1),top:tint(b.c2||b.c1),bot:tint(b.c2||b.c1),shoe:tint([46,40,38]),eye:tint([30,26,30]),scale:1};
+  const Bd=L.build||{h:1,g:1,sh:1,leg:1,head:1},Gt=L.gait||{cad:1,stride:0.55,arm:0.5,sway:1,lean:0.06,o:0,fidget:1},S=b.size*(L.scale||1)*Bd.h;
+  const c1=tint(b.c1),c2=tint(b.c2||b.c1),sw=moving?Math.sin(ph):0,g=bob||1,WHITE=G.WHITE,t=A.t+Gt.o,an=moving?null:A.anim,fine=!A.shadow;
   if(simple){
-    if(b.plan==='biped'){G.draw(U.torso,G.part(base,0,S*0.66,0,0,0,S*0.36,S*0.38,S*0.3),L.top);G.draw(U.head,G.part(base,0,S*0.93,0,0,0,S*0.17,S*0.2,S*0.18),L.skin);G.draw(U.pelvis,G.part(base,0,S*0.24,0,0,0,S*0.28,S*0.5,S*0.2),L.bot);}
+    if(b.plan==='biped'){G.draw(U.torso,G.part(base,0,S*0.66,0,0,0,S*0.36*Bd.g,S*0.38,S*0.3*Bd.g),L.top);G.draw(U.head,G.part(base,0,S*0.93,0,0,0,S*0.17,S*0.2,S*0.18),L.skin);G.draw(U.pelvis,G.part(base,0,S*0.24,0,0,0,S*0.28,S*0.5,S*0.2),L.bot);}
     else G.draw(U.qbody,G.part(base,0,S*0.6,0,0,0,S*0.48,S*0.5,S*1.1),c1);
     return;
   }
   if(b.plan==='biped'){
-    const hip=0.47*S,l1=0.245*S,l2=0.225*S;let root=G.part(base,0,moving?Math.abs(Math.cos(ph))*0.018*S/g:0,0,moving?-0.06:0,0,1,1,1);
-    let tA=-sw*0.55,tB=sw*0.55,kA=moving?0.12+0.8*Math.max(0,Math.sin(ph-0.9)):0.03,kB=moving?0.12+0.8*Math.max(0,Math.sin(ph-0.9+Math.PI)):0.03,aA=sw*0.5,aB=-sw*0.5,eA=-0.22-(moving?0.25:0),eB=eA;
-    if(posture==='lie'){root=G.part(base,0,0.66,-S*0.45,-Math.PI/2,0,1,1,1);tA=tB=0;kA=kB=0.05;aA=aB=0.08;}
-    else if(posture==='sit'){root=G.part(base,0,0.5-hip+0.05,0,0,0,1,1,1);tA=tB=-1.5;kA=kB=1.5;aA=aB=-0.5;eA=eB=-0.7;}
-    const fem=L.fem?1:0,sh=(0.178-fem*0.014)*S,skirt=L.skirt&&posture!=='sit';
-    for(const q of [[-0.082,tA,kA],[0.082,tB,kB]]){const k=limb2(U,root,q[0]*S,hip,0,q[1],q[2],0,0.125*S,l1,l2,skirt?L.skin:L.bot,skirt?L.skin:L.bot,skirt?0:M_FAB,skirt?0:M_FAB);
+    const hip=0.47*S*Bd.leg,l1=0.245*S*Bd.leg,l2=0.225*S*Bd.leg,gw=Math.sqrt(Bd.g),fem=L.fem?1:0;
+    // ---- pose: walking is individual (cadence, stride, arm swing, sway); standing people breathe, shift weight, look about, gesture and work
+    let rootY=moving?Math.abs(Math.cos(ph))*0.02*S/g:0,lean=moving?Gt.lean+0.04:0,sway=moving?sw*0.035*Gt.sway:Math.sin(t*0.37)*0.03*Gt.fidget;
+    let tA=-sw*Gt.stride,tB=sw*Gt.stride,kA=moving?0.1+0.85*Math.max(0,Math.sin(ph-0.9)):0.03,kB=moving?0.1+0.85*Math.max(0,Math.sin(ph-0.9+Math.PI)):0.03;
+    let aA=sw*Gt.arm,aB=-sw*Gt.arm,eA=-0.18-(moving?0.3*Gt.arm:0),eB=eA,nod=0,yaw=0,breathe=1+Math.sin(t*1.25)*0.012;
+    if(!moving){aA=Math.sin(t*0.6)*0.05*Gt.fidget;aB=-aA;yaw=(Math.sin(t*0.23)+Math.sin(t*0.61+1.3)*0.5)*0.45*Gt.fidget;nod=Math.sin(t*0.4)*0.04;kA=0.03+Math.max(0,Math.sin(t*0.37))*0.12*Gt.fidget;}
+    if(an==='talk'){aA=-0.9+Math.sin(t*3.1)*0.4;eA=-1.2+Math.sin(t*2.3)*0.3;aB=-0.2+Math.sin(t*1.7)*0.15;nod=Math.sin(t*2.2)*0.09;yaw*=0.3;}
+    else if(an==='work'){const c=Math.sin(t*5.2);aA=aB=-1.15+c*0.7;eA=eB=-0.5-c*0.3;lean=0.22+c*0.1;nod=0.15;yaw=0;}
+    else if(an==='bend'){const c=Math.sin(t*2.6);lean=0.75+c*0.08;aA=-0.9+c*0.25;aB=-0.7-c*0.25;eA=eB=-0.3;kA=kB=0.35;tA=tB=-0.35;nod=0.2;yaw=0;}
+    else if(an==='eat'){aA=-1.25+Math.sin(t*2.1)*0.35;eA=-1.9;nod=0.08+Math.sin(t*2.1)*0.05;yaw=0;}
+    else if(an==='study'){nod=0.3;aA=-0.7;eA=-1.0;aB=-0.6;eB=-0.9;yaw=Math.sin(t*0.5)*0.1;}
+    let root=G.part(base,0,rootY,0,0,0,1,1,1);
+    if(posture==='lie'){root=G.part(base,0,0.66,-S*0.45,-Math.PI/2,0,1,1,1);tA=tB=0;kA=kB=0.05;aA=aB=0.08;lean=0;sway=0;yaw=0;nod=0;breathe=1+Math.sin(t*0.8)*0.03;}
+    else if(posture==='sit'){root=G.part(base,0,0.5-hip+0.05,0,0,0,1,1,1);tA=tB=-1.5;kA=kB=1.5;if(!an){aA=aB=-0.5;eA=eB=-0.7;}lean=0.02;sway=0;}
+    const skirt=(L.skirt||L.dress)&&posture!=='sit',legC=skirt?L.skin:L.bot,shinC=skirt||L.shorts?L.skin:L.bot,lm=skirt?0:M_FAB;
+    for(const q of [[-0.082,tA,kA],[0.082,tB,kB]]){const k=limb2(U,root,q[0]*S*gw,hip,0,q[1],q[2],0,0.125*S*gw,l1,l2,legC,shinC,lm,skirt||L.shorts?0:M_FAB);
       G.draw(U.shoe,G.part(k,0,-l2-0.005*S,0.045*S,0,0,0.09*S,0.07*S,0.2*S),L.shoe);}
-    G.draw(U.pelvis,G.part(root,0,hip+0.01*S,0,0,0,(0.3+fem*0.02)*S,0.17*S,0.25*S),L.bot,1,null,M_FAB);
-    if(skirt)G.draw(U.skirt,G.part(root,0,hip-0.08*S,0,0,0,0.36*S,0.3*S,0.34*S),L.bot,1,null,M_FAB);
-    G.draw(U.torso,G.part(root,0,hip+0.255*S,0,0,0,(0.36-fem*0.03)*S,0.36*S,(0.33+fem*0.02)*S),L.top,1,null,M_FAB);
-    G.draw(U.box,G.part(root,0,hip+0.085*S,0,0,0,(0.285+fem*0.02)*S,0.022*S,0.2*S),L.shoe);                       // belt
-    const arms=Math.max(0,Math.min(6,b.arms|0));
-    for(let a=0;a<arms;a++){const side=a%2?1:-1,row=Math.floor(a/2),k=limb2(U,root,side*sh,hip+0.385*S-row*0.12*S,0,(side>0?aB:aA)*(row?0.6:1),side>0?eB:eA,side*0.1,0.092*S,0.15*S,0.14*S,L.top,L.skin,M_FAB,0);
-      G.draw(U.hand,G.part(k,0,-0.165*S,0,0,0,0.085*S,0.1*S,0.05*S),L.skin);}
-    const hw=b.head*S*0.74,hh=hw*1.26,hy=hip+0.43*S+hh*0.5;
-    G.draw(U.cyl,G.part(root,0,hip+0.435*S,0,0,0,0.07*S,0.06*S,0.07*S),L.skin);
-    G.draw(U.head,G.part(root,0,hy,0,0,0,hw,hh,hw),L.skin);
-    G.draw(L.long?U.hairLong:U.hair,G.part(root,0,hy,0,0,0,hw*1.07,hh*1.05,hw*1.08),L.hair,1,null,M_HAIR,0.6);
-    for(const sx of [-1,1]){
-      G.draw(U.dot,G.part(root,sx*hw*0.2,hy+hh*0.06,hw*0.43,0,0,hw*0.17,hh*0.1,hw*0.08),WHITE);
-      G.draw(U.dot,G.part(root,sx*hw*0.2,hy+hh*0.055,hw*0.465,0,0,hw*0.085,hh*0.075,hw*0.05),L.eye);
-      G.draw(U.box,G.part(root,sx*hw*0.2,hy+hh*0.15,hw*0.45,0,sx*-0.12,hw*0.2,hh*0.025,hw*0.04),L.hair);}
-    G.draw(U.box,G.part(root,0,hy-hh*0.27,hw*0.4,0,0,hw*0.24,hh*0.03,hw*0.05),tint([150,70,70]));
+    G.draw(U.pelvis,G.part(root,0,hip+0.01*S,0,0,0,(0.3+fem*0.02)*S*gw,0.17*S,0.25*S*gw),L.bot,1,null,M_FAB);
+    if(skirt)G.draw(U.skirt,G.part(root,0,hip-(L.dress?0.14:0.08)*S,0,0,0,0.36*S*gw,(L.dress?0.42:0.3)*S,0.34*S*gw),L.dress?L.top:L.bot,1,null,L.pattern||M_FAB);
+    // upper body hangs off a spine joint so it can lean, sway and breathe
+    const T=G.part(root,0,hip+0.06*S,0,lean,sway,1,1,1),tw=(0.36-fem*0.03)*S*gw*Bd.sh,td=(0.33+fem*0.02)*S*gw;
+    G.draw(U.torso,G.part(T,0,0.195*S,0,0,0,tw,0.36*S,td*breathe),L.top,1,null,L.pattern||M_FAB,1);
+    if(L.jacket)G.draw(U.torso,G.part(T,0,0.19*S,-0.004*S,0,0,tw*1.1,0.35*S,td*1.08),L.jacket,1,null,M_FAB);
+    if(fine)G.draw(U.box,G.part(root,0,hip+0.085*S,0,0,0,(0.285+fem*0.02)*S*gw,0.022*S,0.2*S*gw),L.shoe);
+    const arms=Math.max(0,Math.min(6,b.arms|0)),sh=(0.178-fem*0.014)*S*gw*Bd.sh,sleeve=L.jacket||L.top,fore=L.jacket||L.sleeves?sleeve:L.skin;
+    for(let a=0;a<arms;a++){const side=a%2?1:-1,row=Math.floor(a/2),k=limb2(U,T,side*sh,0.325*S-row*0.12*S,0,(side>0?aB:aA)*(row?0.6:1),side>0?eB:eA,side*0.1,0.092*S*gw,0.15*S,0.14*S,sleeve,fore,M_FAB,fore===L.skin?0:M_FAB);
+      if(fine)G.draw(U.hand,G.part(k,0,-0.165*S,0,0,0,0.085*S,0.1*S,0.05*S),L.skin);}
+    const hw=b.head*S*0.74*Bd.head,hh=hw*1.26;
+    G.draw(U.cyl,G.part(T,0,0.375*S,0,0,0,0.07*S,0.06*S,0.07*S),L.skin);
+    const H=G.rotY(G.part(T,0,0.37*S+hh*0.5,0,nod,0,1,1,1),yaw);
+    G.draw(U.head,G.part(H,0,0,0,0,0,hw,hh,hw),L.skin);
+    if(L.style!==3)G.draw(L.style===1?U.hairLong:U.hair,G.part(H,0,0,0,0,0,hw*1.07,hh*1.05,hw*1.08),L.hair,1,null,M_HAIR,0.6);
+    if(L.style===2)G.draw(U.ball,G.part(H,0,hh*0.34,-hw*0.42,0,0,hw*0.5,hw*0.46,hw*0.5),L.hair,1,null,M_HAIR,0.6);
+    if(L.style===3)G.draw(U.hair,G.part(H,0,-hh*0.04,-hw*0.06,0,0,hw*1.03,hh*0.5,hw*1.0),L.hair,1,null,M_HAIR,0.6);
+    if(fine){
+      for(const sx of [-1,1]){
+        G.draw(U.dot,G.part(H,sx*hw*0.2,hh*0.06,hw*0.43,0,0,hw*0.18,hh*0.105,hw*0.08),WHITE);
+        G.draw(U.dot,G.part(H,sx*hw*0.2,hh*0.055,hw*0.462,0,0,hw*0.1,hh*0.085,hw*0.05),L.iris||L.eye);
+        G.draw(U.dot,G.part(H,sx*hw*0.2,hh*0.055,hw*0.482,0,0,hw*0.05,hh*0.045,hw*0.03),L.eye);
+        G.draw(U.box,G.part(H,sx*hw*0.2,hh*0.15,hw*0.45,0,sx*-0.12,hw*0.2,hh*0.025,hw*0.04),L.hair);}
+      const talk=an==='talk'?0.5+0.5*Math.sin(t*9):0;
+      G.draw(U.box,G.part(H,0,-hh*0.265,hw*0.405,0,0,hw*0.24,hh*(0.022+talk*0.03),hw*0.05),L.lip||tint([150,70,70]));
+      G.draw(U.box,G.part(H,0,-hh*(0.295+talk*0.03),hw*0.4,0,0,hw*0.2,hh*0.02,hw*0.05),L.lip||tint([150,70,70]));
+      if(L.beard)G.draw(U.ball,G.part(H,0,-hh*0.36,hw*0.2,0,0,hw*0.62,hh*0.36,hw*0.52),L.hair,1,null,M_HAIR,0.6);
+      if(L.hat===1){G.draw(U.hair,G.part(H,0,hh*0.05,-hw*0.02,0,0,hw*1.14,hh*0.8,hw*1.14),L.jacket||L.bot,1,null,M_FAB);G.draw(U.box,G.part(H,0,hh*0.2,hw*0.62,0.15,0,hw*0.7,hh*0.03,hw*0.5),L.jacket||L.bot);}
+      else if(L.hat===2){G.draw(U.cyl,G.part(H,0,hh*0.36,-hw*0.03,0,0,hw*1.9,hh*0.035,hw*1.9),tint([214,190,130]),1,null,M_FAB);G.draw(U.cyl,G.part(H,0,hh*0.47,-hw*0.03,0,0,hw*1.0,hh*0.24,hw*1.0),tint([214,190,130]),1,null,M_FAB);}
+    }
     if(b.tail)G.draw(U.cone,G.part(root,0,hip+0.05*S,-0.16*S,-2.2+sw*0.2,0,0.09*S,0.45*S,0.09*S),c2);
     return;
   }
@@ -298,11 +332,13 @@ function creature(sp,base,ph,moving,posture,simple,look,bob){
   for(let p=0;p<pairs;p++){const z=pairs===1?0:(p/(pairs-1)-0.5)*bl*0.66,s=(p%2?-sw:sw)*(rest?0:0.6),sp2=hex?0.55:0.05,kn=rest?1.6:0.1+(moving?0.4*Math.max(0,p%2?-sw:sw):0);
     for(const side of [-1,1]){const k=limb2(U,root,side*bw*0.3,len+0.1*S,z,side*s-(rest?1.2:0),kn,side*sp2,0.13*S,len*0.56,len*0.5,c1,c1,M_FUR,M_FUR);G.draw(U.cyl,G.part(k,0,-len*0.5,0,0,0,0.09*S,0.07*S,0.1*S),L.shoe);}}
   const hs=b.head*S,hx=len+0.56*S,hz=bl*0.56;
-  G.draw(U.lower,G.part(root,0,len+0.42*S,bl*0.42,-2.3,0,0.26*S,0.42*S,0.24*S),c1,1,null,M_FUR);
-  G.draw(U.qhead,G.part(root,0,hx,hz+hs*0.3,0.28,0,hs*0.95,hs*0.95,hs*1.7),c1,1,null,M_FUR);
-  G.draw(U.ball,G.part(root,0,hx-hs*0.3,hz+hs*1.02,0.28,0,hs*0.34,hs*0.26,hs*0.2),c2);
-  for(const side of [-1,1])G.draw(U.dot,G.part(root,side*hs*0.38,hx+hs*0.12,hz+hs*0.42,0,0,hs*0.11,hs*0.11,hs*0.08),L.eye);
-  if(b.tail){G.draw(U.cone,G.part(root,0,len+0.34*S,-bl*0.48,-2.0+sw*0.3,0,0.06*S,0.46*S,0.06*S),c1);G.draw(U.ball,G.part(root,0,len+0.14*S,-bl*0.68-sw*0.05*S,0,0,0.11*S,0.16*S,0.11*S),c2,1,null,M_FUR);}
+  // the neck is a joint: heads go down to graze or drink, bob while walking and look about at rest
+  const graze=an==='graze'?1:0,pitch=graze?1.25+Math.sin(t*3)*0.08:(moving?Math.sin(ph*2)*0.06:Math.sin(t*0.3)*0.12*Gt.fidget),NK=G.part(root,0,len+0.36*S,bl*0.36,pitch,moving?0:Math.sin(t*0.19)*0.2*Gt.fidget*(1-graze),1,1,1);
+  G.draw(U.lower,G.part(NK,0,0.14*S,0.1*S,-2.3,0,0.26*S,0.42*S,0.24*S),c1,1,null,M_FUR);
+  G.draw(U.qhead,G.part(NK,0,0.24*S,0.22*S+hs*0.3,0.28,0,hs*0.95,hs*0.95,hs*1.7),c1,1,null,M_FUR);
+  if(fine){G.draw(U.ball,G.part(NK,0,0.24*S-hs*0.3,0.22*S+hs*1.02,0.28,0,hs*0.34,hs*0.26,hs*0.2),c2);
+    for(const side of [-1,1])G.draw(U.dot,G.part(NK,side*hs*0.38,0.24*S+hs*0.12,0.22*S+hs*0.42,0,0,hs*0.11,hs*0.11,hs*0.08),L.eye);}
+  if(b.tail){const wag=Math.sin(t*(moving?4:1.7))*0.35*Gt.fidget;G.draw(U.cone,G.part(root,0,len+0.34*S,-bl*0.48,-2.0+sw*0.3,wag,0.06*S,0.46*S,0.06*S),c1);G.draw(U.ball,G.part(root,0,len+0.14*S,-bl*0.68-sw*0.05*S,0,0,0.11*S,0.16*S,0.11*S),c2,1,null,M_FUR);}
 }
 G.creature=creature;
 // era conveyances, drawn under their rider
@@ -402,12 +438,13 @@ class Scene{
     // creatures and people
     const live={},far=sp_?lim:Math.max(500,cam.dist*6),bob=Math.sqrt(Math.max(0.3,world.body.gravity)/9.8);
     const ent=(e,sp)=>{
-      const s=this.rstate(world,e,sp_?0:dt*bob);live[e.id]=1;
+      let s=this.rs.get(e.id);const cad=s&&s.look&&s.look.gait?s.look.gait.cad:1;s=this.rstate(world,e,sp_?0:dt*bob*cad);live[e.id]=1;
       const p=this.entPos(world,e,s),dc=V.dist(p,sp_?cam.T:cam.pos);if(dc>far)return;
       if(!s.look||s.lookT!==Math.floor(world.tick/LW.TPD)){s.look=G.lookOf(world,e,sp);s.lookT=Math.floor(world.tick/LW.TPD);}
       const base=G.frameMat(LW.frame(s.n),-s.face,V.sub(p,cam.pos));
       let seat=0;if(e.ride&&dc<400)seat=vehicle(e.ride,base,s.ph);
-      creature(sp,seat?G.part(base,0,seat,e.ride==='cart'?-0.1:0,0,0,1,1,1):base,s.ph,seat?false:s.moving,seat?'sit':(e.posture||(e.st==='rest'?'rest':'stand')),!sp_&&dc>220,s.look,bob);
+      const act=e.act,k=act?(act.a==='use'?act.cap:act.a):e.st,anim=k==='talk'?'talk':k==='build'||k==='gather'||k==='work'||k==='cook'?'work':k==='forage'||k==='farm'||k==='drink'?'bend':k==='eat'?'eat':k==='study'?'study':k==='graze'?'graze':null;
+      creature(sp,seat?G.part(base,0,seat,e.ride==='cart'?-0.1:0,0,0,1,1,1):base,s.ph,seat?false:s.moving,seat?'sit':(e.posture||(e.st==='rest'?'rest':'stand')),!sp_&&dc>220,s.look,bob,{t:this.time,anim,shadow:sp_});
     };
     for(const id in world.organisms){const o=world.organisms[id];ent(o,world.species[o.speciesId]);}
     for(const id in world.persons){const p=world.persons[id];if(p.alive)ent(p,world.species[p.speciesId]);}
