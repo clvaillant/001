@@ -305,6 +305,15 @@ function creature(sp,base,ph,moving,posture,simple,look,bob){
   if(b.tail){G.draw(U.cone,G.part(root,0,len+0.34*S,-bl*0.48,-2.0+sw*0.3,0,0.06*S,0.46*S,0.06*S),c1);G.draw(U.ball,G.part(root,0,len+0.14*S,-bl*0.68-sw*0.05*S,0,0,0.11*S,0.16*S,0.11*S),c2,1,null,M_FUR);}
 }
 G.creature=creature;
+// era conveyances, drawn under their rider
+function vehicle(kind,base,ph){
+  const U=G.unit(),wood=tint([150,108,70]),dark=tint([60,56,60]),metal=tint([150,156,166]),spin=ph*2,wheel=(x,y,z,r)=>{G.draw(U.cyl,G.part(base,x,y,z,spin,1.5708,r*2,0.12,r*2),dark);G.draw(U.cyl,G.part(base,x,y,z,spin,1.5708,r*0.5,0.16,r*0.5),metal);};
+  if(kind==='cart'){G.draw(U.box,G.part(base,0,0.62,-0.2,0,0,0.9,0.12,1.5),wood,1,null,1);for(const sx of [-1,1]){G.draw(U.box,G.part(base,sx*0.45,0.8,-0.2,0,0,0.05,0.3,1.5),wood,1,null,1);wheel(sx*0.55,0.42,-0.3,0.42);G.draw(U.box,G.part(base,sx*0.3,0.62,0.9,0,0,0.05,0.05,0.9),wood);}return 0.25;}
+  if(kind==='velocipede'){wheel(0,0.45,0.55,0.45);wheel(0,0.3,-0.5,0.3);G.draw(U.box,G.part(base,0,0.72,0.05,0.25,0,0.05,0.05,1.1),metal);G.draw(U.box,G.part(base,0,1.0,0.5,0,0,0.5,0.04,0.04),dark);return 0.42;}
+  if(kind==='steam carriage'){G.draw(U.box,G.part(base,0,0.75,0,0,0,1.3,0.5,2.2),tint([120,50,44]));G.draw(U.cyl,G.part(base,0,1.15,0.75,1.5708,0,0.7,0.9,0.7),dark);G.draw(U.cyl,G.part(base,0,1.8,0.95,0,0,0.18,0.7,0.18),dark);for(const sx of [-1,1]){wheel(sx*0.75,0.45,0.7,0.45);wheel(sx*0.75,0.45,-0.7,0.45);}return 0.55;}
+  if(kind==='electric car'){G.draw(U.ball,G.part(base,0,0.62,0,0,0,1.5,0.7,2.6),tint([70,150,190]));G.draw(U.ball,G.part(base,0,1.0,-0.1,0,0,1.25,0.6,1.4),tint([190,220,235]));for(const sx of [-1,1]){wheel(sx*0.72,0.32,0.8,0.32);wheel(sx*0.72,0.32,-0.8,0.32);}return 0.3;}
+  G.draw(U.ball,G.part(base,0,0.75+Math.sin(ph*0.2)*0.05,0,0,0,1.5,0.4,2.4),tint([226,230,240]));G.draw(U.ball,G.part(base,0,0.55,0,0,0,1.1,0.16,1.9),tint([120,230,255],1.2));return 0.5;
+}
 
 class Scene{
   constructor(){this.bm=new Map();this.vm=new Map();this.rs=new Map();this.water=null;this.waterKey='';this.time=0;}
@@ -313,22 +322,19 @@ class Scene{
   // rivers (ribbons along drainage links) and natural lakes (flat sheets at fill level) from the hydrology state
   buildWater(world,cam){
     const d=E.d(world),R=world.body.radius,riv=world.env.river;if(!riv)return;
-    const bucket=Math.round(Math.log2(Math.max(8,cam.alt))*2),key=world.id+'|'+d.rev+'|'+world.colorEpoch+'|'+bucket+'|'+world.terrainEdits.length;
+    const bucket=Math.round(Math.log2(Math.max(8,cam.alt))*2),key=world.id+'|'+d.rev+'|'+(world.env.rv|0)+'|'+world.colorEpoch+'|'+bucket+'|'+world.terrainEdits.length;
     if(key===this.waterKey)return;this.waterKey=key;this.freeWater();
-    const N=d.N,groups={},cell=E.cellSize(world),lift=Math.max(0.35,cam.alt*0.004),thr=Math.max(2,P.amplitude(world.body)*0.02);
+    const N=d.N,groups={},cell=E.cellSize(world),lines=P.riverLines(world),lift=Math.max(0.04,cam.alt*0.004),thr=Math.max(2,P.amplitude(world.body)*0.02);
     const grp=c=>{const f=Math.floor(c/(N*N)),j=Math.floor(c/N)%N,i=c%N,k=f+'/'+(i>>3)+'/'+(j>>3);
       return groups[k]||(groups[k]={mb:new G.MB(),o:[d.dirs[c*3]*R,d.dirs[c*3+1]*R,d.dirs[c*3+2]*R]});};
     for(let c=0;c<d.C;c++){
-      if(riv[c]===1&&d.to[c]>=0){
-        const g=grp(c),a=[d.dirs[c*3],d.dirs[c*3+1],d.dirs[c*3+2]],t=d.to[c],b=[d.dirs[t*3],d.dirs[t*3+1],d.dirs[t*3+2]];
-        const wd=Math.max(LW.clamp(cell*0.011*Math.sqrt(d.flux[c]/d.thr),2,cell*0.08),cam.alt*0.009),SEG=cam.alt<3000?14:6;
-        const side0=V.norm(V.cross(a,V.sub(b,a))),me=(LW.hrand(c,7,0,0)-0.5)*0.36*cell/R;
-        let pl=null,pr=null;g.mb.ex=2.5+d.flux[c]*0.05;
-        for(let k=0;k<=SEG;k++){
-          const n=V.norm(V.madd(V.lerp(a,b,k/SEG),side0,Math.sin(k/SEG*Math.PI)*me)),r=R+Math.max(P.height(world,n),P.waterLevel(world,n))+lift;
-          const l=[n[0]*r-side0[0]*wd/2-g.o[0],n[1]*r-side0[1]*wd/2-g.o[1],n[2]*r-side0[2]*wd/2-g.o[2]],q=[n[0]*r+side0[0]*wd/2-g.o[0],n[1]*r+side0[1]*wd/2-g.o[1],n[2]*r+side0[2]*wd/2-g.o[2]];
-          if(pl)g.mb.quad(pl,pr,q,l,[60,120,150]);pl=l;pr=q;
-        }
+      const rl=lines&&lines[c];
+      if(rl){
+        const g=grp(c),wd=Math.max(rl.half*2,cam.alt*0.009);g.mb.ex=2.5+rl.flux*0.05;
+        for(const sg of rl.list){const a=sg[0],b=sg[1],side=V.norm(V.cross(a,V.sub(b,a)));let pl=null,pr=null;
+          for(let k=0;k<=2;k++){const n=V.norm(V.lerp(a,b,k/2)),r=R+Math.max(P.height(world,n),P.waterLevel(world,n))+lift;
+            const l=[n[0]*r-side[0]*wd/2-g.o[0],n[1]*r-side[1]*wd/2-g.o[1],n[2]*r-side[2]*wd/2-g.o[2]],q=[n[0]*r+side[0]*wd/2-g.o[0],n[1]*r+side[1]*wd/2-g.o[1],n[2]*r+side[2]*wd/2-g.o[2]];
+            if(pl)g.mb.quad(pl,pr,q,l,[60,120,150]);pl=l;pr=q;}}
       }else if(riv[c]===2&&d.filled[c]-d.h[c]>thr){
         const g=grp(c),f=Math.floor(c/(N*N)),j=Math.floor(c/N)%N,i=c%N,r=R+d.filled[c]-0.3;g.mb.ex=6;
         const pt=(u,v)=>{const n=LW.faceDir(f,(i+u)/N*2-1,(j+v)/N*2-1);return [n[0]*r-g.o[0],n[1]*r-g.o[1],n[2]*r-g.o[2]];};
@@ -336,6 +342,19 @@ class Scene{
       }
     }
     this.water=[];for(const k in groups){const m=groups[k].mb.build();if(m)this.water.push({mesh:m,o:groups[k].o});}
+  }
+  // roads: ribbons draped on the canonical terrain; surface follows the builders' era
+  buildRoads(world,cam){
+    const key=world.id+'|'+(world.roadRev|0)+'|'+P.terrainRev(world)+'|'+(world.env.rv|0)+'|'+Math.round(Math.log2(Math.max(8,cam.alt)));
+    if(key===this.roadKey)return;this.roadKey=key;if(this.roadMeshes)for(const m of this.roadMeshes)G.free(m.mesh);this.roadMeshes=[];
+    const R=world.body.radius,lift=Math.max(0.07,cam.alt*0.003);
+    for(const id in world.roads){const r=world.roads[id],s=world.settlements[r.settlement],era=s?s.era:0,mb=new G.MB(),o=V.mul(r.pts[0],R);
+      const wd=Math.max(r.by==='player'?3:2,cam.alt*0.006),col=era>=6?[70,70,78]:era>=2?[150,146,140]:[156,128,94];mb.ey=era>=2?0.08:0.13;
+      for(let i=0;i<r.pts.length-1;i++){const a=r.pts[i],b=r.pts[i+1],side=V.norm(V.cross(a,V.sub(b,a))),n=Math.max(1,Math.ceil(LW.arcDist(a,b,R)/5));let pl=null,pr=null;
+        for(let k=0;k<=n;k++){const q=V.norm(V.lerp(a,b,k/n)),rr=R+Math.max(P.height(world,q),P.waterLevel(world,q))+lift;
+          const l=[q[0]*rr-side[0]*wd/2-o[0],q[1]*rr-side[1]*wd/2-o[1],q[2]*rr-side[2]*wd/2-o[2]],p2=[q[0]*rr+side[0]*wd/2-o[0],q[1]*rr+side[1]*wd/2-o[1],q[2]*rr+side[2]*wd/2-o[2]];
+          if(pl)mb.quad(pl,pr,p2,l,col);pl=l;pr=p2;}}
+      const mesh=mb.build();if(mesh)this.roadMeshes.push({mesh,o});}
   }
   rstate(world,ent,dt){
     let s=this.rs.get(ent.id);
@@ -354,6 +373,7 @@ class Scene{
     mode(1);
     if(!sp_){
       this.buildWater(world,cam);
+      this.buildRoads(world,cam);for(const s of this.roadMeshes)G.draw(s.mesh,G.translate(s.o[0]-cam.pos[0],s.o[1]-cam.pos[1],s.o[2]-cam.pos[2]));
       if(this.water)for(const s of this.water)G.draw(s.mesh,G.translate(s.o[0]-cam.pos[0],s.o[1]-cam.pos[1],s.o[2]-cam.pos[2]),null,1,[s.o[0]%256,s.o[1]%256,s.o[2]%256]);
       // dig sites
       for(const id in world.volumes){
@@ -386,7 +406,8 @@ class Scene{
       const p=this.entPos(world,e,s),dc=V.dist(p,sp_?cam.T:cam.pos);if(dc>far)return;
       if(!s.look||s.lookT!==Math.floor(world.tick/LW.TPD)){s.look=G.lookOf(world,e,sp);s.lookT=Math.floor(world.tick/LW.TPD);}
       const base=G.frameMat(LW.frame(s.n),-s.face,V.sub(p,cam.pos));
-      creature(sp,base,s.ph,s.moving,e.posture||(e.st==='rest'?'rest':'stand'),!sp_&&dc>220,s.look,bob);
+      let seat=0;if(e.ride&&dc<400)seat=vehicle(e.ride,base,s.ph);
+      creature(sp,seat?G.part(base,0,seat,e.ride==='cart'?-0.1:0,0,0,1,1,1):base,s.ph,seat?false:s.moving,seat?'sit':(e.posture||(e.st==='rest'?'rest':'stand')),!sp_&&dc>220,s.look,bob);
     };
     for(const id in world.organisms){const o=world.organisms[id];ent(o,world.species[o.speciesId]);}
     for(const id in world.persons){const p=world.persons[id];if(p.alive)ent(p,world.species[p.speciesId]);}

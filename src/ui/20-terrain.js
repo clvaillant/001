@@ -171,7 +171,7 @@ class Terrain{
   // choose visible chunks for this camera; build missing/stale ones within a time budget
   update(world,cam,budgetMs){
     this.frame++;const R=world.body.radius,amp=P.amplitude(world.body);
-    const sig=world.id+'|'+world.body.seaLevel+'|'+world.colorEpoch+'|'+world.genEpoch+'|'+world.body.atmosphere.baseTemp+'|'+world.body.axialTilt;
+    const sig=world.id+'|'+(world.env.rv|0)+'|'+world.body.seaLevel+'|'+world.colorEpoch+'|'+world.genEpoch+'|'+world.body.atmosphere.baseTemp+'|'+world.body.axialTilt;
     if(sig!==this.sig){this.sig=sig;this.invalidateAll();}
     const maxL=Math.max(1,Math.floor(Math.log2(R*Math.PI/2/8))),K=2.5*this.quality;
     const rc=V.len(cam.pos),cd=V.mul(cam.pos,1/rc);

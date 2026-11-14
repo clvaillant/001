@@ -27,7 +27,7 @@ LW.createWorld=function(cfg){
     terrainEdits:[],editSeq:0,volumes:{},env:null,
     species:{},organisms:{},persons:{},cohorts:{},buildings:{},settlements:{},households:{},relationships:{},activities:{},
     events:[],eventArchive:{dropped:0,byType:{}},receipts:{},receiptOrder:[],pending:[],undo:[],redo:[],
-    interest:null,colorEpoch:0};
+    roads:{},roadRev:0,interest:null,colorEpoch:0};
   LW.life.installDefaults(w);
   LW.env.init(w);
   return w;

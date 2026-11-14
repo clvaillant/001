@@ -1,4 +1,4 @@
-# WORLD_FORMAT — Living World schema 1.1
+# WORLD_FORMAT — Living World schema 1.2
 
 One world = one JSON object. The kernel (`src/core`) is its only writer. Meshes, panels and sound are
 derived from it and never stored. The same format is used by the browser game, the LAN host and the
@@ -36,7 +36,7 @@ does not prove who made a file.
 
 - `schema.major` changes when old readers cannot load new files. Newer major → refused.
 - `schema.minor` changes for additive fields. `LW.save.MIGRATIONS['major.minor']` holds one function
-  per source version, applied in a chain before validation. `1.0 → 1.1` adds `env.soil` (filled with 128).
+  per source version, applied in a chain before validation. `1.0 → 1.1` adds `env.soil` (filled with 128); `1.1 → 1.2` adds `roads`.
 - `generatorVersion` (1) pins the terrain generator. A world whose generator version is newer than the
   build is refused, so a code change can never silently reshape saved terrain. A future generator must
   keep version 1 available.
@@ -76,6 +76,7 @@ does not prove who made a file.
 | `editSeq`, `colorEpoch` | change counters used to invalidate derived data |
 | `volumes{}` | **VoxelVolume** `{id,n,yaw,nx,ny,nz,cell,top,h0,ops[{t:'c'|'f',x,y,z,r,gid}]}` |
 | `env` | `{N, veg[6N²], vsp[6N²], soil[6N²] (0–255 moisture held from recent rain), plants[], river[6N²]|null, chg{cell:eventId}, dirty{pending,causes[]}, mined{}}` |
+| `roads{}`, `roadRev` | **Road** `{id, pts[unit directions], by:'player'|'settlement', settlement, built}`; a person's `ride` names the conveyance in use |
 | `species{}` | **Species** configuration (anatomy, senses, movement, diet, lifecycle, climate, voice, capabilities) |
 | `organisms{}` | **Organism** `{id,speciesId,n,face,born,sex,needs,health,st,alive,named,lf,home,preg}` |
 | `persons{}` | **Person** (below) |

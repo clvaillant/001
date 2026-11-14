@@ -6,6 +6,7 @@ const SV=LW.save={};
 SV.MAX_BYTES=96*1024*1024;
 // keyed by source "major.minor"; each returns the world upgraded one step
 SV.MIGRATIONS={
+  '1.1':w=>{if(!w.roads||typeof w.roads!=='object')w.roads={};w.roadRev=w.roadRev|0;w.schema={major:1,minor:2};return w;},   // 1.2 adds roads
   '1.0':w=>{if(w.env&&Array.isArray(w.env.veg)&&!Array.isArray(w.env.soil))w.env.soil=new Array(w.env.veg.length).fill(128);w.schema={major:1,minor:1};return w;}   // 1.1 adds soil moisture
 };
 
@@ -42,11 +43,13 @@ SV.validate=function(w){
   const C=6*b.envN*b.envN,en=w.env;
   need(isObj(en)&&en.N===b.envN&&Array.isArray(en.veg)&&en.veg.length===C&&Array.isArray(en.vsp)&&en.vsp.length===C&&Array.isArray(en.soil)&&en.soil.length===C&&Array.isArray(en.plants),'bad environment grid');
   need(en.river===null||(Array.isArray(en.river)&&en.river.length===C),'bad water grid');
+  need(en.rv===undefined||Number.isInteger(en.rv),'bad water revision');
   need(isObj(en.dirty)&&Array.isArray(en.dirty.causes)&&isObj(en.chg)&&isObj(en.mined),'bad environment state');
   need(Array.isArray(w.protectedGens)&&w.protectedGens.length===w.genEpoch,'bad regeneration history');
   need(Array.isArray(w.terrainEdits)&&w.terrainEdits.length<=20000,'bad terrain edits');
   for(const e of w.terrainEdits)need(isObj(e)&&LW.planet.TOOLS.indexOf(e.tool)>=0&&LW.isDir(e.n)&&fin(e.r)&&e.r>0&&fin(e.s)&&Number.isInteger(e.g)&&e.g<=w.genEpoch,'bad terrain edit');
-  for(const k of ['volumes','species','organisms','persons','cohorts','buildings','settlements','households','relationships','activities','receipts','rules','eventArchive'])need(isObj(w[k]),'bad '+k);
+  for(const id in (w.roads||{})){const r=w.roads[id];need(r&&r.id===id&&Array.isArray(r.pts)&&r.pts.length>=2&&r.pts.length<=400&&r.pts.every(LW.isDir),'bad road '+id);}
+  for(const k of ['roads','volumes','species','organisms','persons','cohorts','buildings','settlements','households','relationships','activities','receipts','rules','eventArchive'])need(isObj(w[k]),'bad '+k);
   for(const k of ['events','receiptOrder','pending','undo','redo'])need(Array.isArray(w[k]),'bad '+k);
   for(const id in w.species){const e=LW.life.validateSpecies(w.species[id]);need(!e&&w.species[id].id===id,'bad species '+id+(e?': '+e:''));}
   for(const id in w.volumes){const v=w.volumes[id];need(v.id===id&&LW.isDir(v.n)&&Array.isArray(v.ops)&&v.nx>0&&v.nx<=64&&v.ny>0&&v.ny<=64&&v.nz>0&&v.nz<=64&&fin(v.cell)&&fin(v.h0),'bad volume '+id);}

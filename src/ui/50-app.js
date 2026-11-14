@@ -146,11 +146,12 @@ App.focusOn=function(n,dist){App.cam.goal={n:n.slice(),dist:dist||null};};
 App.controlled=function(){const w=App.world;if(!w)return null;for(const id in w.persons){const p=w.persons[id];if(p.alive&&p.control.mode==='player'&&p.control.by===LW.LOCAL_ACTOR.id)return p;}return null;};
 
 // ---- tools --------------------------------------------------------------------------------------
-const BRUSH={raise:1,lower:1,smooth:1,flatten:1,mountain:1,valley:1,shore:1,biome:1,water:1,plants:1};
+const BRUSH={raise:1,lower:1,smooth:1,flatten:1,mountain:1,valley:1,shore:1,biome:1,water:1,plants:1,road:1};
 App.isBrush=()=>!!BRUSH[App.tool.id];
 App.setTool=function(cat,id){App.tool.cat=cat;App.tool.id=id||cat;App.pending=null;App.autoBrush();App.changed('tool');};
 App.autoBrush=function(){
   const t=App.tool,w=App.view();if(!w||t.lockR)return;
+  if(t.id==='road'){t.r=Math.max(1.5,App.cam.dist*0.004);return;}
   t.r=LW.clamp(App.cam.dist*0.13,3,w.body.radius*0.6);
   t.s=LW.clamp(t.r*0.16,0.4,P.amplitude(w.body)*0.6+5);
 };
@@ -175,15 +176,21 @@ function carveAt(x,y,first){
 App.strokeStart=function(x,y){
   const t=App.tool;App.stroke={gid:LW.idPrefix+'g'+Date.now().toString(36),n:0,last:null};
   if(t.id==='carve'||t.id==='fill')return carveAt(x,y,true);
-  const hit=App.groundHit(x,y);if(hit)dab(hit.n,true);
+  const hit=App.groundHit(x,y);
+  if(t.id==='road'){App.stroke.pts=hit?[hit.n]:[];App.stroke.last=hit?hit.n:null;return;}
+  if(hit)dab(hit.n,true);
 };
 App.strokeMove=function(x,y){
   if(!App.stroke)return;const t=App.tool;
   if(t.id==='carve'||t.id==='fill')return carveAt(x,y,false);
-  const hit=App.groundHit(x,y);if(hit){App.hover=hit.n;if(App.stroke.last)dab(hit.n,false);else dab(hit.n,true);}
+  const hit=App.groundHit(x,y);
+  if(t.id==='road'){if(hit&&(!App.stroke.pts.length||LW.arcDist(App.stroke.last,hit.n,App.world.body.radius)>Math.max(5,App.cam.dist*0.03))){App.stroke.pts.push(hit.n);App.stroke.last=hit.n;}return;}
+  if(hit){App.hover=hit.n;if(App.stroke.last)dab(hit.n,false);else dab(hit.n,true);}
 };
 App.strokeEnd=function(){
-  const st=App.stroke;App.stroke=null;if(!st||!st.n)return;
+  const st=App.stroke;App.stroke=null;
+  if(st&&st.pts){if(st.pts.length>=2){const r=App.do('road.add',{pts:st.pts.slice(0,200)});if(r.ok)App.toast('Road built. People travel faster along it.');}else App.toast('Drag across the land to draw a road','warn');return;}
+  if(!st||!st.n)return;
   const w=App.world;
   if(w.env.dirty.pending){const r=App.do('env.settle',{},true);if(r.ok&&r.result.changed)App.toast('Water responded: '+r.result.changed+' region'+(r.result.changed>1?'s':'')+' changed. Tap the land to inspect causes.');}
   App.changed('stroke');
@@ -327,7 +334,7 @@ App.frame=function(now){
       else if(s.type==='settlement'&&ww.settlements[s.id])rings.push({n:ww.settlements[s.id].n,r:Math.max(40,c.dist*0.03),col:[255,200,120]});}
     if(App.isBrush()&&(App.hover||App.stroke&&App.stroke.last))rings.push({n:(App.stroke&&App.stroke.last)||App.hover,r:App.tool.r,col:[255,120,90]});
   }
-  G.render(w,c,App.terrain,App.scene,dt,{studio:App.opts.studio||App.phase!=='play',clouds:App.opts.clouds,shadows:App.opts.shadows,rings});
+  G.render(w,c,App.terrain,App.scene,dt,{studio:App.opts.studio||App.phase!=='play'||(App.world&&App.world.mode==='create'),clouds:App.opts.clouds,shadows:App.opts.shadows,rings});
   // bookkeeping
   fpsN++;fpsT+=dt;if(fpsT>=0.5){App.stats.fps=fpsN/fpsT;App.stats.ms=fpsT/fpsN*1000;App.stats.ticksPerSec=tickN/fpsT;fpsN=0;fpsT=0;tickN=0;}
   if(now-uiT>250){uiT=now;App.changed('tick');}

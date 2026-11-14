@@ -13,7 +13,7 @@
     "LW-120"
    ],
    "status": "pass",
-   "ms": 45,
+   "ms": 68,
    "error": null,
    "note": null
   },
@@ -27,7 +27,7 @@
     "LW-116"
    ],
    "status": "pass",
-   "ms": 219,
+   "ms": 192,
    "error": null,
    "note": null
   },
@@ -40,7 +40,7 @@
     "LW-153"
    ],
    "status": "pass",
-   "ms": 479,
+   "ms": 491,
    "error": null,
    "note": null
   }

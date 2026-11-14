@@ -12,7 +12,7 @@ S.TECHS=[{id:'fire',name:'Fire',cost:15,era:0},{id:'tools',name:'Stone tools',co
 S.ERAS=['Dawn age','Stone age','Agrarian age','Bronze age','Iron age','Mechanical age','Industrial age','Electric age','Information age','Space age'];
 S.transport=function(s){
   const t=s?s.techs:[];
-  return t.indexOf('spaceflight')>=0?'orbital shuttle':t.indexOf('electricity')>=0?'electric tram':t.indexOf('steam')>=0?'steam rail':t.indexOf('wheel')>=0?'cart':'on foot';
+  let v='on foot';for(const x of LW.roads.VEHICLES)if(t.indexOf(x[0])>=0)v=x[1];return v;
 };
 const NAMES=['Aldmere','Brisk','Calder','Dunmoor','Esk','Farrow','Glint','Harrow','Isel','Jund','Kessa','Lorn','Marrow','Nesh','Orrin','Pell','Quill','Rook','Sable','Tarn'];
 
@@ -184,6 +184,7 @@ S.daily=function(w){
       else if(sp.lifecycle.repro==='assembly'&&s.stock.tools>=3&&s.members.length<40&&LW.rand(w)<0.1){s.stock.tools-=3;w.pending.push({id:LW.newId(w,'pw'),due:w.tick+sp.lifecycle.gest*LW.TPD,type:'personBirth',mother:q.id,father:null});}
     }
   }
+  LW.roads.daily(w);
   // inter-settlement relations: trade when calm, disputes/raids under scarcity (intensity is a world rule)
   const ids=Object.keys(w.settlements);
   for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++){

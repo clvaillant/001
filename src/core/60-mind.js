@@ -65,9 +65,11 @@ M.perceive=function(w,p,sp){
 };
 
 // ---- actions ---------------------------------------------------------------------
-function speed(w,p,sp){let s=sp.move.speed;const st=w.settlements[p.settlement];if(st&&st.techs.indexOf('wheel')>=0)s*=1.25;if(p.needs.energy<8)s*=0.6;return s;}
+function speed(w,p,sp){let s=sp.move.speed*LW.roads.speedFactor(w,p);if(p.needs.energy<8)s*=0.6;return s;}
 function go(w,p,a,sp){
-  if(!a.path){a.path=LW.nav.path(w,p.n,a.to,sp);a.i=0;if(!a.path)return 'no route';p.posture='stand';}
+  if(!a.path){a.path=LW.nav.path(w,p.n,a.to,sp);a.i=0;if(!a.path)return 'no route';p.posture='stand';
+    // long outdoor trips use the best conveyance the traveller's settlement has invented
+    const v=LW.arcDist(p.n,a.to,w.body.radius)>120&&!B.locate(w,p.n)?LW.roads.vehicleFor(w,p):null;p.ride=v?v[1]:null;}
   let budget=speed(w,p,sp);
   while(a.i<a.path.length){
     const d=LW.arcDist(p.n,a.path[a.i],w.body.radius);
@@ -89,6 +91,7 @@ const FAIL_TEXT={dry:'I went for water but found the place dry',barren:'There wa
   'not here':'This is no place to settle','too tired':'I was too exhausted'};
 M.FAIL_TEXT=FAIL_TEXT;
 function release(w,p,a){
+  if(a&&(a.a==='go'||a.sub))p.ride=null;
   if(a&&a.a==='use'){const b=w.buildings[a.b],c=b&&B.comp(b,a.c);if(c&&c.by===p.id)c.by=null;}
   p.posture='stand';
 }
@@ -267,7 +270,11 @@ function plan(w,p,type,sp,data){
     case 'craft':{const wb=w.buildings[data],c=wb&&B.findCap(wb,'work',p.id);return c?{steps:[{a:'use',b:wb.id,c:c.id,cap:'work'}]}:null;}
     case 'found':{
       const c=E.cellOf(w,p.n);
-      if(E.fresh(w,c)||[0,1,2,3].some(k=>E.fresh(w,E.d(w).nb[c*4+k])))return {steps:[{a:'found'}]};
+      if(E.fresh(w,c)||[0,1,2,3].some(k=>E.fresh(w,E.d(w).nb[c*4+k]))){
+        const dry=q=>LW.planet.height(w,q)>=LW.planet.waterLevel(w,q)+0.6;
+        if(dry(p.n))return {steps:[{a:'found'}]};
+        for(let k=1;k<40;k++){const a=k*2.4,q=LW.offsetDir(p.n,Math.sin(a)*(8+k*3),Math.cos(a)*(8+k*3),R);if(dry(q))return {steps:[{a:'go',to:q},{a:'found'}]};}   // step out of the riverbed first
+        return null;}
       const b=nearestBelief(w,p,'water');if(!b)return null;
       return {steps:[{a:'go',to:LW.offsetDir(b.n,60,60,R)},{a:'found'}]};}
     case 'explore':return {steps:[{a:'explore'}]};

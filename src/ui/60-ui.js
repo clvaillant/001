@@ -162,7 +162,8 @@ UI.renderTools=function(){
     btn('Species editor…',()=>UI.speciesEditor(),'ghost')];
   else if(t.cat==='build')strip=[h('div',{class:'chips'},Object.keys(B.TEMPLATES).map(k=>btn(B.TEMPLATES[k].name,()=>{t.template=k;App.setTool('build','template');},'chip'+(t.id==='template'&&t.template===k?' on':'')))),
     h('div',{class:'chips'},Object.keys(LW.COMPONENTS).filter(k=>k!=='well').map(k=>btn(LW.COMPONENTS[k].name,()=>{t.comp=k;App.setTool('build','comp');},'chip'+(t.id==='comp'&&t.comp===k?' on':'')))),
-    h('p',{class:'note',text:'Tap the ground to place a building; tap a floor to place furniture. Select a building in Navigate mode to add rooms, move or remove it.'})];
+    h('div',{class:'chips'},btn('Draw road',()=>App.setTool('build','road'),'chip'+(t.id==='road'?' on':''))),
+    h('p',{class:'note',text:'Tap the ground to place a building; tap a floor to place furniture; drag to draw a road. Select a building in Navigate mode to add rooms, move or remove it.'})];
   else if(t.cat==='dig')strip=[tools([['digsite','New dig site'],['carve','Carve'],['fill','Fill']]),slider('Carve radius',1,8,0.5,t.carveR,v=>{t.carveR=v;},v=>v+' m'),
     slider('View depth',0,24,0.5,App.cam.depth,v=>{App.cam.depth=v;},v=>v?v+' m below ground':'surface'),
     h('p',{class:'note',text:'Dig sites are editable 3D volumes in the same planetary space. Carve from the surface to open an entrance, then raise View depth to look inside.'})];
@@ -207,7 +208,7 @@ function evText(w,e){
     case 'settlement.founded':return d.name+' was founded by '+nm(d.by);case 'settlement.joined':return nm(d.id)+' joined a settlement';
     case 'building.completed':return 'A '+d.kind+' was completed'+(d.by&&d.by!=='player'?' by '+nm(d.by):d.by==='player'?' (placed by the creator)':'');
     case 'building.planned':return 'A '+d.kind+' was planned'+(d.why?': '+d.why:'');case 'building.flooded':return 'A building was flooded';
-    case 'harvest':return 'Harvest of '+d.yield+' food (water '+d.water+')';case 'drought':return 'Drought struck '+d.name;case 'drought.ended':return 'The drought at '+d.name+' broke';case 'storm':return 'A storm hit '+d.name;case 'tech.discovered':return d.name+' discovered — '+d.era;
+    case 'harvest':return 'Harvest of '+d.yield+' food (water '+d.water+')';case 'road.built':return d.by==='player'?'A road was built (by the creator)':(d.name||'A settlement')+' laid a '+(d.to&&d.to.length>10?'road':'path')+' to '+(d.to||'a building');case 'drought':return 'Drought struck '+d.name;case 'drought.ended':return 'The drought at '+d.name+' broke';case 'storm':return 'A storm hit '+d.name;case 'tech.discovered':return d.name+' discovered — '+d.era;
     case 'partnership':return nm(d.a)+' and '+nm(d.b)+' became partners';case 'talk':return nm(d.a)+' talked with '+nm(d.b);
     case 'life.introduced':return 'Life introduced: '+d.count+' × '+((w.species[d.species]||{}).name||d.species);
     case 'plants.seeded':return 'Plants seeded: '+((w.species[d.species]||{}).name||d.species);case 'plants.diedOut':return 'Plants died out here';

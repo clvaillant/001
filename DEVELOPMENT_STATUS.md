@@ -83,8 +83,8 @@ so there is no polygon count to match, and none of its art was copied.
   large planets the scene reaches about 300 000 triangles in several hundred draw calls with no
   back-face or occlusion culling; this is the first thing to measure and tune on a device.
 - LOD transitions pop; trees are regenerated per chunk and differ between levels.
-- Rivers are ribbons between ~600 m cells and can cut through small hills; they do not carve beds.
-  Edits much smaller than a cell do not change hydrology.
+- River courses are still routed between ~600 m cells; channels are carved along them and small dams are
+  detected, but ditches do not divert flow and all rivers are fordable.
 - Outdoor routes avoid buildings and water within about 900 m; longer detours fail as "no route". No tunnel pathfinding.
 - The start of a new world is local midnight at some longitudes, so first Play can be dark; use
   Menu → "Creator light".
@@ -116,9 +116,10 @@ so there is no polygon count to match, and none of its art was copied.
 
 Done: **10** pathfinding round buildings and water · **9** weather with consequences (soil moisture,
 droughts, storms; schema 1.1 with a migration from 1.0) · **8** schedule editor · **7** LAN play from
-inside the game (join screen, invitations, shared clock; tested with three browsers).
-Remaining: **6** rivers that carve channels · **5** roads and era vehicles ·
-**4** ownership, personal trade, institutions · **3** larger caves with tunnel navigation ·
+inside the game (join screen, invitations, shared clock; tested with three browsers) · **6** rivers
+carved into the canonical terrain, with sub-cell dams · **5** roads (player-drawn and settlement-laid)
+and five era conveyances (schema 1.2).
+Remaining: **4** ownership, personal trade, institutions · **3** larger caves with tunnel navigation ·
 **2** more celestial bodies · **1** Android build, real-phone measurement and a local language model
 (blocked in this environment).
 

@@ -37,8 +37,8 @@ E.cellSize=world=>world.body.radius*(Math.PI/2)/world.env.N;
 function sampleCell(world,d,c){
   const N=d.N,f=Math.floor(c/(N*N)),j=Math.floor(c/N)%N,i=c%N,o=0.3/N*2;
   const u=(i+0.5)/N*2-1,v=(j+0.5)/N*2-1;
-  d.h[c]=(LW.planet.height(world,LW.faceDir(f,u,v))*2+LW.planet.height(world,LW.faceDir(f,u-o,v-o))+LW.planet.height(world,LW.faceDir(f,u+o,v-o))+
-    LW.planet.height(world,LW.faceDir(f,u-o,v+o))+LW.planet.height(world,LW.faceDir(f,u+o,v+o)))/6;
+  d.h[c]=(LW.planet.ground(world,LW.faceDir(f,u,v))*2+LW.planet.ground(world,LW.faceDir(f,u-o,v-o))+LW.planet.ground(world,LW.faceDir(f,u+o,v-o))+
+    LW.planet.ground(world,LW.faceDir(f,u-o,v+o))+LW.planet.ground(world,LW.faceDir(f,u+o,v+o)))/6;
 }
 function route(world,d){
   const C=d.C,h=d.h,sea=world.body.seaLevel,filled=d.filled,to=d.to,flux=d.flux,od=d.od;
@@ -59,7 +59,15 @@ function route(world,d){
     const x=d.dirs[c*3],y=d.dirs[c*3+1],z=d.dirs[c*3+2];
     d.moist[c]=LW.clamp(0.52+0.75*g(x*2.1+31,y*2.1,z*2.1)+0.3*g(x*5.3,y*5.3+11,z*5.3)-0.32*Math.min(1,od[c]*dryScale)+P.moisture,0,1);
   }
-  for(let i=order.length-1;i>=0;i--){const c=order[i];if(h[c]<sea)continue;flux[c]+=0.25+d.moist[c];if(to[c]>=0)flux[to[c]]+=flux[c];}
+  // small dams: a hand-made ridge across a watercourse, standing above the upstream bed, holds the water back
+  // even when it is far smaller than a hydrology cell
+  const dam=d.dam||(d.dam=new Uint8Array(C));dam.fill(0);
+  if(world.terrainEdits.length){const PL=LW.planet,dir=k=>[d.dirs[k*3],d.dirs[k*3+1],d.dirs[k*3+2]];
+    for(let c=0;c<C;c++){if(to[c]<0||h[c]<sea)continue;const a=dir(c),b=dir(to[c]);
+      if(!PL.editsNear(world,a).length&&!PL.editsNear(world,b).length)continue;
+      let lo=PL.ground(world,a);        // lowest point the water has reached so far on its way down
+      for(let k=1;k<=12;k++){const n=LW.V.norm(LW.V.lerp(a,b,k/12)),g=PL.ground(world,n);if(g>lo+1.2&&g-PL.baseHeight(world,n)>1.2){dam[c]=1;break;}if(g<lo)lo=g;}}}
+  for(let i=order.length-1;i>=0;i--){const c=order[i];if(h[c]<sea)continue;flux[c]+=0.25+d.moist[c];if(to[c]>=0&&!dam[c])flux[to[c]]+=flux[c];}
   d.rev++;d.rivers=null;
 }
 // derived fields; always reflects the current canonical terrain (lazy, dirty-cell resampling)
@@ -100,6 +108,7 @@ E.markAllDirty=function(world,ev){const c=LW.cache(world);if(c.env)c.env.all=tru
 E.waterKind=function(world,d,c){
   if(d.h[c]<world.body.seaLevel)return 3;
   if(d.filled[c]-d.h[c]>Math.max(2,LW.planet.amplitude(world.body)*0.02))return 2;
+  if(d.dam&&d.dam[c]&&d.flux[c]>d.thr)return 2;            // pond held behind a dam
   return d.flux[c]>d.thr?1:0;
 };
 // commit hydrology changes to canonical state and emit provenance-carrying events (idempotent pending work)
@@ -117,7 +126,7 @@ E.settle=function(world){
       world.env.chg[c]=LW.emit(world,type,{cell:c,from:old[c],to:k},q.causes,{cell:c});emitted++;
     }else world.env.chg[c]=world.env.chg[c]||q.causes[0];
   }
-  world.env.river=now;q.pending=false;q.causes=[];
+  world.env.river=now;world.env.rv=(world.env.rv|0)+1;q.pending=false;q.causes=[];
   if(changed)world.colorEpoch++;
   return changed;
 };

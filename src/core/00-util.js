@@ -3,7 +3,7 @@
 ;(function(){'use strict';
 const LW=globalThis.LW=globalThis.LW||{};
 LW.VERSION='0.1.0';
-LW.SCHEMA={major:1,minor:1};
+LW.SCHEMA={major:1,minor:2};
 LW.GENERATOR_VERSION=1;
 LW.TICK_SECONDS=15;            // one logical tick = 15 simulated seconds
 LW.TPH=240;                    // ticks per simulated hour

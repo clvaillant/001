@@ -79,7 +79,8 @@ function applyEdit(e,n,h,R,sea){
   }
 }
 // THE canonical terrain function. Every mesh LOD, every simulation system and every raycast samples this.
-P.height=function(world,n){
+// P.ground = generator + manual edits. P.height (below) additionally carves river channels into it.
+P.ground=function(world,n){
   const c=LW.cache(world),body=world.body,R=body.radius,amp=P.amplitude(body);
   let h=base(genOf(c,body.gen),amp,n[0],n[1],n[2]);
   if(!world.terrainEdits.length)return h;
@@ -96,9 +97,48 @@ P.height=function(world,n){
   return h;
 };
 P.baseHeight=function(world,n){const c=LW.cache(world);return base(genOf(c,world.body.gen),P.amplitude(world.body),n[0],n[1],n[2]);};
-// local water surface level (sea or painted lake) at n
+// ---- river channels: the drainage network cut into the canonical surface --------------------------
+// Each river cell holds a smooth curve from where water enters it to where it leaves; the bed is carved along
+// that curve and holds water. Derived from hydrology (which itself samples P.ground, so there is no cycle).
+function channels(world,c){
+  const d=c.env,riv=world.env&&world.env.river;
+  if(!d||d.all||d.resample||!riv)return null;
+  if(c.chan&&c.chanRev===d.rev&&c.chanRv===(world.env.rv|0))return c.chan;
+  const C=d.C,up=new Array(C),segs=new Array(C),dir=k=>[d.dirs[k*3],d.dirs[k*3+1],d.dirs[k*3+2]],cell=world.body.radius*(Math.PI/2)/d.N;let any=false;
+  for(let k=0;k<C;k++)if(riv[k]===1&&d.to[k]>=0)(up[d.to[k]]||(up[d.to[k]]=[])).push(k);
+  for(let x=0;x<C;x++){
+    if(riv[x]!==1)continue;
+    const cx=dir(x),out=d.to[x]>=0?V.norm(V.lerp(cx,dir(d.to[x]),0.5)):cx,ins=(up[x]||[]).map(u=>V.norm(V.lerp(dir(u),cx,0.5)));
+    const f=Math.sqrt(Math.max(1,d.flux[x]/d.thr)),half=LW.clamp(cell*0.006*f,1.2,cell*0.05),wd=LW.clamp(0.25+0.12*f,0.3,0.65),list=[];
+    if(!ins.length)list.push([cx,out]);
+    for(const m of ins){let prev=m;for(let k=1;k<=5;k++){const t=k/5,q=V.norm([(1-t)*(1-t)*m[0]+2*t*(1-t)*cx[0]+t*t*out[0],(1-t)*(1-t)*m[1]+2*t*(1-t)*cx[1]+t*t*out[1],(1-t)*(1-t)*m[2]+2*t*(1-t)*cx[2]+t*t*out[2]]);list.push([prev,q]);prev=q;}}
+    segs[x]={list,half,wd,flux:d.flux[x]};any=true;
+  }
+  c.chan=any?segs:null;c.chanRev=d.rev;c.chanRv=world.env.rv|0;
+  return c.chan;
+}
+P.riverLines=world=>channels(world,LW.cache(world));
+// nearest river centreline to n within its own hydrology cell: {dist (m), half, wd, q (closest point)} or null
+P.riverAt=function(world,n){
+  const ch=channels(world,LW.cache(world));if(!ch)return null;
+  const s=ch[LW.env.cellOf(world,n)];if(!s)return null;
+  let bd=1e9,bq=null;
+  for(let i=0;i<s.list.length;i++){const a=s.list[i][0],b=s.list[i][1],ex=b[0]-a[0],ey=b[1]-a[1],ez=b[2]-a[2],l2=ex*ex+ey*ey+ez*ez||1e-12;
+    let t=((n[0]-a[0])*ex+(n[1]-a[1])*ey+(n[2]-a[2])*ez)/l2;t=t<0?0:t>1?1:t;
+    const qx=a[0]+ex*t,qy=a[1]+ey*t,qz=a[2]+ez*t,dd=(n[0]-qx)*(n[0]-qx)+(n[1]-qy)*(n[1]-qy)+(n[2]-qz)*(n[2]-qz);if(dd<bd){bd=dd;bq=[qx,qy,qz];}}
+  const dist=Math.sqrt(bd)*world.body.radius;if(dist>s.half*1.6)return null;
+  return {dist,half:s.half,wd:s.wd,q:V.norm(bq)};
+};
+// THE canonical surface: every mesh LOD, raycast and simulation system samples this.
+P.height=function(world,n){
+  const h=P.ground(world,n),r=P.riverAt(world,n);
+  if(!r)return h;
+  const k=r.dist/(r.half*1.6);return h-(r.wd+0.5)*(1-k*k);
+};
+// local water surface level (sea, painted lake or river channel) at n
 P.waterLevel=function(world,n){
   let lv=world.body.seaLevel;
+  const rv=P.riverAt(world,n);if(rv){const l2=P.ground(world,rv.q)-0.5;if(l2>lv)lv=l2;}
   if(!world.terrainEdits.length)return lv;
   const b=index(world,LW.cache(world)).b[bucketOf(n)];
   if(b)for(let i=0;i<b.length;i++){const e=b[i];if(e.tool==='water'&&e.level>lv&&V.dist(n,e.n)*world.body.radius<e.r*0.92)lv=e.level;}

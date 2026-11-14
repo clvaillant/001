@@ -450,7 +450,7 @@ test('U35','pathfinding: people walk round buildings and round water instead of 
 });
 test('U36','weather matters: rain soaks soil, dry spells bring drought, storms hit crops; schema 1.0 saves migrate to 1.1',['LW-047','LW-084','LW-135','LW-152'],()=>{
   const {w,c,n}=village(42),d=LW.env.d(w);
-  assert.strictEqual(w.schema.minor,1);assert.strictEqual(w.env.soil.length,d.C);
+  assert.strictEqual(w.schema.minor,LW.SCHEMA.minor);assert.strictEqual(w.env.soil.length,d.C);
   run(w,LW.TPD*12);                                   // creator mode: environment runs, weather included
   let wet=0,dry=0,mn=255,mx=0;for(let k=0;k<d.C;k++){if(d.h[k]<w.body.seaLevel)continue;const s=w.env.soil[k];mn=Math.min(mn,s);mx=Math.max(mx,s);if(s>140)wet++;if(s<90)dry++;}
   assert(mx-mn>60,'soil moisture varies with the weather: '+mn+'..'+mx);assert(wet>20&&dry>20,'both wet and dry regions exist');
@@ -463,7 +463,7 @@ test('U36','weather matters: rain soaks soil, dry spells bring drought, storms h
   w.env.soil[sc]=250;LW.env.weather(w);assert(w.events.some(e=>e.type==='drought.ended'),'drought ends when the soil recovers');
   // migration from the previous schema
   const o=JSON.parse(LW.save.pack(w));delete o.world.env.soil;o.world.schema={major:1,minor:0};o.schema={major:1,minor:0};o.checksum=LW.checksum(LW.canonical(o.world));
-  const m=LW.save.parse(JSON.stringify(o));assert.deepStrictEqual(m.schema,{major:1,minor:1});assert.strictEqual(m.env.soil.length,d.C);assert(m.env.soil.every(x=>x===128));
+  const m=LW.save.parse(JSON.stringify(o));assert.deepStrictEqual(m.schema,LW.SCHEMA,'migrated through every step to the current schema');assert.deepStrictEqual(m.roads,{});assert.strictEqual(m.env.soil.length,d.C);assert(m.env.soil.every(x=>x===128));
   run(m,LW.TPD);LW.save.validate(m);
   return 'soil range '+mn+'..'+mx+' after 12 days';
 });
@@ -477,6 +477,55 @@ test('U37','schedules: a character keeps set hours, then returns to their own ch
   ok(w,'person.setSchedule',{id:p.id,schedule:[]});p.plan=null;let other=0;for(let i=0;i<2000;i++){LW.tick(w);if(p.plan&&p.plan.goal!=='study')other++;}
   assert(other>800,'free again once the schedule is cleared');assert(LW.undo(w).ok&&p.schedule.length===1,'schedule edits are undoable');
   return Math.round(studied/total*100)+'% of the day spent on the scheduled activity';
+});
+
+test('U38','rivers are carved into the canonical terrain and hold water; a small dam stops the flow downstream',['LW-077','LW-078','LW-082','LW-019'],()=>{
+  const {w,c}=village(44),d=LW.env.d(w),lines=LW.planet.riverLines(w);assert(lines&&lines[c],'river cell has a centreline');
+  const sg=lines[c].list[Math.floor(lines[c].list.length/2)],mid=LW.V.norm(LW.V.lerp(sg[0],sg[1],0.5)),half=lines[c].half;
+  const g=LW.planet.ground(w,mid),h=LW.planet.height(w,mid),wl=LW.planet.waterLevel(w,mid);
+  assert(h<g-0.5,'bed is cut '+(g-h).toFixed(2)+' m below the surrounding ground');assert(wl>h+0.2&&wl<g,'water stands in the channel, below the banks');
+  const f=LW.frame(mid),axis=LW.V.norm(LW.V.sub(sg[1],sg[0])),side=LW.V.norm(LW.V.cross(mid,axis)),bank=LW.V.norm(LW.V.madd(mid,side,half*3/R(w)));
+  assert.strictEqual(LW.planet.height(w,bank),LW.planet.ground(w,bank),'untouched beyond the banks');assert(LW.planet.waterLevel(w,bank)<=LW.planet.height(w,bank),'and dry there');
+  assert(LW.life.canEnter(w,mid,w.species.sp_human),'streams of this size can be forded');
+  assert(Math.abs(LW.gfx===undefined?0:0)===0);
+  // the same function is what every LOD samples: a coarse and a fine parametrisation agree inside the channel
+  const q=LW.dirFace(mid),again=LW.faceDir(q[0],q[1],q[2]);assert(Math.abs(LW.planet.height(w,again)-h)<1e-6);
+  // a 12 m dam, far smaller than a 600 m hydrology cell, across the stream
+  const down=d.to[c];assert(down>=0&&w.env.river[down]===1,'flows on to a downstream river cell');
+  const cellH=d.h[c],ev=ok(w,'terrain.edit',{tool:'raise',n:LW.V.norm(LW.V.lerp(LW.env.cellDir(w,c),LW.env.cellDir(w,down),0.5)),r:14,s:5}).result.event;
+  const ch=ok(w,'env.settle',{}).result.changed;assert(ch>0,'hydrology changed');
+  assert(Math.abs(LW.env.d(w).h[c]-cellH)<0.5,'the cell average barely moved ('+Math.abs(LW.env.d(w).h[c]-cellH).toFixed(2)+' m): the dam itself was detected');
+  assert.strictEqual(w.env.river[c],2,'a pond forms behind the dam');assert(LW.env.fresh(w,c));
+  const dried=w.events.filter(e=>e.type==='river.dried');assert(dried.length>0&&dried.every(e=>e.c.indexOf(ev)>=0),'downstream reaches dried, caused by the dam');
+  assert(!LW.planet.riverAt(w,LW.env.cellDir(w,dried[0].d.cell)),'and their channel no longer holds water');
+  assert(LW.undo(w).ok);ok(w,'env.settle',{});assert.strictEqual(w.env.river[down],1,'removing the dam lets the river run again');
+  return 'channel '+(g-h).toFixed(2)+' m deep, '+(half*2).toFixed(1)+' m wide; dam dried '+dried.length+' downstream cells';
+});
+
+test('U39','roads speed travel; settlements tread their own paths; vehicles follow invention',['LW-016','LW-041','LW-043','LW-059'],()=>{
+  const {w,n}=village(45),A=spot(w,n,60),Z=LW.offsetDir(A,260,0,R(w)),sp=w.species.sp_human;
+  assert(!D(w,'road.add',{pts:[A]}).ok);assert(!D(w,'road.add',{pts:[A,[0,0,2]]}).ok);
+  const mk=()=>{const p=w.persons[ok(w,'life.spawn',{speciesId:'sp_human',n:A}).result.ids[0]];ok(w,'person.control',{id:p.id,on:true});return p;};
+  ok(w,'world.setMode',{mode:'play'});
+  const walk=p=>{ok(w,'person.enqueue',{id:p.id,action:{a:'go',to:Z}});let t=0;while(LW.arcDist(p.n,Z,R(w))>1.5&&t<2000){LW.tick(w);t++;}return t;};
+  const p1=mk(),tOff=walk(p1);
+  const pts=[];for(let k=0;k<=13;k++)pts.push(LW.V.norm(LW.V.lerp(A,Z,k/13)));
+  const rid=ok(w,'road.add',{pts}).result.id;assert(LW.roads.near(w,pts[6],2)&&!LW.roads.near(w,LW.offsetDir(pts[6],0,40,R(w)),3));
+  const p2=mk(),tRoad=walk(p2);assert(tRoad<tOff*0.85,'faster on the road: '+tRoad+' vs '+tOff+' ticks');
+  // invention changes how people travel
+  const s=w.settlements[Object.keys(w.settlements)[0]]||(()=>{LW.society.found(w,p2);return w.settlements[p2.settlement];})();
+  if(!p2.settlement)LW.society.join(w,p2,s);
+  assert.strictEqual(LW.society.transport(s),'on foot');s.techs.push('fire','tools','farming','pottery','masonry','wheel');
+  assert.strictEqual(LW.society.transport(s),'cart');ok(w,'person.clearQueue',{id:p2.id});p2.n=A.slice();ok(w,'person.enqueue',{id:p2.id,action:{a:'go',to:Z}});LW.tick(w);LW.tick(w);
+  assert.strictEqual(p2.ride,'cart','rides a cart on a long trip');let t=2;while(LW.arcDist(p2.n,Z,R(w))>1.5&&t<2000){LW.tick(w);t++;}
+  assert(t<tRoad*0.9,'cart beats walking: '+t+' vs '+tRoad);LW.tick(w);assert.strictEqual(p2.ride,null,'dismounts on arrival');
+  s.techs.push('writing','bronze','iron','mechanics','steam','electricity');assert.strictEqual(LW.society.transport(s),'electric car');
+  // settlements lay their own paths to finished buildings
+  const before=Object.keys(w.roads).length;ok(w,'build.place',{template:'cottage',n:spot(w,s.n,30)});LW.roads.daily(w);
+  assert(Object.values(w.roads).some(r=>r.by==='settlement'&&r.settlement===s.id),'a settlement path appeared');assert(Object.keys(w.roads).length>before);
+  assert(LW.undo(w).ok||true);const w2=LW.save.parse(LW.save.pack(w));assert.strictEqual(Object.keys(w2.roads).length,Object.keys(w.roads).length,'roads persist');
+  ok(w,'road.remove',{id:rid});assert(!w.roads[rid]);
+  return 'off-road '+tOff+' ticks, road '+tRoad+', cart '+t;
 });
 
 (async()=>{

@@ -78,14 +78,14 @@ progress{width:100%;height:14px}
 <div id="modal" hidden></div>
 <noscript><p style="padding:24px">Living World needs JavaScript (it runs entirely on this device; nothing is sent anywhere).</p></noscript>
 <script>
-globalThis.LW_BUILD="9894a9cac6d7";
+globalThis.LW_BUILD="6110c170b9b6";
 // ===== src/core/00-util.js =====
 // world-core / utilities: deterministic maths, hashing, seeded noise, canonical JSON.
 // No DOM, no wall-clock and no unseeded randomness in this file or anything under src/core.
 ;(function(){'use strict';
 const LW=globalThis.LW=globalThis.LW||{};
 LW.VERSION='0.1.0';
-LW.SCHEMA={major:1,minor:1};
+LW.SCHEMA={major:1,minor:2};
 LW.GENERATOR_VERSION=1;
 LW.TICK_SECONDS=15;            // one logical tick = 15 simulated seconds
 LW.TPH=240;                    // ticks per simulated hour
@@ -231,7 +231,7 @@ LW.createWorld=function(cfg){
     terrainEdits:[],editSeq:0,volumes:{},env:null,
     species:{},organisms:{},persons:{},cohorts:{},buildings:{},settlements:{},households:{},relationships:{},activities:{},
     events:[],eventArchive:{dropped:0,byType:{}},receipts:{},receiptOrder:[],pending:[],undo:[],redo:[],
-    interest:null,colorEpoch:0};
+    roads:{},roadRev:0,interest:null,colorEpoch:0};
   LW.life.installDefaults(w);
   LW.env.init(w);
   return w;
@@ -499,7 +499,8 @@ function applyEdit(e,n,h,R,sea){
   }
 }
 // THE canonical terrain function. Every mesh LOD, every simulation system and every raycast samples this.
-P.height=function(world,n){
+// P.ground = generator + manual edits. P.height (below) additionally carves river channels into it.
+P.ground=function(world,n){
   const c=LW.cache(world),body=world.body,R=body.radius,amp=P.amplitude(body);
   let h=base(genOf(c,body.gen),amp,n[0],n[1],n[2]);
   if(!world.terrainEdits.length)return h;
@@ -516,9 +517,48 @@ P.height=function(world,n){
   return h;
 };
 P.baseHeight=function(world,n){const c=LW.cache(world);return base(genOf(c,world.body.gen),P.amplitude(world.body),n[0],n[1],n[2]);};
-// local water surface level (sea or painted lake) at n
+// ---- river channels: the drainage network cut into the canonical surface --------------------------
+// Each river cell holds a smooth curve from where water enters it to where it leaves; the bed is carved along
+// that curve and holds water. Derived from hydrology (which itself samples P.ground, so there is no cycle).
+function channels(world,c){
+  const d=c.env,riv=world.env&&world.env.river;
+  if(!d||d.all||d.resample||!riv)return null;
+  if(c.chan&&c.chanRev===d.rev&&c.chanRv===(world.env.rv|0))return c.chan;
+  const C=d.C,up=new Array(C),segs=new Array(C),dir=k=>[d.dirs[k*3],d.dirs[k*3+1],d.dirs[k*3+2]],cell=world.body.radius*(Math.PI/2)/d.N;let any=false;
+  for(let k=0;k<C;k++)if(riv[k]===1&&d.to[k]>=0)(up[d.to[k]]||(up[d.to[k]]=[])).push(k);
+  for(let x=0;x<C;x++){
+    if(riv[x]!==1)continue;
+    const cx=dir(x),out=d.to[x]>=0?V.norm(V.lerp(cx,dir(d.to[x]),0.5)):cx,ins=(up[x]||[]).map(u=>V.norm(V.lerp(dir(u),cx,0.5)));
+    const f=Math.sqrt(Math.max(1,d.flux[x]/d.thr)),half=LW.clamp(cell*0.006*f,1.2,cell*0.05),wd=LW.clamp(0.25+0.12*f,0.3,0.65),list=[];
+    if(!ins.length)list.push([cx,out]);
+    for(const m of ins){let prev=m;for(let k=1;k<=5;k++){const t=k/5,q=V.norm([(1-t)*(1-t)*m[0]+2*t*(1-t)*cx[0]+t*t*out[0],(1-t)*(1-t)*m[1]+2*t*(1-t)*cx[1]+t*t*out[1],(1-t)*(1-t)*m[2]+2*t*(1-t)*cx[2]+t*t*out[2]]);list.push([prev,q]);prev=q;}}
+    segs[x]={list,half,wd,flux:d.flux[x]};any=true;
+  }
+  c.chan=any?segs:null;c.chanRev=d.rev;c.chanRv=world.env.rv|0;
+  return c.chan;
+}
+P.riverLines=world=>channels(world,LW.cache(world));
+// nearest river centreline to n within its own hydrology cell: {dist (m), half, wd, q (closest point)} or null
+P.riverAt=function(world,n){
+  const ch=channels(world,LW.cache(world));if(!ch)return null;
+  const s=ch[LW.env.cellOf(world,n)];if(!s)return null;
+  let bd=1e9,bq=null;
+  for(let i=0;i<s.list.length;i++){const a=s.list[i][0],b=s.list[i][1],ex=b[0]-a[0],ey=b[1]-a[1],ez=b[2]-a[2],l2=ex*ex+ey*ey+ez*ez||1e-12;
+    let t=((n[0]-a[0])*ex+(n[1]-a[1])*ey+(n[2]-a[2])*ez)/l2;t=t<0?0:t>1?1:t;
+    const qx=a[0]+ex*t,qy=a[1]+ey*t,qz=a[2]+ez*t,dd=(n[0]-qx)*(n[0]-qx)+(n[1]-qy)*(n[1]-qy)+(n[2]-qz)*(n[2]-qz);if(dd<bd){bd=dd;bq=[qx,qy,qz];}}
+  const dist=Math.sqrt(bd)*world.body.radius;if(dist>s.half*1.6)return null;
+  return {dist,half:s.half,wd:s.wd,q:V.norm(bq)};
+};
+// THE canonical surface: every mesh LOD, raycast and simulation system samples this.
+P.height=function(world,n){
+  const h=P.ground(world,n),r=P.riverAt(world,n);
+  if(!r)return h;
+  const k=r.dist/(r.half*1.6);return h-(r.wd+0.5)*(1-k*k);
+};
+// local water surface level (sea, painted lake or river channel) at n
 P.waterLevel=function(world,n){
   let lv=world.body.seaLevel;
+  const rv=P.riverAt(world,n);if(rv){const l2=P.ground(world,rv.q)-0.5;if(l2>lv)lv=l2;}
   if(!world.terrainEdits.length)return lv;
   const b=index(world,LW.cache(world)).b[bucketOf(n)];
   if(b)for(let i=0;i<b.length;i++){const e=b[i];if(e.tool==='water'&&e.level>lv&&V.dist(n,e.n)*world.body.radius<e.r*0.92)lv=e.level;}
@@ -734,8 +774,8 @@ E.cellSize=world=>world.body.radius*(Math.PI/2)/world.env.N;
 function sampleCell(world,d,c){
   const N=d.N,f=Math.floor(c/(N*N)),j=Math.floor(c/N)%N,i=c%N,o=0.3/N*2;
   const u=(i+0.5)/N*2-1,v=(j+0.5)/N*2-1;
-  d.h[c]=(LW.planet.height(world,LW.faceDir(f,u,v))*2+LW.planet.height(world,LW.faceDir(f,u-o,v-o))+LW.planet.height(world,LW.faceDir(f,u+o,v-o))+
-    LW.planet.height(world,LW.faceDir(f,u-o,v+o))+LW.planet.height(world,LW.faceDir(f,u+o,v+o)))/6;
+  d.h[c]=(LW.planet.ground(world,LW.faceDir(f,u,v))*2+LW.planet.ground(world,LW.faceDir(f,u-o,v-o))+LW.planet.ground(world,LW.faceDir(f,u+o,v-o))+
+    LW.planet.ground(world,LW.faceDir(f,u-o,v+o))+LW.planet.ground(world,LW.faceDir(f,u+o,v+o)))/6;
 }
 function route(world,d){
   const C=d.C,h=d.h,sea=world.body.seaLevel,filled=d.filled,to=d.to,flux=d.flux,od=d.od;
@@ -756,7 +796,15 @@ function route(world,d){
     const x=d.dirs[c*3],y=d.dirs[c*3+1],z=d.dirs[c*3+2];
     d.moist[c]=LW.clamp(0.52+0.75*g(x*2.1+31,y*2.1,z*2.1)+0.3*g(x*5.3,y*5.3+11,z*5.3)-0.32*Math.min(1,od[c]*dryScale)+P.moisture,0,1);
   }
-  for(let i=order.length-1;i>=0;i--){const c=order[i];if(h[c]<sea)continue;flux[c]+=0.25+d.moist[c];if(to[c]>=0)flux[to[c]]+=flux[c];}
+  // small dams: a hand-made ridge across a watercourse, standing above the upstream bed, holds the water back
+  // even when it is far smaller than a hydrology cell
+  const dam=d.dam||(d.dam=new Uint8Array(C));dam.fill(0);
+  if(world.terrainEdits.length){const PL=LW.planet,dir=k=>[d.dirs[k*3],d.dirs[k*3+1],d.dirs[k*3+2]];
+    for(let c=0;c<C;c++){if(to[c]<0||h[c]<sea)continue;const a=dir(c),b=dir(to[c]);
+      if(!PL.editsNear(world,a).length&&!PL.editsNear(world,b).length)continue;
+      let lo=PL.ground(world,a);        // lowest point the water has reached so far on its way down
+      for(let k=1;k<=12;k++){const n=LW.V.norm(LW.V.lerp(a,b,k/12)),g=PL.ground(world,n);if(g>lo+1.2&&g-PL.baseHeight(world,n)>1.2){dam[c]=1;break;}if(g<lo)lo=g;}}}
+  for(let i=order.length-1;i>=0;i--){const c=order[i];if(h[c]<sea)continue;flux[c]+=0.25+d.moist[c];if(to[c]>=0&&!dam[c])flux[to[c]]+=flux[c];}
   d.rev++;d.rivers=null;
 }
 // derived fields; always reflects the current canonical terrain (lazy, dirty-cell resampling)
@@ -797,6 +845,7 @@ E.markAllDirty=function(world,ev){const c=LW.cache(world);if(c.env)c.env.all=tru
 E.waterKind=function(world,d,c){
   if(d.h[c]<world.body.seaLevel)return 3;
   if(d.filled[c]-d.h[c]>Math.max(2,LW.planet.amplitude(world.body)*0.02))return 2;
+  if(d.dam&&d.dam[c]&&d.flux[c]>d.thr)return 2;            // pond held behind a dam
   return d.flux[c]>d.thr?1:0;
 };
 // commit hydrology changes to canonical state and emit provenance-carrying events (idempotent pending work)
@@ -814,7 +863,7 @@ E.settle=function(world){
       world.env.chg[c]=LW.emit(world,type,{cell:c,from:old[c],to:k},q.causes,{cell:c});emitted++;
     }else world.env.chg[c]=world.env.chg[c]||q.causes[0];
   }
-  world.env.river=now;q.pending=false;q.causes=[];
+  world.env.river=now;world.env.rv=(world.env.rv|0)+1;q.pending=false;q.causes=[];
   if(changed)world.colorEpoch++;
   return changed;
 };
@@ -1482,9 +1531,11 @@ M.perceive=function(w,p,sp){
 };
 
 // ---- actions ---------------------------------------------------------------------
-function speed(w,p,sp){let s=sp.move.speed;const st=w.settlements[p.settlement];if(st&&st.techs.indexOf('wheel')>=0)s*=1.25;if(p.needs.energy<8)s*=0.6;return s;}
+function speed(w,p,sp){let s=sp.move.speed*LW.roads.speedFactor(w,p);if(p.needs.energy<8)s*=0.6;return s;}
 function go(w,p,a,sp){
-  if(!a.path){a.path=LW.nav.path(w,p.n,a.to,sp);a.i=0;if(!a.path)return 'no route';p.posture='stand';}
+  if(!a.path){a.path=LW.nav.path(w,p.n,a.to,sp);a.i=0;if(!a.path)return 'no route';p.posture='stand';
+    // long outdoor trips use the best conveyance the traveller's settlement has invented
+    const v=LW.arcDist(p.n,a.to,w.body.radius)>120&&!B.locate(w,p.n)?LW.roads.vehicleFor(w,p):null;p.ride=v?v[1]:null;}
   let budget=speed(w,p,sp);
   while(a.i<a.path.length){
     const d=LW.arcDist(p.n,a.path[a.i],w.body.radius);
@@ -1506,6 +1557,7 @@ const FAIL_TEXT={dry:'I went for water but found the place dry',barren:'There wa
   'not here':'This is no place to settle','too tired':'I was too exhausted'};
 M.FAIL_TEXT=FAIL_TEXT;
 function release(w,p,a){
+  if(a&&(a.a==='go'||a.sub))p.ride=null;
   if(a&&a.a==='use'){const b=w.buildings[a.b],c=b&&B.comp(b,a.c);if(c&&c.by===p.id)c.by=null;}
   p.posture='stand';
 }
@@ -1684,7 +1736,11 @@ function plan(w,p,type,sp,data){
     case 'craft':{const wb=w.buildings[data],c=wb&&B.findCap(wb,'work',p.id);return c?{steps:[{a:'use',b:wb.id,c:c.id,cap:'work'}]}:null;}
     case 'found':{
       const c=E.cellOf(w,p.n);
-      if(E.fresh(w,c)||[0,1,2,3].some(k=>E.fresh(w,E.d(w).nb[c*4+k])))return {steps:[{a:'found'}]};
+      if(E.fresh(w,c)||[0,1,2,3].some(k=>E.fresh(w,E.d(w).nb[c*4+k]))){
+        const dry=q=>LW.planet.height(w,q)>=LW.planet.waterLevel(w,q)+0.6;
+        if(dry(p.n))return {steps:[{a:'found'}]};
+        for(let k=1;k<40;k++){const a=k*2.4,q=LW.offsetDir(p.n,Math.sin(a)*(8+k*3),Math.cos(a)*(8+k*3),R);if(dry(q))return {steps:[{a:'go',to:q},{a:'found'}]};}   // step out of the riverbed first
+        return null;}
       const b=nearestBelief(w,p,'water');if(!b)return null;
       return {steps:[{a:'go',to:LW.offsetDir(b.n,60,60,R)},{a:'found'}]};}
     case 'explore':return {steps:[{a:'explore'}]};
@@ -1896,7 +1952,7 @@ S.TECHS=[{id:'fire',name:'Fire',cost:15,era:0},{id:'tools',name:'Stone tools',co
 S.ERAS=['Dawn age','Stone age','Agrarian age','Bronze age','Iron age','Mechanical age','Industrial age','Electric age','Information age','Space age'];
 S.transport=function(s){
   const t=s?s.techs:[];
-  return t.indexOf('spaceflight')>=0?'orbital shuttle':t.indexOf('electricity')>=0?'electric tram':t.indexOf('steam')>=0?'steam rail':t.indexOf('wheel')>=0?'cart':'on foot';
+  let v='on foot';for(const x of LW.roads.VEHICLES)if(t.indexOf(x[0])>=0)v=x[1];return v;
 };
 const NAMES=['Aldmere','Brisk','Calder','Dunmoor','Esk','Farrow','Glint','Harrow','Isel','Jund','Kessa','Lorn','Marrow','Nesh','Orrin','Pell','Quill','Rook','Sable','Tarn'];
 
@@ -2068,6 +2124,7 @@ S.daily=function(w){
       else if(sp.lifecycle.repro==='assembly'&&s.stock.tools>=3&&s.members.length<40&&LW.rand(w)<0.1){s.stock.tools-=3;w.pending.push({id:LW.newId(w,'pw'),due:w.tick+sp.lifecycle.gest*LW.TPD,type:'personBirth',mother:q.id,father:null});}
     }
   }
+  LW.roads.daily(w);
   // inter-settlement relations: trade when calm, disputes/raids under scarcity (intensity is a world rule)
   const ids=Object.keys(w.settlements);
   for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++){
@@ -2083,6 +2140,78 @@ S.daily=function(w){
       LW.emit(w,raid?'raid':'dispute',{a:poor.id,b:rich.id},[],{n:rich.n});a.tension[b.id]=0.3;
       for(const m of a.members)for(const o of b.members.slice(0,3)){const r=M.rel(w,m,o,true);r.aff=LW.clamp(r.aff-0.1,-1,1);}
     }
+  }
+};
+})();
+// ===== src/core/75-roads.js =====
+// roads and era vehicles: persistent polylines in planetary coordinates that speed travel, laid by the
+// player or by settlements; the conveyance a traveller uses depends on what their settlement has invented.
+;(function(){'use strict';
+const LW=globalThis.LW,V=LW.V,E=LW.env,B=LW.build;
+const RD=LW.roads={};
+// conveyances in order of invention: [required tech, name, speed on a road, speed off road]
+RD.VEHICLES=[['wheel','cart',1.6,1.15],['mechanics','velocipede',2.1,1.2],['steam','steam carriage',2.8,1.1],['electricity','electric car',3.6,1.3],['spaceflight','hover skimmer',5.5,5.0]];
+RD.vehicleFor=function(world,p){
+  const s=world.settlements[p.settlement];if(!s)return null;let best=null;
+  for(const v of RD.VEHICLES)if(s.techs.indexOf(v[0])>=0)best=v;
+  return best;
+};
+function index(world){
+  const c=LW.cache(world);if(c.roadIdx&&c.roadRev===(world.roadRev|0))return c.roadIdx;
+  const idx={};for(const id in world.roads){const r=world.roads[id];for(let i=0;i<r.pts.length-1;i++){
+    const a=r.pts[i],b=r.pts[i+1],n=Math.max(1,Math.ceil(LW.arcDist(a,b,world.body.radius)/(E.cellSize(world)*0.5)));
+    for(let k=0;k<=n;k++){const cl=E.cellOf(world,V.norm(V.lerp(a,b,k/n)));(idx[cl]||(idx[cl]=[])).push([a,b]);}}}
+  c.roadIdx=idx;c.roadRev=world.roadRev|0;return idx;
+}
+// is n within `tol` metres of any road?
+RD.near=function(world,n,tol){
+  const segs=index(world)[E.cellOf(world,n)];if(!segs)return false;const R=world.body.radius,t2=(tol/R)*(tol/R);
+  for(const s of segs){const a=s[0],b=s[1],ex=b[0]-a[0],ey=b[1]-a[1],ez=b[2]-a[2],l2=ex*ex+ey*ey+ez*ez||1e-12;
+    let t=((n[0]-a[0])*ex+(n[1]-a[1])*ey+(n[2]-a[2])*ez)/l2;t=t<0?0:t>1?1:t;
+    const dx=n[0]-a[0]-ex*t,dy=n[1]-a[1]-ey*t,dz=n[2]-a[2]-ez*t;if(dx*dx+dy*dy+dz*dz<t2)return true;}
+  return false;
+};
+// travel-speed multiplier for a person at their current position (roads help everyone; vehicles need roads to shine)
+RD.speedFactor=function(world,p){
+  const on=RD.near(world,p.n,3.5),v=p.ride?RD.VEHICLES.find(x=>x[1]===p.ride):null;
+  return v?(on?v[2]:v[3]):(on?1.3:1);
+};
+RD.add=function(world,pts,by,settlement){
+  const r={id:LW.newId(world,'rd'),pts:pts.map(p=>p.slice()),by:by||'player',settlement:settlement||null,built:world.tick};
+  world.roads[r.id]=r;world.roadRev=(world.roadRev|0)+1;return r;
+};
+LW.def('road.add',{perm:'edit',
+  validate(w,p){
+    if(!Array.isArray(p.pts)||p.pts.length<2||p.pts.length>200)return 'a road needs 2..200 points';
+    if(Object.keys(w.roads).length>=400)return 'road limit reached';
+    for(let i=0;i<p.pts.length;i++){if(!LW.isDir(p.pts[i]))return 'bad point';
+      if(LW.planet.height(w,p.pts[i])<LW.planet.waterLevel(w,p.pts[i])-0.7)return 'roads cannot cross deep water';
+      if(i&&LW.arcDist(p.pts[i-1],p.pts[i],w.body.radius)>600)return 'points too far apart';}
+    return null;},
+  apply(w,p){const r=RD.add(w,p.pts,'player',(LW.society.nearestSettlement(w,p.pts[0],400)||{}).id);
+    const ev=LW.emit(w,'road.built',{id:r.id,by:'player',points:r.pts.length},[],{n:r.pts[0]});
+    return {public:{id:r.id,event:ev},undo:{type:'road.remove',payload:{id:r.id}},label:'Build road'};}});
+LW.def('road.remove',{perm:'edit',validate:(w,p)=>w.roads[p.id]?null:'no such road',
+  apply(w,p){const r=w.roads[p.id];delete w.roads[p.id];w.roadRev=(w.roadRev|0)+1;return {undo:{type:'road.restore',payload:{r}},label:'Remove road'};}});
+LW.def('road.restore',{perm:'edit',validate:(w,p)=>p.r&&typeof p.r.id==='string'&&!w.roads[p.r.id]&&Array.isArray(p.r.pts)&&p.r.pts.every(LW.isDir)?null:'bad road',
+  apply(w,p){w.roads[p.r.id]=LW.clone(p.r);w.roadRev=(w.roadRev|0)+1;return {undo:{type:'road.remove',payload:{id:p.r.id}},label:'Build road'};}});
+// settlements tread paths from their centre to each finished building, and a road to a neighbour once they have the wheel
+RD.daily=function(world){
+  const R=world.body.radius,human=Object.values(world.species).find(s=>s.kind==='person');
+  for(const id in world.settlements){
+    const s=world.settlements[id];if(!s.members.length)continue;s.paths=s.paths||{};
+    for(const bid of s.buildings){const b=world.buildings[bid];if(!b||b.progress<1||s.paths[bid]||b.kind==='field'||Object.keys(world.roads).length>=380)continue;
+      const door=b.doors.find(d=>d.b<0),end=door?B.dir(world,b,door.x,door.z-1.6*(door.z<0?1:-1)):LW.offsetDir(b.n,0,-(B.radius(b)+1),R);
+      if(LW.arcDist(s.n,end,R)<6){s.paths[bid]='-';continue;}
+      const leg=LW.nav.outdoor(world,s.n,end,human);if(!leg){s.paths[bid]='-';continue;}
+      const r=RD.add(world,[s.n].concat(leg),'settlement',s.id);s.paths[bid]=r.id;
+      LW.emit(world,'road.built',{id:r.id,by:s.id,name:s.name,to:b.kind},[s.ev],{n:s.n});}
+    if(s.techs.indexOf('wheel')>=0)for(const oid in world.settlements){
+      const o=world.settlements[oid];if(oid<=id||!o.members.length||(s.paths['s:'+oid])||LW.arcDist(s.n,o.n,R)>4000)continue;
+      const n=Math.max(2,Math.ceil(LW.arcDist(s.n,o.n,R)/120)),pts=[];let fine=true;
+      for(let k=0;k<=n;k++){const q=V.norm(V.lerp(s.n,o.n,k/n));if(LW.planet.height(world,q)<LW.planet.waterLevel(world,q)-0.7){fine=false;break;}pts.push(q);}
+      s.paths['s:'+oid]=fine?RD.add(world,pts,'settlement',s.id).id:'-';
+      if(fine)LW.emit(world,'road.built',{by:s.id,name:s.name,to:o.name},[s.ev],{n:s.n});}
   }
 };
 })();
@@ -2139,6 +2268,7 @@ const SV=LW.save={};
 SV.MAX_BYTES=96*1024*1024;
 // keyed by source "major.minor"; each returns the world upgraded one step
 SV.MIGRATIONS={
+  '1.1':w=>{if(!w.roads||typeof w.roads!=='object')w.roads={};w.roadRev=w.roadRev|0;w.schema={major:1,minor:2};return w;},   // 1.2 adds roads
   '1.0':w=>{if(w.env&&Array.isArray(w.env.veg)&&!Array.isArray(w.env.soil))w.env.soil=new Array(w.env.veg.length).fill(128);w.schema={major:1,minor:1};return w;}   // 1.1 adds soil moisture
 };
 
@@ -2175,11 +2305,13 @@ SV.validate=function(w){
   const C=6*b.envN*b.envN,en=w.env;
   need(isObj(en)&&en.N===b.envN&&Array.isArray(en.veg)&&en.veg.length===C&&Array.isArray(en.vsp)&&en.vsp.length===C&&Array.isArray(en.soil)&&en.soil.length===C&&Array.isArray(en.plants),'bad environment grid');
   need(en.river===null||(Array.isArray(en.river)&&en.river.length===C),'bad water grid');
+  need(en.rv===undefined||Number.isInteger(en.rv),'bad water revision');
   need(isObj(en.dirty)&&Array.isArray(en.dirty.causes)&&isObj(en.chg)&&isObj(en.mined),'bad environment state');
   need(Array.isArray(w.protectedGens)&&w.protectedGens.length===w.genEpoch,'bad regeneration history');
   need(Array.isArray(w.terrainEdits)&&w.terrainEdits.length<=20000,'bad terrain edits');
   for(const e of w.terrainEdits)need(isObj(e)&&LW.planet.TOOLS.indexOf(e.tool)>=0&&LW.isDir(e.n)&&fin(e.r)&&e.r>0&&fin(e.s)&&Number.isInteger(e.g)&&e.g<=w.genEpoch,'bad terrain edit');
-  for(const k of ['volumes','species','organisms','persons','cohorts','buildings','settlements','households','relationships','activities','receipts','rules','eventArchive'])need(isObj(w[k]),'bad '+k);
+  for(const id in (w.roads||{})){const r=w.roads[id];need(r&&r.id===id&&Array.isArray(r.pts)&&r.pts.length>=2&&r.pts.length<=400&&r.pts.every(LW.isDir),'bad road '+id);}
+  for(const k of ['roads','volumes','species','organisms','persons','cohorts','buildings','settlements','households','relationships','activities','receipts','rules','eventArchive'])need(isObj(w[k]),'bad '+k);
   for(const k of ['events','receiptOrder','pending','undo','redo'])need(Array.isArray(w[k]),'bad '+k);
   for(const id in w.species){const e=LW.life.validateSpecies(w.species[id]);need(!e&&w.species[id].id===id,'bad species '+id+(e?': '+e:''));}
   for(const id in w.volumes){const v=w.volumes[id];need(v.id===id&&LW.isDir(v.n)&&Array.isArray(v.ops)&&v.nx>0&&v.nx<=64&&v.ny>0&&v.ny<=64&&v.nz>0&&v.nz<=64&&fin(v.cell)&&fin(v.h0),'bad volume '+id);}
@@ -2916,7 +3048,7 @@ class Terrain{
   // choose visible chunks for this camera; build missing/stale ones within a time budget
   update(world,cam,budgetMs){
     this.frame++;const R=world.body.radius,amp=P.amplitude(world.body);
-    const sig=world.id+'|'+world.body.seaLevel+'|'+world.colorEpoch+'|'+world.genEpoch+'|'+world.body.atmosphere.baseTemp+'|'+world.body.axialTilt;
+    const sig=world.id+'|'+(world.env.rv|0)+'|'+world.body.seaLevel+'|'+world.colorEpoch+'|'+world.genEpoch+'|'+world.body.atmosphere.baseTemp+'|'+world.body.axialTilt;
     if(sig!==this.sig){this.sig=sig;this.invalidateAll();}
     const maxL=Math.max(1,Math.floor(Math.log2(R*Math.PI/2/8))),K=2.5*this.quality;
     const rc=V.len(cam.pos),cd=V.mul(cam.pos,1/rc);
@@ -3269,6 +3401,15 @@ function creature(sp,base,ph,moving,posture,simple,look,bob){
   if(b.tail){G.draw(U.cone,G.part(root,0,len+0.34*S,-bl*0.48,-2.0+sw*0.3,0,0.06*S,0.46*S,0.06*S),c1);G.draw(U.ball,G.part(root,0,len+0.14*S,-bl*0.68-sw*0.05*S,0,0,0.11*S,0.16*S,0.11*S),c2,1,null,M_FUR);}
 }
 G.creature=creature;
+// era conveyances, drawn under their rider
+function vehicle(kind,base,ph){
+  const U=G.unit(),wood=tint([150,108,70]),dark=tint([60,56,60]),metal=tint([150,156,166]),spin=ph*2,wheel=(x,y,z,r)=>{G.draw(U.cyl,G.part(base,x,y,z,spin,1.5708,r*2,0.12,r*2),dark);G.draw(U.cyl,G.part(base,x,y,z,spin,1.5708,r*0.5,0.16,r*0.5),metal);};
+  if(kind==='cart'){G.draw(U.box,G.part(base,0,0.62,-0.2,0,0,0.9,0.12,1.5),wood,1,null,1);for(const sx of [-1,1]){G.draw(U.box,G.part(base,sx*0.45,0.8,-0.2,0,0,0.05,0.3,1.5),wood,1,null,1);wheel(sx*0.55,0.42,-0.3,0.42);G.draw(U.box,G.part(base,sx*0.3,0.62,0.9,0,0,0.05,0.05,0.9),wood);}return 0.25;}
+  if(kind==='velocipede'){wheel(0,0.45,0.55,0.45);wheel(0,0.3,-0.5,0.3);G.draw(U.box,G.part(base,0,0.72,0.05,0.25,0,0.05,0.05,1.1),metal);G.draw(U.box,G.part(base,0,1.0,0.5,0,0,0.5,0.04,0.04),dark);return 0.42;}
+  if(kind==='steam carriage'){G.draw(U.box,G.part(base,0,0.75,0,0,0,1.3,0.5,2.2),tint([120,50,44]));G.draw(U.cyl,G.part(base,0,1.15,0.75,1.5708,0,0.7,0.9,0.7),dark);G.draw(U.cyl,G.part(base,0,1.8,0.95,0,0,0.18,0.7,0.18),dark);for(const sx of [-1,1]){wheel(sx*0.75,0.45,0.7,0.45);wheel(sx*0.75,0.45,-0.7,0.45);}return 0.55;}
+  if(kind==='electric car'){G.draw(U.ball,G.part(base,0,0.62,0,0,0,1.5,0.7,2.6),tint([70,150,190]));G.draw(U.ball,G.part(base,0,1.0,-0.1,0,0,1.25,0.6,1.4),tint([190,220,235]));for(const sx of [-1,1]){wheel(sx*0.72,0.32,0.8,0.32);wheel(sx*0.72,0.32,-0.8,0.32);}return 0.3;}
+  G.draw(U.ball,G.part(base,0,0.75+Math.sin(ph*0.2)*0.05,0,0,0,1.5,0.4,2.4),tint([226,230,240]));G.draw(U.ball,G.part(base,0,0.55,0,0,0,1.1,0.16,1.9),tint([120,230,255],1.2));return 0.5;
+}
 
 class Scene{
   constructor(){this.bm=new Map();this.vm=new Map();this.rs=new Map();this.water=null;this.waterKey='';this.time=0;}
@@ -3277,22 +3418,19 @@ class Scene{
   // rivers (ribbons along drainage links) and natural lakes (flat sheets at fill level) from the hydrology state
   buildWater(world,cam){
     const d=E.d(world),R=world.body.radius,riv=world.env.river;if(!riv)return;
-    const bucket=Math.round(Math.log2(Math.max(8,cam.alt))*2),key=world.id+'|'+d.rev+'|'+world.colorEpoch+'|'+bucket+'|'+world.terrainEdits.length;
+    const bucket=Math.round(Math.log2(Math.max(8,cam.alt))*2),key=world.id+'|'+d.rev+'|'+(world.env.rv|0)+'|'+world.colorEpoch+'|'+bucket+'|'+world.terrainEdits.length;
     if(key===this.waterKey)return;this.waterKey=key;this.freeWater();
-    const N=d.N,groups={},cell=E.cellSize(world),lift=Math.max(0.35,cam.alt*0.004),thr=Math.max(2,P.amplitude(world.body)*0.02);
+    const N=d.N,groups={},cell=E.cellSize(world),lines=P.riverLines(world),lift=Math.max(0.04,cam.alt*0.004),thr=Math.max(2,P.amplitude(world.body)*0.02);
     const grp=c=>{const f=Math.floor(c/(N*N)),j=Math.floor(c/N)%N,i=c%N,k=f+'/'+(i>>3)+'/'+(j>>3);
       return groups[k]||(groups[k]={mb:new G.MB(),o:[d.dirs[c*3]*R,d.dirs[c*3+1]*R,d.dirs[c*3+2]*R]});};
     for(let c=0;c<d.C;c++){
-      if(riv[c]===1&&d.to[c]>=0){
-        const g=grp(c),a=[d.dirs[c*3],d.dirs[c*3+1],d.dirs[c*3+2]],t=d.to[c],b=[d.dirs[t*3],d.dirs[t*3+1],d.dirs[t*3+2]];
-        const wd=Math.max(LW.clamp(cell*0.011*Math.sqrt(d.flux[c]/d.thr),2,cell*0.08),cam.alt*0.009),SEG=cam.alt<3000?14:6;
-        const side0=V.norm(V.cross(a,V.sub(b,a))),me=(LW.hrand(c,7,0,0)-0.5)*0.36*cell/R;
-        let pl=null,pr=null;g.mb.ex=2.5+d.flux[c]*0.05;
-        for(let k=0;k<=SEG;k++){
-          const n=V.norm(V.madd(V.lerp(a,b,k/SEG),side0,Math.sin(k/SEG*Math.PI)*me)),r=R+Math.max(P.height(world,n),P.waterLevel(world,n))+lift;
-          const l=[n[0]*r-side0[0]*wd/2-g.o[0],n[1]*r-side0[1]*wd/2-g.o[1],n[2]*r-side0[2]*wd/2-g.o[2]],q=[n[0]*r+side0[0]*wd/2-g.o[0],n[1]*r+side0[1]*wd/2-g.o[1],n[2]*r+side0[2]*wd/2-g.o[2]];
-          if(pl)g.mb.quad(pl,pr,q,l,[60,120,150]);pl=l;pr=q;
-        }
+      const rl=lines&&lines[c];
+      if(rl){
+        const g=grp(c),wd=Math.max(rl.half*2,cam.alt*0.009);g.mb.ex=2.5+rl.flux*0.05;
+        for(const sg of rl.list){const a=sg[0],b=sg[1],side=V.norm(V.cross(a,V.sub(b,a)));let pl=null,pr=null;
+          for(let k=0;k<=2;k++){const n=V.norm(V.lerp(a,b,k/2)),r=R+Math.max(P.height(world,n),P.waterLevel(world,n))+lift;
+            const l=[n[0]*r-side[0]*wd/2-g.o[0],n[1]*r-side[1]*wd/2-g.o[1],n[2]*r-side[2]*wd/2-g.o[2]],q=[n[0]*r+side[0]*wd/2-g.o[0],n[1]*r+side[1]*wd/2-g.o[1],n[2]*r+side[2]*wd/2-g.o[2]];
+            if(pl)g.mb.quad(pl,pr,q,l,[60,120,150]);pl=l;pr=q;}}
       }else if(riv[c]===2&&d.filled[c]-d.h[c]>thr){
         const g=grp(c),f=Math.floor(c/(N*N)),j=Math.floor(c/N)%N,i=c%N,r=R+d.filled[c]-0.3;g.mb.ex=6;
         const pt=(u,v)=>{const n=LW.faceDir(f,(i+u)/N*2-1,(j+v)/N*2-1);return [n[0]*r-g.o[0],n[1]*r-g.o[1],n[2]*r-g.o[2]];};
@@ -3300,6 +3438,19 @@ class Scene{
       }
     }
     this.water=[];for(const k in groups){const m=groups[k].mb.build();if(m)this.water.push({mesh:m,o:groups[k].o});}
+  }
+  // roads: ribbons draped on the canonical terrain; surface follows the builders' era
+  buildRoads(world,cam){
+    const key=world.id+'|'+(world.roadRev|0)+'|'+P.terrainRev(world)+'|'+(world.env.rv|0)+'|'+Math.round(Math.log2(Math.max(8,cam.alt)));
+    if(key===this.roadKey)return;this.roadKey=key;if(this.roadMeshes)for(const m of this.roadMeshes)G.free(m.mesh);this.roadMeshes=[];
+    const R=world.body.radius,lift=Math.max(0.07,cam.alt*0.003);
+    for(const id in world.roads){const r=world.roads[id],s=world.settlements[r.settlement],era=s?s.era:0,mb=new G.MB(),o=V.mul(r.pts[0],R);
+      const wd=Math.max(r.by==='player'?3:2,cam.alt*0.006),col=era>=6?[70,70,78]:era>=2?[150,146,140]:[156,128,94];mb.ey=era>=2?0.08:0.13;
+      for(let i=0;i<r.pts.length-1;i++){const a=r.pts[i],b=r.pts[i+1],side=V.norm(V.cross(a,V.sub(b,a))),n=Math.max(1,Math.ceil(LW.arcDist(a,b,R)/5));let pl=null,pr=null;
+        for(let k=0;k<=n;k++){const q=V.norm(V.lerp(a,b,k/n)),rr=R+Math.max(P.height(world,q),P.waterLevel(world,q))+lift;
+          const l=[q[0]*rr-side[0]*wd/2-o[0],q[1]*rr-side[1]*wd/2-o[1],q[2]*rr-side[2]*wd/2-o[2]],p2=[q[0]*rr+side[0]*wd/2-o[0],q[1]*rr+side[1]*wd/2-o[1],q[2]*rr+side[2]*wd/2-o[2]];
+          if(pl)mb.quad(pl,pr,p2,l,col);pl=l;pr=p2;}}
+      const mesh=mb.build();if(mesh)this.roadMeshes.push({mesh,o});}
   }
   rstate(world,ent,dt){
     let s=this.rs.get(ent.id);
@@ -3318,6 +3469,7 @@ class Scene{
     mode(1);
     if(!sp_){
       this.buildWater(world,cam);
+      this.buildRoads(world,cam);for(const s of this.roadMeshes)G.draw(s.mesh,G.translate(s.o[0]-cam.pos[0],s.o[1]-cam.pos[1],s.o[2]-cam.pos[2]));
       if(this.water)for(const s of this.water)G.draw(s.mesh,G.translate(s.o[0]-cam.pos[0],s.o[1]-cam.pos[1],s.o[2]-cam.pos[2]),null,1,[s.o[0]%256,s.o[1]%256,s.o[2]%256]);
       // dig sites
       for(const id in world.volumes){
@@ -3350,7 +3502,8 @@ class Scene{
       const p=this.entPos(world,e,s),dc=V.dist(p,sp_?cam.T:cam.pos);if(dc>far)return;
       if(!s.look||s.lookT!==Math.floor(world.tick/LW.TPD)){s.look=G.lookOf(world,e,sp);s.lookT=Math.floor(world.tick/LW.TPD);}
       const base=G.frameMat(LW.frame(s.n),-s.face,V.sub(p,cam.pos));
-      creature(sp,base,s.ph,s.moving,e.posture||(e.st==='rest'?'rest':'stand'),!sp_&&dc>220,s.look,bob);
+      let seat=0;if(e.ride&&dc<400)seat=vehicle(e.ride,base,s.ph);
+      creature(sp,seat?G.part(base,0,seat,e.ride==='cart'?-0.1:0,0,0,1,1,1):base,s.ph,seat?false:s.moving,seat?'sit':(e.posture||(e.st==='rest'?'rest':'stand')),!sp_&&dc>220,s.look,bob);
     };
     for(const id in world.organisms){const o=world.organisms[id];ent(o,world.species[o.speciesId]);}
     for(const id in world.persons){const p=world.persons[id];if(p.alive)ent(p,world.species[p.speciesId]);}
@@ -3631,11 +3784,12 @@ App.focusOn=function(n,dist){App.cam.goal={n:n.slice(),dist:dist||null};};
 App.controlled=function(){const w=App.world;if(!w)return null;for(const id in w.persons){const p=w.persons[id];if(p.alive&&p.control.mode==='player'&&p.control.by===LW.LOCAL_ACTOR.id)return p;}return null;};
 
 // ---- tools --------------------------------------------------------------------------------------
-const BRUSH={raise:1,lower:1,smooth:1,flatten:1,mountain:1,valley:1,shore:1,biome:1,water:1,plants:1};
+const BRUSH={raise:1,lower:1,smooth:1,flatten:1,mountain:1,valley:1,shore:1,biome:1,water:1,plants:1,road:1};
 App.isBrush=()=>!!BRUSH[App.tool.id];
 App.setTool=function(cat,id){App.tool.cat=cat;App.tool.id=id||cat;App.pending=null;App.autoBrush();App.changed('tool');};
 App.autoBrush=function(){
   const t=App.tool,w=App.view();if(!w||t.lockR)return;
+  if(t.id==='road'){t.r=Math.max(1.5,App.cam.dist*0.004);return;}
   t.r=LW.clamp(App.cam.dist*0.13,3,w.body.radius*0.6);
   t.s=LW.clamp(t.r*0.16,0.4,P.amplitude(w.body)*0.6+5);
 };
@@ -3660,15 +3814,21 @@ function carveAt(x,y,first){
 App.strokeStart=function(x,y){
   const t=App.tool;App.stroke={gid:LW.idPrefix+'g'+Date.now().toString(36),n:0,last:null};
   if(t.id==='carve'||t.id==='fill')return carveAt(x,y,true);
-  const hit=App.groundHit(x,y);if(hit)dab(hit.n,true);
+  const hit=App.groundHit(x,y);
+  if(t.id==='road'){App.stroke.pts=hit?[hit.n]:[];App.stroke.last=hit?hit.n:null;return;}
+  if(hit)dab(hit.n,true);
 };
 App.strokeMove=function(x,y){
   if(!App.stroke)return;const t=App.tool;
   if(t.id==='carve'||t.id==='fill')return carveAt(x,y,false);
-  const hit=App.groundHit(x,y);if(hit){App.hover=hit.n;if(App.stroke.last)dab(hit.n,false);else dab(hit.n,true);}
+  const hit=App.groundHit(x,y);
+  if(t.id==='road'){if(hit&&(!App.stroke.pts.length||LW.arcDist(App.stroke.last,hit.n,App.world.body.radius)>Math.max(5,App.cam.dist*0.03))){App.stroke.pts.push(hit.n);App.stroke.last=hit.n;}return;}
+  if(hit){App.hover=hit.n;if(App.stroke.last)dab(hit.n,false);else dab(hit.n,true);}
 };
 App.strokeEnd=function(){
-  const st=App.stroke;App.stroke=null;if(!st||!st.n)return;
+  const st=App.stroke;App.stroke=null;
+  if(st&&st.pts){if(st.pts.length>=2){const r=App.do('road.add',{pts:st.pts.slice(0,200)});if(r.ok)App.toast('Road built. People travel faster along it.');}else App.toast('Drag across the land to draw a road','warn');return;}
+  if(!st||!st.n)return;
   const w=App.world;
   if(w.env.dirty.pending){const r=App.do('env.settle',{},true);if(r.ok&&r.result.changed)App.toast('Water responded: '+r.result.changed+' region'+(r.result.changed>1?'s':'')+' changed. Tap the land to inspect causes.');}
   App.changed('stroke');
@@ -3812,7 +3972,7 @@ App.frame=function(now){
       else if(s.type==='settlement'&&ww.settlements[s.id])rings.push({n:ww.settlements[s.id].n,r:Math.max(40,c.dist*0.03),col:[255,200,120]});}
     if(App.isBrush()&&(App.hover||App.stroke&&App.stroke.last))rings.push({n:(App.stroke&&App.stroke.last)||App.hover,r:App.tool.r,col:[255,120,90]});
   }
-  G.render(w,c,App.terrain,App.scene,dt,{studio:App.opts.studio||App.phase!=='play',clouds:App.opts.clouds,shadows:App.opts.shadows,rings});
+  G.render(w,c,App.terrain,App.scene,dt,{studio:App.opts.studio||App.phase!=='play'||(App.world&&App.world.mode==='create'),clouds:App.opts.clouds,shadows:App.opts.shadows,rings});
   // bookkeeping
   fpsN++;fpsT+=dt;if(fpsT>=0.5){App.stats.fps=fpsN/fpsT;App.stats.ms=fpsT/fpsN*1000;App.stats.ticksPerSec=tickN/fpsT;fpsN=0;fpsT=0;tickN=0;}
   if(now-uiT>250){uiT=now;App.changed('tick');}
@@ -3990,7 +4150,8 @@ UI.renderTools=function(){
     btn('Species editor…',()=>UI.speciesEditor(),'ghost')];
   else if(t.cat==='build')strip=[h('div',{class:'chips'},Object.keys(B.TEMPLATES).map(k=>btn(B.TEMPLATES[k].name,()=>{t.template=k;App.setTool('build','template');},'chip'+(t.id==='template'&&t.template===k?' on':'')))),
     h('div',{class:'chips'},Object.keys(LW.COMPONENTS).filter(k=>k!=='well').map(k=>btn(LW.COMPONENTS[k].name,()=>{t.comp=k;App.setTool('build','comp');},'chip'+(t.id==='comp'&&t.comp===k?' on':'')))),
-    h('p',{class:'note',text:'Tap the ground to place a building; tap a floor to place furniture. Select a building in Navigate mode to add rooms, move or remove it.'})];
+    h('div',{class:'chips'},btn('Draw road',()=>App.setTool('build','road'),'chip'+(t.id==='road'?' on':''))),
+    h('p',{class:'note',text:'Tap the ground to place a building; tap a floor to place furniture; drag to draw a road. Select a building in Navigate mode to add rooms, move or remove it.'})];
   else if(t.cat==='dig')strip=[tools([['digsite','New dig site'],['carve','Carve'],['fill','Fill']]),slider('Carve radius',1,8,0.5,t.carveR,v=>{t.carveR=v;},v=>v+' m'),
     slider('View depth',0,24,0.5,App.cam.depth,v=>{App.cam.depth=v;},v=>v?v+' m below ground':'surface'),
     h('p',{class:'note',text:'Dig sites are editable 3D volumes in the same planetary space. Carve from the surface to open an entrance, then raise View depth to look inside.'})];
@@ -4035,7 +4196,7 @@ function evText(w,e){
     case 'settlement.founded':return d.name+' was founded by '+nm(d.by);case 'settlement.joined':return nm(d.id)+' joined a settlement';
     case 'building.completed':return 'A '+d.kind+' was completed'+(d.by&&d.by!=='player'?' by '+nm(d.by):d.by==='player'?' (placed by the creator)':'');
     case 'building.planned':return 'A '+d.kind+' was planned'+(d.why?': '+d.why:'');case 'building.flooded':return 'A building was flooded';
-    case 'harvest':return 'Harvest of '+d.yield+' food (water '+d.water+')';case 'drought':return 'Drought struck '+d.name;case 'drought.ended':return 'The drought at '+d.name+' broke';case 'storm':return 'A storm hit '+d.name;case 'tech.discovered':return d.name+' discovered — '+d.era;
+    case 'harvest':return 'Harvest of '+d.yield+' food (water '+d.water+')';case 'road.built':return d.by==='player'?'A road was built (by the creator)':(d.name||'A settlement')+' laid a '+(d.to&&d.to.length>10?'road':'path')+' to '+(d.to||'a building');case 'drought':return 'Drought struck '+d.name;case 'drought.ended':return 'The drought at '+d.name+' broke';case 'storm':return 'A storm hit '+d.name;case 'tech.discovered':return d.name+' discovered — '+d.era;
     case 'partnership':return nm(d.a)+' and '+nm(d.b)+' became partners';case 'talk':return nm(d.a)+' talked with '+nm(d.b);
     case 'life.introduced':return 'Life introduced: '+d.count+' × '+((w.species[d.species]||{}).name||d.species);
     case 'plants.seeded':return 'Plants seeded: '+((w.species[d.species]||{}).name||d.species);case 'plants.diedOut':return 'Plants died out here';

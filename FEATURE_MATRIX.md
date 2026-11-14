@@ -13,7 +13,7 @@ A status describes this build, not the full design. `WORKING_TESTED` means the s
 | Canonical terrain + manual override layers | `WORKING_TESTED` | Height = seeded generator + ordered edit strokes in canonical directions; identical at every LOD; 9 tools incl. mountains, valley, coastline, lake, biome. | No erosion; no per-stroke editing after the fact; 20 000 stroke cap. |
 | Undo/redo, protected regeneration with preview | `WORKING_TESTED` | Stroke-level undo/redo as journaled commands; regeneration keeps hand-edited regions exactly; warning when consequences cannot be undone. | Undo stack capped at 80. |
 | Continuous orbit-to-ground camera, quadtree LOD, floating origin | `WORKING_NOT_DEVICE_VALIDATED` | One camera model and one scene from 6 radii out to 2.5 m; cube-sphere chunks down to <1 m quads; camera-relative rendering verified on a 6371 km planet. | LOD changes pop (no geomorphing); no predictive loading; flora differs between levels. |
-| Hydrology, climate, biomes, seasons | `PARTIAL` | Priority-flood drainage, flow accumulation, rivers/lakes/sea classes, sea-level and painted water, latitude/altitude/season temperature, 11 biomes, painted biome overrides climate; rain soaks soil, soil drives plant and crop growth, droughts and storms strike settlements. | Cell resolution (~600 m on the default planet); rivers are ribbons, do not carve beds; no long-term climate drift or erosion. |
+| Hydrology, climate, biomes, seasons | `PARTIAL` | Priority-flood drainage, flow accumulation, rivers/lakes/sea classes, sea-level and painted water, latitude/altitude/season temperature, 11 biomes, painted biome overrides climate; rain soaks soil, soil drives plant and crop growth, droughts and storms strike settlements; rivers are carved into the terrain as real channels holding water, and a small dam across one stops the flow downstream. | Flow routing is still at cell resolution (~600 m on the default planet); ditches do not divert rivers; all rivers are fordable; no long-term climate drift or erosion. |
 | Life is never spontaneous; plants, succession | `WORKING_TESTED` | Sterile start; ground colour = climate, green only where plants live; seeding, growth by suitability, spread, die-off, grazing consumption. | One dominant plant species per cell. |
 | Animals: needs, grazing, predation, reproduction, death | `PARTIAL` | Individuals with hunger/thirst/energy, water-seeking, herds, hunting, pregnancy/birth, old age; 5 default species + editor. | No migration planning, no learning; simple state machine. |
 | Species editor / anatomy | `PARTIAL` | Parametric body plans (biped, quadruped, hexapod, winged, serpent, amorphous), size, limbs, colours, diet, speed, senses, lifecycle, climate tolerance; artificial life preset. | No body sculpting, clothing or equipment. |
@@ -41,12 +41,12 @@ A status describes this build, not the full design. `WORKING_TESTED` means the s
 | Android package | `SPECIFIED_ONLY` | Capacitor wrapper source and instructions in `android/`. | Not built; no SDK or device available. No APK exists. |
 | Real-device performance (30 FPS target) | `BLOCKED` | Adaptive resolution/LOD exists. | Blocked: no physical Android device. Only software-renderer timings exist. |
 | Other celestial bodies / non-spherical shapes | `SPECIFIED_ONLY` | `body.shape` field and a body record exist. | Only one spherical body is implemented. |
-| Vehicles and transport | `SPECIFIED_ONLY` | Era gives a travel-speed multiplier and a named transport mode. | No vehicles, roads or infrastructure. |
+| Roads and vehicles | `PARTIAL` | Player-drawn roads and paths that settlements lay themselves; travel is faster on them; five conveyances by invention (cart, velocipede, steam carriage, electric car, hover skimmer) used on longer trips and drawn under the rider; road surface changes with era. | No rail, boats, aircraft or spaceflight travel; no traffic or freight; routes do not prefer roads; no bridges. |
 | ChatGPT wrapper | `SPECIFIED_ONLY` | Not needed for play. | Not implemented (optional by requirement). |
 
 ## All 155 requirements
 
-Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 69 · `WORKING_TESTED` 73 · `BLOCKED` 5 · `SPECIFIED_ONLY` 2.
+Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 69 · `WORKING_TESTED` 74 · `BLOCKED` 5 · `SPECIFIED_ONLY` 1.
 
 | Req | Status | Tests | Note |
 |---|---|---|---|
@@ -65,10 +65,10 @@ Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 69 · `WORKING_TESTED` 73 
 | LW-013 | `WORKING_TESTED` | B04 |  |
 | LW-014 | `WORKING_NOT_DEVICE_VALIDATED` | U04 B03 | pops between LODs |
 | LW-015 | `PARTIAL` | U02 B07 | placed life yes; spread/reproduction yes; no abiogenesis |
-| LW-016 | `PARTIAL` | — | tech ladder with thin effects |
+| LW-016 | `PARTIAL` | U39 | tech ladder with thin effects |
 | LW-017 | `PARTIAL` | U24 |  |
 | LW-018 | `PARTIAL` | U33 | bounded catch-up implemented; dialog not browser-tested |
-| LW-019 | `WORKING_TESTED` | U13 U29 B08 |  |
+| LW-019 | `WORKING_TESTED` | U13 U29 U38 B08 |  |
 | LW-020 | `PARTIAL` | U11 B07 | templates + furniture; no free-form |
 | LW-021 | `WORKING_TESTED` | L01 B15 | host + in-game join |
 | LW-022 | `WORKING_TESTED` | U24 U28 |  |
@@ -90,9 +90,9 @@ Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 69 · `WORKING_TESTED` 73 
 | LW-038 | `WORKING_TESTED` | B05 B07 |  |
 | LW-039 | `PARTIAL` | U11 | authored capabilities; little general physics |
 | LW-040 | `WORKING_TESTED` | U12 U37 | queues, goals and a schedule editor |
-| LW-041 | `SPECIFIED_ONLY` | — | speed multiplier only |
+| LW-041 | `PARTIAL` | U39 | roads + five era conveyances; no boats, rail or space travel |
 | LW-042 | `WORKING_TESTED` | U25 B14 |  |
-| LW-043 | `WORKING_TESTED` | U23 |  |
+| LW-043 | `WORKING_TESTED` | U23 U39 |  |
 | LW-044 | `PARTIAL` | U23 | stockpile economy |
 | LW-045 | `PARTIAL` | — | untested disputes/raids |
 | LW-046 | `PARTIAL` | U23 |  |
@@ -108,7 +108,7 @@ Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 69 · `WORKING_TESTED` 73 
 | LW-056 | `WORKING_TESTED` | U17 U18 U19 U21 B10 B11 B12 |  |
 | LW-057 | `PARTIAL` | — |  |
 | LW-058 | `PARTIAL` | — |  |
-| LW-059 | `PARTIAL` | — | era palettes, seasonal/snow colours |
+| LW-059 | `PARTIAL` | U39 | era palettes, seasonal/snow colours |
 | LW-060 | `WORKING_NOT_DEVICE_VALIDATED` | U04 B03 |  |
 | LW-061 | `PARTIAL` | U11 |  |
 | LW-062 | `PARTIAL` | — | kinematic gait, not physics |
@@ -126,12 +126,12 @@ Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 69 · `WORKING_TESTED` 73 
 | LW-074 | `PARTIAL` | B03 | sphere only |
 | LW-075 | `PARTIAL` | — | one body |
 | LW-076 | `WORKING_TESTED` | U05 B04 |  |
-| LW-077 | `WORKING_TESTED` | U09 B04 |  |
-| LW-078 | `PARTIAL` | U13 B08 | cell-scale flow |
+| LW-077 | `WORKING_TESTED` | U09 U38 B04 |  |
+| LW-078 | `WORKING_TESTED` | U13 U38 B08 | cell-scale flow, carved channels, sub-cell dams |
 | LW-079 | `WORKING_TESTED` | U09 U24 B04 |  |
 | LW-080 | `PARTIAL` | U10 | strata + per-cell minerals |
 | LW-081 | `PARTIAL` | U10 B09 | inside dig sites |
-| LW-082 | `PARTIAL` | B04 | mountain, valley, coast tools; rivers follow terrain only at cell scale |
+| LW-082 | `PARTIAL` | U38 B04 | mountain, valley, coast tools; rivers cut channels and react to small dams; no dedicated river-drawing tool |
 | LW-083 | `WORKING_TESTED` | B04 |  |
 | LW-084 | `PARTIAL` | U24 U36 | seasons and soil moisture that follows the weather; no multi-year drift |
 | LW-085 | `WORKING_TESTED` | U11 U29 |  |

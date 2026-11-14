@@ -2,8 +2,8 @@
  "suite": "unit",
  "node": "v22.23.4",
  "platform": "linux x64",
- "total": 37,
- "pass": 37,
+ "total": 39,
+ "pass": 39,
  "fail": 0,
  "results": [
   {
@@ -16,7 +16,7 @@
     "LW-073"
    ],
    "status": "pass",
-   "ms": 4,
+   "ms": 8,
    "error": null,
    "note": null
   },
@@ -29,7 +29,7 @@
     "LW-015"
    ],
    "status": "pass",
-   "ms": 134,
+   "ms": 181,
    "error": null,
    "note": null
   },
@@ -42,7 +42,7 @@
     "LW-125"
    ],
    "status": "pass",
-   "ms": 4,
+   "ms": 6,
    "error": null,
    "note": null
   },
@@ -83,7 +83,7 @@
     "LW-146"
    ],
    "status": "pass",
-   "ms": 154,
+   "ms": 171,
    "error": null,
    "note": null
   },
@@ -108,7 +108,7 @@
     "LW-121"
    ],
    "status": "pass",
-   "ms": 24,
+   "ms": 27,
    "error": null,
    "note": null
   },
@@ -122,7 +122,7 @@
     "LW-009"
    ],
    "status": "pass",
-   "ms": 254,
+   "ms": 389,
    "error": null,
    "note": null
   },
@@ -136,7 +136,7 @@
     "LW-080"
    ],
    "status": "pass",
-   "ms": 134,
+   "ms": 195,
    "error": null,
    "note": null
   },
@@ -152,7 +152,7 @@
     "LW-149"
    ],
    "status": "pass",
-   "ms": 138,
+   "ms": 140,
    "error": null,
    "note": null
   },
@@ -169,7 +169,7 @@
     "LW-137"
    ],
    "status": "pass",
-   "ms": 127,
+   "ms": 134,
    "error": null,
    "note": null
   },
@@ -186,7 +186,7 @@
     "LW-099"
    ],
    "status": "pass",
-   "ms": 127,
+   "ms": 151,
    "error": null,
    "note": "chain: person.failed <- river.dried <- terrain.edited"
   },
@@ -202,7 +202,7 @@
     "LW-100"
    ],
    "status": "pass",
-   "ms": 120,
+   "ms": 145,
    "error": null,
    "note": null
   },
@@ -216,7 +216,7 @@
     "LW-037"
    ],
    "status": "pass",
-   "ms": 324,
+   "ms": 1053,
    "error": null,
    "note": null
   },
@@ -232,7 +232,7 @@
     "LW-139"
    ],
    "status": "pass",
-   "ms": 208,
+   "ms": 233,
    "error": null,
    "note": null
   },
@@ -247,9 +247,9 @@
     "LW-152"
    ],
    "status": "pass",
-   "ms": 1044,
+   "ms": 2304,
    "error": null,
-   "note": "archive 139 KB"
+   "note": "archive 143 KB"
   },
   {
    "id": "U18",
@@ -259,7 +259,7 @@
     "LW-056"
    ],
    "status": "pass",
-   "ms": 31,
+   "ms": 43,
    "error": null,
    "note": null
   },
@@ -272,7 +272,7 @@
     "LW-129"
    ],
    "status": "pass",
-   "ms": 16,
+   "ms": 25,
    "error": null,
    "note": null
   },
@@ -285,7 +285,7 @@
     "LW-129"
    ],
    "status": "pass",
-   "ms": 285,
+   "ms": 399,
    "error": null,
    "note": "replayed 5 commands"
   },
@@ -298,7 +298,7 @@
     "LW-129"
    ],
    "status": "pass",
-   "ms": 22,
+   "ms": 43,
    "error": null,
    "note": null
   },
@@ -311,7 +311,7 @@
     "LW-033"
    ],
    "status": "pass",
-   "ms": 317,
+   "ms": 433,
    "error": null,
    "note": null
   },
@@ -328,7 +328,7 @@
     "LW-034"
    ],
    "status": "pass",
-   "ms": 661,
+   "ms": 1048,
    "error": null,
    "note": "settlement after 0 days, building after 2 days, techs: fire,tools,farming"
   },
@@ -343,9 +343,9 @@
     "LW-022"
    ],
    "status": "pass",
-   "ms": 267,
+   "ms": 268,
    "error": null,
-   "note": "animals alive 1, hunts 7"
+   "note": "animals alive 0, hunts 8"
   },
   {
    "id": "U25",
@@ -355,7 +355,7 @@
     "LW-051"
    ],
    "status": "pass",
-   "ms": 141,
+   "ms": 145,
    "error": null,
    "note": null
   },
@@ -371,7 +371,7 @@
     "LW-138"
    ],
    "status": "pass",
-   "ms": 155,
+   "ms": 142,
    "error": null,
    "note": "scripted: I am sure there is water at the place I call 6825 (I saw it myself)."
   },
@@ -385,7 +385,7 @@
     "LW-141"
    ],
    "status": "pass",
-   "ms": 112,
+   "ms": 154,
    "error": null,
    "note": null
   },
@@ -400,7 +400,7 @@
     "LW-147"
    ],
    "status": "pass",
-   "ms": 417,
+   "ms": 516,
    "error": null,
    "note": null
   },
@@ -413,7 +413,7 @@
     "LW-085"
    ],
    "status": "pass",
-   "ms": 269,
+   "ms": 298,
    "error": null,
    "note": null
   },
@@ -424,7 +424,7 @@
     "LW-104"
    ],
    "status": "pass",
-   "ms": 8,
+   "ms": 5,
    "error": null,
    "note": null
   },
@@ -440,9 +440,9 @@
     "LW-106"
    ],
    "status": "pass",
-   "ms": 7,
+   "ms": 6,
    "error": null,
-   "note": "11 kernel modules, shipped file 337 KB"
+   "note": "12 kernel modules, shipped file 350 KB"
   },
   {
    "id": "U32",
@@ -452,7 +452,7 @@
     "LW-143"
    ],
    "status": "pass",
-   "ms": 46,
+   "ms": 50,
    "error": null,
    "note": null
   },
@@ -465,7 +465,7 @@
     "LW-115"
    ],
    "status": "pass",
-   "ms": 148,
+   "ms": 178,
    "error": null,
    "note": null
   },
@@ -477,9 +477,9 @@
     "LW-117"
    ],
    "status": "pass",
-   "ms": 2236,
+   "ms": 2992,
    "error": null,
-   "note": "152 people, 140 animals: mean 0.924 ms/tick (desktop Node, not a phone)"
+   "note": "152 people, 140 animals: mean 1.295 ms/tick (desktop Node, not a phone)"
   },
   {
    "id": "U35",
@@ -490,7 +490,7 @@
     "LW-149"
    ],
    "status": "pass",
-   "ms": 117,
+   "ms": 201,
    "error": null,
    "note": "2 waypoints round the house; 7 round the lake"
   },
@@ -504,7 +504,7 @@
     "LW-152"
    ],
    "status": "pass",
-   "ms": 308,
+   "ms": 438,
    "error": null,
    "note": "soil range 58..255 after 12 days"
   },
@@ -515,9 +515,37 @@
     "LW-040"
    ],
    "status": "pass",
-   "ms": 111,
+   "ms": 158,
    "error": null,
    "note": "69% of the day spent on the scheduled activity"
+  },
+  {
+   "id": "U38",
+   "name": "rivers are carved into the canonical terrain and hold water; a small dam stops the flow downstream",
+   "reqs": [
+    "LW-077",
+    "LW-078",
+    "LW-082",
+    "LW-019"
+   ],
+   "status": "pass",
+   "ms": 146,
+   "error": null,
+   "note": "channel 0.96 m deep, 13.0 m wide; dam dried 1 downstream cells"
+  },
+  {
+   "id": "U39",
+   "name": "roads speed travel; settlements tread their own paths; vehicles follow invention",
+   "reqs": [
+    "LW-016",
+    "LW-041",
+    "LW-043",
+    "LW-059"
+   ],
+   "status": "pass",
+   "ms": 178,
+   "error": null,
+   "note": "off-road 346 ticks, road 267, cart 217"
   }
  ]
 }

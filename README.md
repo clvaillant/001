@@ -85,9 +85,9 @@ If the game is slow on your device, choose Low: it turns shadows off and lowers 
 
 ## Limits you will notice
 
-- Rivers are drawn as ribbons between climate cells (about 600 m apart on the default planet); they do
-  not carve their own beds, and a small dam does not stop them. Hydrology reacts to edits roughly the
-  size of a cell or larger.
+- Rivers run in carved channels and a small dam across one holds the water back, but where a river
+  goes is still decided on a coarse grid (about 600 m on the default planet): digging a ditch does not
+  divert it. Every river can be waded across; there are no bridges or boats.
 - Level-of-detail changes pop rather than morph, and trees differ between detail levels.
 - Rain soaks the soil and dry spells cause droughts, but there is no erosion or long-term climate drift.
 - Caves exist only inside 48 × 48 × 33 m dig sites you create (24 per world). Characters walk on cave
@@ -96,7 +96,7 @@ If the game is slow on your device, choose Low: it turns shadows off and lowers 
   (over about 900 m round a sea or lake) are reported as "no route".
 - Character speech is scripted from their real state and labelled as such. No language model is
   included; free-text conversation is disabled.
-- One planet, spherical only. No vehicles are drawn; era affects travel speed and building colours.
+- One planet, spherical only. Vehicles are personal conveyances on roads (cart to hover skimmer); no rail, boats or aircraft.
 - LAN play re-sends the whole world to each player after every edit, so it suits small worlds on a good network.
 - No APK. `android/` is unbuilt wrapper source.
 
