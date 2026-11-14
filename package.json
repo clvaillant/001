@@ -1,17 +1,16 @@
 {
-  "name": "rgemergence",
-  "version": "1.0.0",
-  "type": "module",
+  "name": "living-world",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Living World - offline planetary creation and life simulation. Zero runtime dependencies.",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "node tools/build.cjs",
+    "test:unit": "node tests/unit.cjs",
+    "test:lan": "node tests/lan.cjs",
+    "test:browser": "node tests/browser.cjs",
+    "test": "node tools/build.cjs && node tests/run-all.cjs",
+    "package": "node tools/package.cjs",
+    "lan-host": "node src/lan/host.cjs"
   },
-  "dependencies": {
-    "three": "^r155"
-  },
-  "devDependencies": {
-    "vite": "^5.0.0",
-    "vite-plugin-singlefile": "^0.13.0"
-  }
+  "devDependencies": {}
 }

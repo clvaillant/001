@@ -1,0 +1,13 @@
+Living World browser tests (software WebGL, network denied)
+  ok   B01 single file opens from file:// with the network denied; title screen shows a live 3D planet
+       requests: 1 (all file://), storage: indexeddb, renderer: ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftSh
+  ok   B02 Quick Start creates a unique, editable, uninhabited world; Advanced setup regenerates the planet live
+       radius 632 km planet created from the advanced panel
+  ok   B03 continuous zoom from orbit to ground in ONE world/scene; LOD refines; floating-origin precision holds on an Earth-sized planet
+       Orbit > Continent > Region > Landscape > Settlement > Home; quads 312736 m -> 1.19 m; float step at camera 0.000 mm vs 0.76 m without floating origin
+  FAIL B04 mouse sculpting with visible brush: immediate terrain change, undo, redo, sea level, biome paint, protected regeneration
+       AssertionError [ERR_ASSERTION]: sea level changed through the UI |     at /home/user/001/tests/browser.cjs:126:5 |     at async test (/home/user/001/tests/browser.cjs:11:12) |     at async /home/user/001/tests/browser.cjs:104:3
+  ok   B05 touch: one-finger drag pans, pinch zooms, tap selects; phone layout keeps every control on screen
+       22 controls checked on 360x640 (emulated touch, not a physical phone)
+  FAIL B06 keyboard and mouse navigation alternatives: wheel zoom, right-drag rotate/tilt, keys, double-click focus
+       AssertionError [ERR_ASSERTION]: wheel zooms |     at /home/user/001/tests/browser.cjs:170:120 |     at async test (/home/user/001/tests/browser.cjs:11:12) |     at async /home/user/001/tests/browser.cjs:167:3

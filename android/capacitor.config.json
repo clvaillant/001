@@ -1,0 +1,7 @@
+{
+  "appId": "world.living.offline",
+  "appName": "Living World",
+  "webDir": "www",
+  "server": { "androidScheme": "https", "cleartext": false, "allowNavigation": [] },
+  "android": { "allowMixedContent": false, "webContentsDebuggingEnabled": false }
+}
