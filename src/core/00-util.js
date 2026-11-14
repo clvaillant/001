@@ -1,5 +1,5 @@
 // world-core / utilities: deterministic maths, hashing, seeded noise, canonical JSON.
-// No DOM, no wall-clock, no Math.random in this file or anything under src/core.
+// No DOM, no wall-clock and no unseeded randomness in this file or anything under src/core.
 ;(function(){'use strict';
 const LW=globalThis.LW=globalThis.LW||{};
 LW.VERSION='0.1.0';

@@ -1,0 +1,48 @@
+{
+ "suite": "lan",
+ "total": 3,
+ "pass": 3,
+ "fail": 0,
+ "results": [
+  {
+   "id": "L01",
+   "name": "owner issues locally validated single-use invitations; no account needed",
+   "reqs": [
+    "LW-021",
+    "LW-053",
+    "LW-120"
+   ],
+   "status": "pass",
+   "ms": 63,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "L02",
+   "name": "two users edit the same object: host orders commands, last valid edit wins, state stays consistent",
+   "reqs": [
+    "LW-054",
+    "LW-121",
+    "LW-141",
+    "LW-116"
+   ],
+   "status": "pass",
+   "ms": 158,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "L03",
+   "name": "exclusive character control lease; owner controls the shared clock; lease expires on disconnect",
+   "reqs": [
+    "LW-055",
+    "LW-109",
+    "LW-153"
+   ],
+   "status": "pass",
+   "ms": 475,
+   "error": null,
+   "note": null
+  }
+ ]
+}

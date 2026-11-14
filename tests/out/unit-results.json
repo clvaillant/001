@@ -1,0 +1,485 @@
+{
+ "suite": "unit",
+ "node": "v22.23.4",
+ "platform": "linux x64",
+ "total": 34,
+ "pass": 34,
+ "fail": 0,
+ "results": [
+  {
+   "id": "U01",
+   "name": "new world is uninhabited with typed, range-checked planetary settings",
+   "reqs": [
+    "LW-012",
+    "LW-151",
+    "LW-072",
+    "LW-073"
+   ],
+   "status": "pass",
+   "ms": 4,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U02",
+   "name": "Play never creates life in a sterile world",
+   "reqs": [
+    "LW-144",
+    "LW-151",
+    "LW-015"
+   ],
+   "status": "pass",
+   "ms": 132,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U03",
+   "name": "seeded generation is deterministic; different seeds differ",
+   "reqs": [
+    "LW-086",
+    "LW-093",
+    "LW-125"
+   ],
+   "status": "pass",
+   "ms": 3,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U04",
+   "name": "terrain sampling is identical at every LOD parametrisation; edits apply at all levels",
+   "reqs": [
+    "LW-060",
+    "LW-112",
+    "LW-133",
+    "LW-014"
+   ],
+   "status": "pass",
+   "ms": 2,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U05",
+   "name": "manual edits override procedural regeneration; regeneration is selective and revertible",
+   "reqs": [
+    "LW-063",
+    "LW-086",
+    "LW-145",
+    "LW-076"
+   ],
+   "status": "pass",
+   "ms": 1,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U06",
+   "name": "undo/redo of terrain strokes; undo after simulated time warns and keeps consequences",
+   "reqs": [
+    "LW-128",
+    "LW-129",
+    "LW-146"
+   ],
+   "status": "pass",
+   "ms": 123,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U07",
+   "name": "command idempotency: duplicate id has no further effect; reused id with other content fails; new id repeats",
+   "reqs": [
+    "LW-088",
+    "LW-103",
+    "LW-121"
+   ],
+   "status": "pass",
+   "ms": 6,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U08",
+   "name": "rejected commands are atomic: canonical state is unchanged",
+   "reqs": [
+    "LW-088",
+    "LW-121"
+   ],
+   "status": "pass",
+   "ms": 13,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U09",
+   "name": "sea level, painted water and painted biome produce consistent results",
+   "reqs": [
+    "LW-077",
+    "LW-079",
+    "LW-135",
+    "LW-009"
+   ],
+   "status": "pass",
+   "ms": 265,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U10",
+   "name": "subsurface volume: carve opens a real entrance in the shared frame; collision and undo",
+   "reqs": [
+    "LW-081",
+    "LW-134",
+    "LW-150",
+    "LW-080"
+   ],
+   "status": "pass",
+   "ms": 136,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U11",
+   "name": "functional home: rooms, door navigation, object use; structure follows sculpted terrain",
+   "reqs": [
+    "LW-020",
+    "LW-039",
+    "LW-061",
+    "LW-085",
+    "LW-136",
+    "LW-149"
+   ],
+   "status": "pass",
+   "ms": 128,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U12",
+   "name": "direct control overrides autonomy; release resumes the SAME individual with memory and needs intact",
+   "reqs": [
+    "LW-003",
+    "LW-029",
+    "LW-035",
+    "LW-040",
+    "LW-090",
+    "LW-094",
+    "LW-137"
+   ],
+   "status": "pass",
+   "ms": 130,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U13",
+   "name": "causal chain: terrain edit dries a river -> resident fails to drink -> belief revised -> provenance recorded",
+   "reqs": [
+    "LW-019",
+    "LW-047",
+    "LW-050",
+    "LW-078",
+    "LW-092",
+    "LW-096",
+    "LW-099"
+   ],
+   "status": "pass",
+   "ms": 134,
+   "error": null,
+   "note": "chain: person.failed <- river.dried <- terrain.edited"
+  },
+  {
+   "id": "U14",
+   "name": "knowledge is personal: no omniscience; hearsay is tagged with source and lower confidence",
+   "reqs": [
+    "LW-026",
+    "LW-027",
+    "LW-036",
+    "LW-096",
+    "LW-097",
+    "LW-100"
+   ],
+   "status": "pass",
+   "ms": 143,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U15",
+   "name": "cohorts: promotion debits exactly once, never duplicates identity, even on retry",
+   "reqs": [
+    "LW-048",
+    "LW-101",
+    "LW-102",
+    "LW-037"
+   ],
+   "status": "pass",
+   "ms": 309,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U16",
+   "name": "interest-based detail: dormant people keep identity, memory and needs; coarse updates stay consequential",
+   "reqs": [
+    "LW-037",
+    "LW-091",
+    "LW-095",
+    "LW-101",
+    "LW-102",
+    "LW-139"
+   ],
+   "status": "pass",
+   "ms": 155,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U17",
+   "name": "archive round-trip restores the same world; simulation continues identically (determinism)",
+   "reqs": [
+    "LW-056",
+    "LW-090",
+    "LW-093",
+    "LW-123",
+    "LW-152"
+   ],
+   "status": "pass",
+   "ms": 482,
+   "error": null,
+   "note": "archive 104 KB"
+  },
+  {
+   "id": "U18",
+   "name": "corrupted, oversized, hostile and future-version archives are rejected without side effects",
+   "reqs": [
+    "LW-152",
+    "LW-056"
+   ],
+   "status": "pass",
+   "ms": 20,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U19",
+   "name": "two-generation storage: a damaged newest save falls back to the previous generation",
+   "reqs": [
+    "LW-056",
+    "LW-103",
+    "LW-129"
+   ],
+   "status": "pass",
+   "ms": 11,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U20",
+   "name": "crash recovery: journaled commands after the last snapshot are replayed to the identical state",
+   "reqs": [
+    "LW-103",
+    "LW-109",
+    "LW-129"
+   ],
+   "status": "pass",
+   "ms": 289,
+   "error": null,
+   "note": "replayed 4 commands"
+  },
+  {
+   "id": "U21",
+   "name": "a failed snapshot write leaves the previous save loadable; named snapshots restore",
+   "reqs": [
+    "LW-056",
+    "LW-103",
+    "LW-129"
+   ],
+   "status": "pass",
+   "ms": 13,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U22",
+   "name": "pending work (births) is applied exactly once across save/reload",
+   "reqs": [
+    "LW-091",
+    "LW-092",
+    "LW-033"
+   ],
+   "status": "pass",
+   "ms": 338,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U23",
+   "name": "autonomous civilisation: people found a settlement and construct a building themselves",
+   "reqs": [
+    "LW-043",
+    "LW-044",
+    "LW-046",
+    "LW-140",
+    "LW-031",
+    "LW-032",
+    "LW-034"
+   ],
+   "status": "pass",
+   "ms": 583,
+   "error": null,
+   "note": "settlement after 0 days, building after 2 days, techs: fire,tools,farming,pottery,masonry"
+  },
+  {
+   "id": "U24",
+   "name": "ecology: suitability is not life; seeded plants grow, spread or die by climate; grazing and predation occur",
+   "reqs": [
+    "LW-017",
+    "LW-079",
+    "LW-084",
+    "LW-135",
+    "LW-022"
+   ],
+   "status": "pass",
+   "ms": 240,
+   "error": null,
+   "note": "animals alive 1, hunts 7"
+  },
+  {
+   "id": "U25",
+   "name": "activities are bounded declarative graphs: validated, never executable code",
+   "reqs": [
+    "LW-042",
+    "LW-051"
+   ],
+   "status": "pass",
+   "ms": 107,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U26",
+   "name": "dialogue: rule-based fallback is labelled; no generative output without a registered local model",
+   "reqs": [
+    "LW-006",
+    "LW-030",
+    "LW-071",
+    "LW-118",
+    "LW-119",
+    "LW-138"
+   ],
+   "status": "pass",
+   "ms": 106,
+   "error": null,
+   "note": "scripted: I am sure there is water at the place I call 6825 (I saw it myself)."
+  },
+  {
+   "id": "U27",
+   "name": "roles and exclusive control: visitors cannot edit; one controller per character",
+   "reqs": [
+    "LW-053",
+    "LW-054",
+    "LW-153",
+    "LW-141"
+   ],
+   "status": "pass",
+   "ms": 114,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U28",
+   "name": "species: validated custom anatomy/lifecycle; artificial life has a different physiology",
+   "reqs": [
+    "LW-022",
+    "LW-023",
+    "LW-033",
+    "LW-004",
+    "LW-147"
+   ],
+   "status": "pass",
+   "ms": 329,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U29",
+   "name": "natural consequences reach player-built structures (flooding is not blocked by manual placement)",
+   "reqs": [
+    "LW-019",
+    "LW-145",
+    "LW-085"
+   ],
+   "status": "pass",
+   "ms": 209,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U30",
+   "name": "bounded history: event log is tiered and capped; key events are retained",
+   "reqs": [
+    "LW-104"
+   ],
+   "status": "pass",
+   "ms": 5,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U31",
+   "name": "kernel purity: no wall clock, unseeded randomness, network, eval or DOM in src/core; offline single file",
+   "reqs": [
+    "LW-001",
+    "LW-011",
+    "LW-070",
+    "LW-093",
+    "LW-154",
+    "LW-106"
+   ],
+   "status": "pass",
+   "ms": 4,
+   "error": null,
+   "note": "11 kernel modules, shipped file 285 KB"
+  },
+  {
+   "id": "U32",
+   "name": "build is reproducible: rebuilding yields a byte-identical Living_World.html",
+   "reqs": [
+    "LW-123",
+    "LW-143"
+   ],
+   "status": "pass",
+   "ms": 33,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U33",
+   "name": "catch-up and time control are bounded and explicit",
+   "reqs": [
+    "LW-007",
+    "LW-018",
+    "LW-115"
+   ],
+   "status": "pass",
+   "ms": 137,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "U34",
+   "name": "scale: 150 people + 140 animals simulate within the per-tick budget on this machine",
+   "reqs": [
+    "LW-069",
+    "LW-117"
+   ],
+   "status": "pass",
+   "ms": 2402,
+   "error": null,
+   "note": "152 people, 140 animals: mean 1.031 ms/tick (desktop Node, not a phone)"
+  }
+ ]
+}

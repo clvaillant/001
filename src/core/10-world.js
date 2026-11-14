@@ -114,29 +114,25 @@ LW.dispatch=function(world,cmd,actor){
   if(LW.onCommit)LW.onCommit(world,cmd,actor,receipt);
   return {ok:true,receipt,result:receipt.result,inverse:res.undo||null,label:res.label};
 };
-function internalCmd(world,spec){
-  return {worldId:world.id,commandId:'u_'+world.revision+'_'+world.nextId,expectedRevision:world.revision,payloadVersion:1,type:spec.type,payload:spec.payload,noUndo:true};
-}
 // Undo is a compensating command: it reverts the edit itself, never the consequences already simulated.
+// Undo/redo are themselves journaled commands, so crash replay reproduces the history stacks exactly.
 LW.undoInfo=function(world){
   const e=world.undo[world.undo.length-1];if(!e)return null;
   const dt=world.tick-e.tick;
   return {label:e.label,ticksSince:dt,warning:dt>0?'Time has advanced '+dt+' ticks since this edit. Undo reverts the edit only; consumed resources, events and memories that followed are kept. Restore a snapshot to rewind history.':null};
 };
-LW.undo=function(world,actor){
-  const e=world.undo.pop();if(!e)return fail('nothing_to_undo');
-  const r=LW.dispatch(world,internalCmd(world,e.undo),actor);
-  if(!r.ok){world.undo.push(e);return r;}
-  if(r.inverse)world.redo.push({label:e.label,tick:world.tick,gid:e.gid,undo:r.inverse});
-  return r;
-};
-LW.redo=function(world,actor){
-  const e=world.redo.pop();if(!e)return fail('nothing_to_redo');
-  const r=LW.dispatch(world,internalCmd(world,e.undo),actor);
-  if(!r.ok){world.redo.push(e);return r;}
-  if(r.inverse)world.undo.push({label:e.label,tick:world.tick,gid:e.gid,undo:r.inverse});
-  return r;
-};
+function hist(from,to){
+  return {perm:'edit',
+    validate(w,p,actor){const e=w[from][w[from].length-1];if(!e)return 'nothing to '+(from==='undo'?'undo':'redo');
+      const def=LW.commands[e.undo.type];if(!def)return 'unknown inverse';return def.validate?def.validate(w,e.undo.payload,actor):null;},
+    apply(w,p,ctx){const e=w[from].pop(),res=LW.commands[e.undo.type].apply(w,e.undo.payload,ctx)||{};
+      if(res.undo)w[to].push({label:e.label,tick:w.tick,gid:e.gid,undo:res.undo});
+      return {public:{label:e.label}};}};
+}
+LW.def('history.undo',hist('undo','redo'));
+LW.def('history.redo',hist('redo','undo'));
+LW.undo=(world,actor)=>LW.dispatch(world,LW.cmd(world,'history.undo',{}),actor);
+LW.redo=(world,actor)=>LW.dispatch(world,LW.cmd(world,'history.redo',{}),actor);
 
 // ---- time helpers -----------------------------------------------------------
 LW.dayOf=w=>Math.floor(w.tick/LW.TPD);
