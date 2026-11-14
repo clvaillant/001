@@ -303,7 +303,7 @@ App.frame=function(now){
   if(cv.width!==cw||cv.height!==chh){cv.width=cw;cv.height=chh;}
   App.terrain.quality=qv;
   // simulation: deterministic ticks at the chosen rate, bounded per frame
-  if(App.world&&App.speed&&App.phase==='play'){
+  if(App.world&&App.speed&&App.phase==='play'&&!App.lan){
     App.acc+=dt*App.SPEEDS[App.speed];const t0=performance.now();let n=0;
     while(App.acc>=1&&performance.now()-t0<11){LW.tick(App.world);App.acc-=1;n++;}
     if(App.acc>App.SPEEDS[App.speed])App.acc=0;        // could not keep up: drop the backlog rather than spiral

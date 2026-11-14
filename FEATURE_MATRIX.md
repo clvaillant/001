@@ -37,7 +37,7 @@ A status describes this build, not the full design. `WORKING_TESTED` means the s
 | Custom activities | `WORKING_TESTED` | Visual step editor; bounded validated graphs; executed by the same action system; assignable as goals. | No drag-and-drop canvas; small node vocabulary. |
 | Dialogue | `PARTIAL` | Scripted, labelled replies built from the character’s real state; free text disabled; local-model adapter contract tested. | No local model, weights or runtime included. |
 | Genuine local-model conversation | `BLOCKED` | — | Blocked: no model weights or on-device runtime were available in this environment. |
-| LAN host | `PARTIAL` | Node host with single-use invitations, roles, ordered validated commands, receipts on retry, controller leases with expiry, owner clock, bounded interest sync, portable snapshot. | No join screen in the game; no reconnection UI; plain HTTP; tested with Node clients only. |
+| LAN play | `WORKING_TESTED` | Node host with single-use invitations, roles, ordered validated commands, receipts on retry, controller leases with expiry, owner clock, bounded interest sync. The game joins from its title screen when served by the host; owner invites from the menu; three browsers tested on one world. | Plain HTTP (trusted networks only). The client mirrors by re-fetching the whole world after each edit, so large worlds will sync slowly; no host migration; remote characters update about once a second. |
 | Android package | `SPECIFIED_ONLY` | Capacitor wrapper source and instructions in `android/`. | Not built; no SDK or device available. No APK exists. |
 | Real-device performance (30 FPS target) | `BLOCKED` | Adaptive resolution/LOD exists. | Blocked: no physical Android device. Only software-renderer timings exist. |
 | Other celestial bodies / non-spherical shapes | `SPECIFIED_ONLY` | `body.shape` field and a body record exist. | Only one spherical body is implemented. |
@@ -46,7 +46,7 @@ A status describes this build, not the full design. `WORKING_TESTED` means the s
 
 ## All 155 requirements
 
-Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 77 · `WORKING_TESTED` 65 · `BLOCKED` 5 · `SPECIFIED_ONLY` 2.
+Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 69 · `WORKING_TESTED` 73 · `BLOCKED` 5 · `SPECIFIED_ONLY` 2.
 
 | Req | Status | Tests | Note |
 |---|---|---|---|
@@ -70,7 +70,7 @@ Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 77 · `WORKING_TESTED` 65 
 | LW-018 | `PARTIAL` | U33 | bounded catch-up implemented; dialog not browser-tested |
 | LW-019 | `WORKING_TESTED` | U13 U29 B08 |  |
 | LW-020 | `PARTIAL` | U11 B07 | templates + furniture; no free-form |
-| LW-021 | `PARTIAL` | L01 | host only |
+| LW-021 | `WORKING_TESTED` | L01 B15 | host + in-game join |
 | LW-022 | `WORKING_TESTED` | U24 U28 |  |
 | LW-023 | `PARTIAL` | U28 B14 | no sculpting/clothing |
 | LW-024 | `PARTIAL` | — | temperament/values/mood |
@@ -102,9 +102,9 @@ Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 77 · `WORKING_TESTED` 65 
 | LW-050 | `PARTIAL` | U13 B07 B08 | needs, memory, beliefs, history, causes; few statistics |
 | LW-051 | `WORKING_TESTED` | U25 |  |
 | LW-052 | `WORKING_NOT_DEVICE_VALIDATED` | B05 | emulated touch |
-| LW-053 | `PARTIAL` | U27 L01 | host only |
-| LW-054 | `PARTIAL` | U27 L02 | host only |
-| LW-055 | `PARTIAL` | L03 | host only |
+| LW-053 | `WORKING_TESTED` | U27 L01 B15 |  |
+| LW-054 | `WORKING_TESTED` | U27 L02 B15 |  |
+| LW-055 | `WORKING_TESTED` | L03 B15 |  |
 | LW-056 | `WORKING_TESTED` | U17 U18 U19 U21 B10 B11 B12 |  |
 | LW-057 | `PARTIAL` | — |  |
 | LW-058 | `PARTIAL` | — |  |
@@ -158,19 +158,19 @@ Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 77 · `WORKING_TESTED` 65 
 | LW-106 | `PARTIAL` | U31 | browser track done; Android not built |
 | LW-107 | `WORKING_TESTED` | — | standalone first |
 | LW-108 | `SPECIFIED_ONLY` | — |  |
-| LW-109 | `PARTIAL` | U20 L03 B10 | local pause/restore tested; LAN disconnect via lease expiry |
+| LW-109 | `PARTIAL` | U20 L03 B10 | local pause/restore tested; LAN disconnect via lease expiry; no reconnect screen |
 | LW-110 | `PARTIAL` | — | direct WebGL2 chosen without device benchmarking |
 | LW-111 | `BLOCKED` | B13 | no device |
 | LW-112 | `PARTIAL` | U04 B03 | fallback to parent chunk; no morph |
 | LW-113 | `PARTIAL` | — | JavaScript, not TypeScript (see status) |
 | LW-114 | `WORKING_TESTED` | B01 |  |
 | LW-115 | `WORKING_TESTED` | U33 |  |
-| LW-116 | `PARTIAL` | L02 | host only |
+| LW-116 | `PARTIAL` | L02 B15 | nearby entities each poll; full world after edits |
 | LW-117 | `WORKING_TESTED` | U34 |  |
 | LW-118 | `PARTIAL` | U26 | adapter only |
 | LW-119 | `PARTIAL` | U26 | budgets declared; nothing to enforce yet |
-| LW-120 | `PARTIAL` | L01 | host only |
-| LW-121 | `PARTIAL` | U07 U08 L02 | host only |
+| LW-120 | `WORKING_TESTED` | L01 B15 |  |
+| LW-121 | `WORKING_TESTED` | U07 U08 L02 B15 |  |
 | LW-122 | `PARTIAL` | — | browser acceptance reported; no ChatGPT deployment |
 | LW-123 | `PARTIAL` | U17 U32 B11 | no installable app package |
 | LW-124 | `WORKING_TESTED` | B01 |  |
@@ -190,7 +190,7 @@ Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 77 · `WORKING_TESTED` 65 
 | LW-138 | `BLOCKED` | U26 | no model |
 | LW-139 | `WORKING_TESTED` | U16 B07 |  |
 | LW-140 | `WORKING_TESTED` | U23 |  |
-| LW-141 | `PARTIAL` | U27 L02 | two Node clients, not two browsers |
+| LW-141 | `WORKING_TESTED` | U27 L02 B15 | three browsers |
 | LW-142 | `BLOCKED` | B13 | no device |
 | LW-143 | `PARTIAL` | U32 B12 | evidence exists for tested items only |
 | LW-144 | `WORKING_TESTED` | U02 |  |
@@ -202,6 +202,6 @@ Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 77 · `WORKING_TESTED` 65 
 | LW-150 | `PARTIAL` | U10 B09 |  |
 | LW-151 | `WORKING_TESTED` | U01 U02 B02 |  |
 | LW-152 | `WORKING_TESTED` | U17 U18 U36 B11 |  |
-| LW-153 | `PARTIAL` | U27 L03 | host only |
+| LW-153 | `WORKING_TESTED` | U27 L03 B15 |  |
 | LW-154 | `WORKING_TESTED` | U31 B01 |  |
 | LW-155 | `BLOCKED` | — | no device |

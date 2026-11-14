@@ -348,6 +348,57 @@ const center={x:450,y:300};
     assert.deepStrictEqual(errs.filter(e=>!/context/i.test(e)),[]);await ctx.close();
   });
 
+  await test('B15','LAN in the game: two browsers join one hosted world; edits are shared; roles and the one-controller rule hold',['LW-021','LW-053','LW-054','LW-055','LW-116','LW-120','LW-121','LW-141','LW-153'],async()=>{
+    const {createHost,loadKernel}=require('../src/lan/host.cjs'),K=loadKernel();
+    const world=K.createWorld({seed:4711,nonce:'lanb',name:'Shared Isle'});K.env.settle(world);
+    const H=createHost({world});await new Promise(r=>H.server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+H.server.address().port;
+    const join=async(code,name)=>{const ctx=await browser.newContext({viewport:{width:700,height:480}}),reqs=[];
+      await ctx.route('**/*',r=>{const u=r.request().url();reqs.push(u);if(u.startsWith(base))r.continue();else r.abort();});
+      const pg=await ctx.newPage();pg.setDefaultTimeout(60000);const errs=[];pg.on('pageerror',e=>errs.push(e.message));
+      await pg.goto(base+'/');await pg.waitForFunction(()=>globalThis.LW&&LW.app&&LW.app.booted);
+      await pg.waitForSelector('text=Shared world on this network');assert(/trusted/i.test(await pg.textContent('#start')),'trusted-network warning shown before joining');
+      await pg.fill('input[aria-label="Your name"]',name);await pg.fill('input[aria-label="Invitation code"]',code);await pg.click('text=Join shared world');
+      await pg.waitForFunction(()=>LW.app.lan&&LW.app.world&&!document.getElementById('hud').hidden);return {ctx,pg,reqs,errs};};
+    try{
+      const bad=await browser.newContext();const bp=await bad.newPage();await bp.goto(base+'/');await bp.waitForFunction(()=>globalThis.LW&&LW.app&&LW.app.booted);
+      await bp.fill('input[aria-label="Invitation code"]','wrongcode');await bp.click('text=Join shared world');await bp.waitForFunction(()=>LW.app.lastToast&&/invalid|join/i.test(LW.app.lastToast.msg));
+      assert(await bp.evaluate(()=>!LW.app.lan),'a wrong code does not join');await bad.close();
+      const A=await join(H.ownerToken,'Owner');
+      assert.strictEqual(await A.pg.evaluate(()=>LW.app.lan.actor.role),'owner');assert.strictEqual(await A.pg.evaluate(()=>LW.app.world.id),world.id);
+      assert(/LAN · OWNER/.test(await A.pg.textContent('#modechip')));
+      // owner creates invitations from the in-game menu
+      await A.pg.click('button[aria-label="Menu"]');await A.pg.click('#modal >> text=Invite editor');await A.pg.waitForFunction(()=>/Invitation for one editor: \w+/.test(document.querySelector('#modal').textContent));
+      const inv=(await A.pg.textContent('#modal')).match(/Invitation for one editor: (\w+)/)[1];
+      await A.pg.click('#modal >> text=Invite visitor');await A.pg.waitForFunction(()=>/Invitation for one visitor: \w+/.test(document.querySelector('#modal').textContent));
+      const vinv=(await A.pg.textContent('#modal')).match(/Invitation for one visitor: (\w+)/)[1];await A.pg.click('#modal button[aria-label="Close"]');
+      const Bp=await join(inv,'Editor'),Vp=await join(vinv,'Visitor');
+      assert.strictEqual(await Bp.pg.evaluate(()=>LW.app.lan.actor.role),'editor');
+      // owner builds; the editor's browser shows it; then the editor moves a piece of furniture and the owner sees that
+      const site=await A.pg.evaluate(()=>{const A=LW.app,w=A.world,d=LW.env.d(w);let c=-1;for(let k=0;k<d.C;k++)if(w.env.river[k]===0&&d.h[k]>40){c=k;break;}const n=LW.env.cellDir(w,c);
+        const r=A.do('build.place',{template:'cottage',n});A.do('life.spawn',{speciesId:'sp_human',n:LW.offsetDir(n,12,-9,w.body.radius),name:'Shared Sam'});return {n,id:r.result.id};});
+      await Bp.pg.waitForFunction(id=>!!LW.app.world.buildings[id]&&Object.values(LW.app.world.persons).some(p=>p.name==='Shared Sam'),site.id,{timeout:30000});
+      assert(world.buildings[site.id],'the host holds the building');
+      await Bp.pg.evaluate(id=>{const A=LW.app,b=A.world.buildings[id];A.do('build.moveComp',{id,cid:b.comps[0].id,x:1.25,z:-0.75});},site.id);
+      await A.pg.waitForFunction(id=>{const c=LW.app.world.buildings[id].comps[0];return c.x===1.25&&c.z===-0.75;},site.id,{timeout:30000});
+      assert.strictEqual(world.buildings[site.id].comps[0].x,1.25,'host state matches');
+      // a visitor may look but not change; an invalid edit by the editor is refused locally and never reaches shared state
+      const vr=await Vp.pg.evaluate(n=>LW.app.do('terrain.edit',{tool:'raise',n,r:50,s:5},true),site.n);assert.strictEqual(vr.code,'forbidden');
+      const rev=world.revision;await Bp.pg.evaluate(id=>LW.app.do('build.moveComp',{id,cid:LW.app.world.buildings[id].comps[0].id,x:99,z:99},true),site.id);await settle(Bp.pg,600);assert.strictEqual(world.revision,rev);
+      // one controller per character, across browsers; only the owner runs the clock
+      const pid=Object.keys(world.persons)[0];
+      assert((await A.pg.evaluate(id=>LW.app.do('person.control',{id,on:true}),pid)).ok);
+      await Bp.pg.waitForFunction(id=>LW.app.world.persons[id]&&LW.app.world.persons[id].control.mode==='player',pid,{timeout:30000});
+      assert(!(await Bp.pg.evaluate(id=>LW.app.do('person.control',{id,on:true},true),pid)).ok,'second browser cannot take the same character');
+      await Bp.pg.evaluate(()=>LW.app.setSpeed(2));await settle(Bp.pg,500);assert.strictEqual(H.speed,0,'editor cannot start the clock');assert(/Only the world owner/.test(await Bp.pg.evaluate(()=>LW.app.lastToast.msg)));
+      await A.pg.evaluate(()=>{LW.app.do('world.setMode',{mode:'play'});LW.app.setSpeed(2);});
+      const t0=world.tick;await Bp.pg.waitForFunction(t=>LW.app.world.tick>t+20&&LW.app.world.mode==='play',t0,{timeout:40000});
+      assert(world.tick>t0+20,'shared time runs on the host and reaches the other browser');
+      assert.strictEqual(await Bp.pg.evaluate(()=>LW.app.acc),0,'clients do not simulate time themselves');
+      for(const x of [A,Bp,Vp]){assert.deepStrictEqual(x.errs,[]);assert(x.reqs.every(u=>u.startsWith(base)),'only the LAN host was contacted');await x.ctx.close();}
+      return 'three browsers (owner, editor, visitor) on one host; host revision '+world.revision;
+    }finally{H.close();}
+  });
+
   await browser.close();
   const pass=results.filter(r=>r.status==='pass').length;
   fs.writeFileSync(path.join(OUT,'browser-results.json'),JSON.stringify({suite:'browser',env,total:results.length,pass,fail:results.length-pass,results},null,1));

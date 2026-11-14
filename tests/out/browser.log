@@ -6,24 +6,26 @@ Living World browser tests (software WebGL, network denied)
   ok   B03 continuous zoom from orbit to ground in ONE world/scene; LOD refines; floating-origin precision holds on an Earth-sized planet
        Orbit > Continent > Region > Landscape > Settlement > Home; quads 312736 m -> 0.60 m; float step at camera 0.001 mm vs 0.76 m without floating origin
   ok   B04 mouse sculpting with visible brush: immediate terrain change, undo, redo, sea level, biome paint, protected regeneration
-       raised 196.1 m with 5 dabs; undo/redo exact; regeneration preserved the edit
+       raised 195.4 m with 5 dabs; undo/redo exact; regeneration preserved the edit
   ok   B05 touch: one-finger drag pans, pinch zooms, tap selects; phone layout keeps every control on screen
        22 controls checked on 360x640 (emulated touch, not a physical phone)
   ok   B06 keyboard and mouse navigation alternatives: wheel zoom, right-drag rotate/tilt, keys, double-click focus
   ok   B07 integrated path by UI: plants -> home -> person -> command to use bed -> Play -> release -> autonomous life -> inspector
-       Ysur slept in the bed on command, then chose "gatherFood" on release
+       Mode slept in the bed on command, then chose "gatherFood" on release
   ok   B08 cause and effect in the app: terrain edit dries the river; inspector explains why
        river.dried <- terrain.edited
   ok   B09 dig site: carve by dragging; opening is rendered in the same space; underground view
-       5 carve ops opened 24 surface columns
+       5 carve ops opened 25 surface columns
   ok   B10 persistence across a real page reload: same planet, edits, home, resident, memories and history; world keeps advancing
-       hash 5f264163c862a902 identical after reload (Restored 1 edits made after the last snapshot.)
+       hash b5d0c158d8f78f25 identical after reload (undefined)
   ok   B11 export/import between independent browser profiles; corrupted file refused and current world untouched
-       archive 106 KB round-tripped; hash 91d5006b2becab44
+       archive 106 KB round-tripped; hash 62548adb7cdc5743
   ok   B12 storage blocked: game still runs and truthfully warns that nothing is kept; export still works
   ok   B13 frame timing and scene complexity at four scales (SOFTWARE renderer; not device evidence); adaptive quality reacts
-       orbit: 99 ms median, 27950 tris, 80 draws, 15 chunks | region: 277 ms median, 118190 tris, 174 draws, 109 chunks | settlement: 564 ms median, 373406 tris, 724 draws, 144 chunks | home: 764 ms median, 525303 tris, 773 draws, 170 chunks | heap 18 MB | save 127 KB
+       orbit: 112 ms median, 37094 tris, 99 draws, 21 chunks | region: 270 ms median, 123494 tris, 189 draws, 111 chunks | settlement: 472 ms median, 357315 tris, 715 draws, 132 chunks | home: 671 ms median, 473546 tris, 763 draws, 167 chunks | heap 20 MB | save 122 KB
   ok   B14 WebGL context loss is survived; species editor and activity editor create validated content
+  ok   B15 LAN in the game: two browsers join one hosted world; edits are shared; roles and the one-controller rule hold
+       three browsers (owner, editor, visitor) on one host; host revision 5
 
-browser: 14/14 passed
+browser: 15/15 passed
 EXIT 0

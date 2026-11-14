@@ -19,6 +19,7 @@ async function boot(){
   App.bindInput(cv);
   await App.initStore();
   App.newDraft();
+  if(LW.lanClient)await LW.lanClient.ready;
   await UI.start();
   requestAnimationFrame(App.frame);
   const flush=()=>{if(App.world)App.snapshot(false);};

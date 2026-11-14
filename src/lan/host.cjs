@@ -30,6 +30,7 @@ function createHost(opts){
       const inv=H.invites[body.invite];if(!inv||inv.used)return [403,{error:'invalid or used invitation'}];
       inv.used=true;const t=tok(),actor={id:'u_'+Object.keys(H.sessions).length,role:inv.role};H.sessions[t]={actor,name:String(body.name||'guest').slice(0,24),seen:H.now()};
       return [200,{token:t,actor,worldId:world.id,revision:world.revision}];}
+    if(method==='POST'&&p==='/api/resume'){const o=H.sessions[body.token];if(!o)return [403,{error:'unknown token'}];o.seen=H.now();o.gone=false;return [200,{actor:o.actor,worldId:world.id,revision:world.revision}];}
     const s=H.sessions[(body&&body.token)||u.searchParams.get('token')];
     if(!s)return [401,{error:'not joined'}];
     s.seen=H.now();s.gone=false;H.expire();

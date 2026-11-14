@@ -1,7 +1,7 @@
 {
- "generated": "2026-11-14T04:52:57.874Z",
+ "generated": "2026-11-14T05:05:42.939Z",
  "environment": {
-  "date": "2026-11-14T04:52:57.874Z",
+  "date": "2026-11-14T05:05:42.939Z",
   "node": "v22.23.4",
   "os": "Linux 6.18.44-fc-v470 x64",
   "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
@@ -11,13 +11,13 @@
   "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftSh",
   "artifact": {
    "file": "Living_World.html",
-   "bytes": 336869,
-   "sha256": "1456c366353135b80032fa134c42c44859619ac39dedac4f7bfaf01deec9204d"
+   "bytes": 344993,
+   "sha256": "3d1e4cbd717206584388b4baa6b66e8488c002c4f9ad3c96e0538aae99d27dcc"
   }
  },
  "summary": {
-  "total": 54,
-  "pass": 54,
+  "total": 55,
+  "pass": 55,
   "fail": 0,
   "suitesMissing": []
  },
@@ -147,7 +147,8 @@
   "LW-121": [
    "U07",
    "U08",
-   "L02"
+   "L02",
+   "B15"
   ],
   "LW-077": [
    "U09",
@@ -390,19 +391,23 @@
   ],
   "LW-053": [
    "U27",
-   "L01"
+   "L01",
+   "B15"
   ],
   "LW-054": [
    "U27",
-   "L02"
+   "L02",
+   "B15"
   ],
   "LW-153": [
    "U27",
-   "L03"
+   "L03",
+   "B15"
   ],
   "LW-141": [
    "U27",
-   "L02"
+   "L02",
+   "B15"
   ],
   "LW-023": [
    "U28",
@@ -464,16 +469,20 @@
    "U35"
   ],
   "LW-021": [
-   "L01"
+   "L01",
+   "B15"
   ],
   "LW-120": [
-   "L01"
+   "L01",
+   "B15"
   ],
   "LW-116": [
-   "L02"
+   "L02",
+   "B15"
   ],
   "LW-055": [
-   "L03"
+   "L03",
+   "B15"
   ],
   "LW-066": [
    "B01"
@@ -553,53 +562,53 @@
    {
     "label": "orbit",
     "dist": 48000,
-    "med": 98.79999999981374,
-    "p90": 106.59999999962747,
-    "tris": 27950,
-    "draws": 80,
-    "chunks": 15,
-    "cached": 70,
-    "q": 0.8,
-    "heap": 18
+    "med": 112.20000000018626,
+    "p90": 120.70000000018626,
+    "tris": 37094,
+    "draws": 99,
+    "chunks": 21,
+    "cached": 94,
+    "q": 0.9,
+    "heap": 20
    },
    {
     "label": "region",
     "dist": 5000,
-    "med": 276.70000000018626,
-    "p90": 301.29999999981374,
-    "tris": 118190,
-    "draws": 174,
-    "chunks": 109,
-    "cached": 210,
+    "med": 269.5,
+    "p90": 291.29999999981374,
+    "tris": 123494,
+    "draws": 189,
+    "chunks": 111,
+    "cached": 198,
     "q": 0.7000000000000001,
-    "heap": 18
+    "heap": 20
    },
    {
     "label": "settlement",
     "dist": 150,
-    "med": 564,
-    "p90": 729.4000000003725,
-    "tris": 373406,
-    "draws": 724,
-    "chunks": 144,
-    "cached": 602,
+    "med": 471.6000000005588,
+    "p90": 576.6999999992549,
+    "tris": 357315,
+    "draws": 715,
+    "chunks": 132,
+    "cached": 550,
     "q": 0.6000000000000001,
-    "heap": 18
+    "heap": 20
    },
    {
     "label": "home",
     "dist": 25,
-    "med": 764.0999999996275,
-    "p90": 891.2999999998137,
-    "tris": 525303,
-    "draws": 773,
-    "chunks": 170,
-    "cached": 770,
+    "med": 670.9000000003725,
+    "p90": 735.5999999996275,
+    "tris": 473546,
+    "draws": 763,
+    "chunks": 167,
+    "cached": 686,
     "q": 0.5000000000000001,
-    "heap": 18
+    "heap": 20
    }
   ],
-  "archiveBytes": 129850
+  "archiveBytes": 124686
  },
  "tests": [
   {
@@ -613,7 +622,7 @@
     "LW-073"
    ],
    "status": "pass",
-   "ms": 5,
+   "ms": 4,
    "error": null,
    "note": null
   },
@@ -627,7 +636,7 @@
     "LW-015"
    ],
    "status": "pass",
-   "ms": 165,
+   "ms": 134,
    "error": null,
    "note": null
   },
@@ -656,7 +665,7 @@
     "LW-014"
    ],
    "status": "pass",
-   "ms": 1,
+   "ms": 2,
    "error": null,
    "note": null
   },
@@ -671,7 +680,7 @@
     "LW-076"
    ],
    "status": "pass",
-   "ms": 2,
+   "ms": 1,
    "error": null,
    "note": null
   },
@@ -685,7 +694,7 @@
     "LW-146"
    ],
    "status": "pass",
-   "ms": 127,
+   "ms": 154,
    "error": null,
    "note": null
   },
@@ -699,7 +708,7 @@
     "LW-121"
    ],
    "status": "pass",
-   "ms": 7,
+   "ms": 9,
    "error": null,
    "note": null
   },
@@ -712,7 +721,7 @@
     "LW-121"
    ],
    "status": "pass",
-   "ms": 18,
+   "ms": 24,
    "error": null,
    "note": null
   },
@@ -727,7 +736,7 @@
     "LW-009"
    ],
    "status": "pass",
-   "ms": 214,
+   "ms": 254,
    "error": null,
    "note": null
   },
@@ -742,7 +751,7 @@
     "LW-080"
    ],
    "status": "pass",
-   "ms": 123,
+   "ms": 134,
    "error": null,
    "note": null
   },
@@ -759,7 +768,7 @@
     "LW-149"
    ],
    "status": "pass",
-   "ms": 152,
+   "ms": 138,
    "error": null,
    "note": null
   },
@@ -777,7 +786,7 @@
     "LW-137"
    ],
    "status": "pass",
-   "ms": 156,
+   "ms": 127,
    "error": null,
    "note": null
   },
@@ -795,7 +804,7 @@
     "LW-099"
    ],
    "status": "pass",
-   "ms": 131,
+   "ms": 127,
    "error": null,
    "note": "chain: person.failed <- river.dried <- terrain.edited"
   },
@@ -812,7 +821,7 @@
     "LW-100"
    ],
    "status": "pass",
-   "ms": 111,
+   "ms": 120,
    "error": null,
    "note": null
   },
@@ -827,7 +836,7 @@
     "LW-037"
    ],
    "status": "pass",
-   "ms": 352,
+   "ms": 324,
    "error": null,
    "note": null
   },
@@ -844,7 +853,7 @@
     "LW-139"
    ],
    "status": "pass",
-   "ms": 206,
+   "ms": 208,
    "error": null,
    "note": null
   },
@@ -860,7 +869,7 @@
     "LW-152"
    ],
    "status": "pass",
-   "ms": 1101,
+   "ms": 1044,
    "error": null,
    "note": "archive 139 KB"
   },
@@ -873,7 +882,7 @@
     "LW-056"
    ],
    "status": "pass",
-   "ms": 40,
+   "ms": 31,
    "error": null,
    "note": null
   },
@@ -887,7 +896,7 @@
     "LW-129"
    ],
    "status": "pass",
-   "ms": 19,
+   "ms": 16,
    "error": null,
    "note": null
   },
@@ -901,7 +910,7 @@
     "LW-129"
    ],
    "status": "pass",
-   "ms": 370,
+   "ms": 285,
    "error": null,
    "note": "replayed 5 commands"
   },
@@ -915,7 +924,7 @@
     "LW-129"
    ],
    "status": "pass",
-   "ms": 28,
+   "ms": 22,
    "error": null,
    "note": null
   },
@@ -929,7 +938,7 @@
     "LW-033"
    ],
    "status": "pass",
-   "ms": 395,
+   "ms": 317,
    "error": null,
    "note": null
   },
@@ -947,7 +956,7 @@
     "LW-034"
    ],
    "status": "pass",
-   "ms": 822,
+   "ms": 661,
    "error": null,
    "note": "settlement after 0 days, building after 2 days, techs: fire,tools,farming"
   },
@@ -963,7 +972,7 @@
     "LW-022"
    ],
    "status": "pass",
-   "ms": 327,
+   "ms": 267,
    "error": null,
    "note": "animals alive 1, hunts 7"
   },
@@ -976,7 +985,7 @@
     "LW-051"
    ],
    "status": "pass",
-   "ms": 139,
+   "ms": 141,
    "error": null,
    "note": null
   },
@@ -993,7 +1002,7 @@
     "LW-138"
    ],
    "status": "pass",
-   "ms": 135,
+   "ms": 155,
    "error": null,
    "note": "scripted: I am sure there is water at the place I call 6825 (I saw it myself)."
   },
@@ -1008,7 +1017,7 @@
     "LW-141"
    ],
    "status": "pass",
-   "ms": 139,
+   "ms": 112,
    "error": null,
    "note": null
   },
@@ -1024,7 +1033,7 @@
     "LW-147"
    ],
    "status": "pass",
-   "ms": 425,
+   "ms": 417,
    "error": null,
    "note": null
   },
@@ -1038,7 +1047,7 @@
     "LW-085"
    ],
    "status": "pass",
-   "ms": 262,
+   "ms": 269,
    "error": null,
    "note": null
   },
@@ -1050,7 +1059,7 @@
     "LW-104"
    ],
    "status": "pass",
-   "ms": 6,
+   "ms": 8,
    "error": null,
    "note": null
   },
@@ -1067,9 +1076,9 @@
     "LW-106"
    ],
    "status": "pass",
-   "ms": 4,
+   "ms": 7,
    "error": null,
-   "note": "11 kernel modules, shipped file 329 KB"
+   "note": "11 kernel modules, shipped file 337 KB"
   },
   {
    "suite": "unit",
@@ -1080,7 +1089,7 @@
     "LW-143"
    ],
    "status": "pass",
-   "ms": 42,
+   "ms": 46,
    "error": null,
    "note": null
   },
@@ -1094,7 +1103,7 @@
     "LW-115"
    ],
    "status": "pass",
-   "ms": 144,
+   "ms": 148,
    "error": null,
    "note": null
   },
@@ -1107,9 +1116,9 @@
     "LW-117"
    ],
    "status": "pass",
-   "ms": 2301,
+   "ms": 2236,
    "error": null,
-   "note": "152 people, 140 animals: mean 1.007 ms/tick (desktop Node, not a phone)"
+   "note": "152 people, 140 animals: mean 0.924 ms/tick (desktop Node, not a phone)"
   },
   {
    "suite": "unit",
@@ -1121,7 +1130,7 @@
     "LW-149"
    ],
    "status": "pass",
-   "ms": 125,
+   "ms": 117,
    "error": null,
    "note": "2 waypoints round the house; 7 round the lake"
   },
@@ -1136,7 +1145,7 @@
     "LW-152"
    ],
    "status": "pass",
-   "ms": 391,
+   "ms": 308,
    "error": null,
    "note": "soil range 58..255 after 12 days"
   },
@@ -1148,7 +1157,7 @@
     "LW-040"
    ],
    "status": "pass",
-   "ms": 145,
+   "ms": 111,
    "error": null,
    "note": "69% of the day spent on the scheduled activity"
   },
@@ -1162,7 +1171,7 @@
     "LW-120"
    ],
    "status": "pass",
-   "ms": 56,
+   "ms": 45,
    "error": null,
    "note": null
   },
@@ -1177,7 +1186,7 @@
     "LW-116"
    ],
    "status": "pass",
-   "ms": 172,
+   "ms": 219,
    "error": null,
    "note": null
   },
@@ -1209,7 +1218,7 @@
     "LW-154"
    ],
    "status": "pass",
-   "ms": 3645,
+   "ms": 3207,
    "error": null,
    "note": "requests: 1 (all file://), storage: indexeddb, renderer: ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftSh"
   },
@@ -1226,7 +1235,7 @@
     "LW-147"
    ],
    "status": "pass",
-   "ms": 9515,
+   "ms": 8473,
    "error": null,
    "note": "radius 632 km planet created from the advanced panel"
   },
@@ -1246,7 +1255,7 @@
     "LW-148"
    ],
    "status": "pass",
-   "ms": 16120,
+   "ms": 15373,
    "error": null,
    "note": "Orbit > Continent > Region > Landscape > Settlement > Home; quads 312736 m -> 0.60 m; float step at camera 0.001 mm vs 0.76 m without floating origin"
   },
@@ -1267,9 +1276,9 @@
     "LW-128"
    ],
    "status": "pass",
-   "ms": 65181,
+   "ms": 60469,
    "error": null,
-   "note": "raised 196.1 m with 5 dabs; undo/redo exact; regeneration preserved the edit"
+   "note": "raised 195.4 m with 5 dabs; undo/redo exact; regeneration preserved the edit"
   },
   {
    "suite": "browser",
@@ -1283,7 +1292,7 @@
     "LW-127"
    ],
    "status": "pass",
-   "ms": 52838,
+   "ms": 56733,
    "error": null,
    "note": "22 controls checked on 360x640 (emulated touch, not a physical phone)"
   },
@@ -1296,7 +1305,7 @@
     "LW-130"
    ],
    "status": "pass",
-   "ms": 10415,
+   "ms": 10256,
    "error": null,
    "note": null
   },
@@ -1318,9 +1327,9 @@
     "LW-067"
    ],
    "status": "pass",
-   "ms": 171929,
+   "ms": 166782,
    "error": null,
-   "note": "Ysur slept in the bed on command, then chose \"gatherFood\" on release"
+   "note": "Mode slept in the bed on command, then chose \"gatherFood\" on release"
   },
   {
    "suite": "browser",
@@ -1333,7 +1342,7 @@
     "LW-092"
    ],
    "status": "pass",
-   "ms": 7159,
+   "ms": 6898,
    "error": null,
    "note": "river.dried <- terrain.edited"
   },
@@ -1347,9 +1356,9 @@
     "LW-150"
    ],
    "status": "pass",
-   "ms": 71227,
+   "ms": 71191,
    "error": null,
-   "note": "5 carve ops opened 24 surface columns"
+   "note": "5 carve ops opened 25 surface columns"
   },
   {
    "suite": "browser",
@@ -1365,9 +1374,9 @@
     "LW-133"
    ],
    "status": "pass",
-   "ms": 42793,
+   "ms": 31627,
    "error": null,
-   "note": "hash 5f264163c862a902 identical after reload (Restored 1 edits made after the last snapshot.)"
+   "note": "hash b5d0c158d8f78f25 identical after reload (undefined)"
   },
   {
    "suite": "browser",
@@ -1379,9 +1388,9 @@
     "LW-152"
    ],
    "status": "pass",
-   "ms": 16414,
+   "ms": 15480,
    "error": null,
-   "note": "archive 106 KB round-tripped; hash 91d5006b2becab44"
+   "note": "archive 106 KB round-tripped; hash 62548adb7cdc5743"
   },
   {
    "suite": "browser",
@@ -1392,7 +1401,7 @@
     "LW-143"
    ],
    "status": "pass",
-   "ms": 3737,
+   "ms": 3649,
    "error": null,
    "note": null
   },
@@ -1406,9 +1415,9 @@
     "LW-142"
    ],
    "status": "pass",
-   "ms": 82718,
+   "ms": 73634,
    "error": null,
-   "note": "orbit: 99 ms median, 27950 tris, 80 draws, 15 chunks | region: 277 ms median, 118190 tris, 174 draws, 109 chunks | settlement: 564 ms median, 373406 tris, 724 draws, 144 chunks | home: 764 ms median, 525303 tris, 773 draws, 170 chunks | heap 18 MB | save 127 KB"
+   "note": "orbit: 112 ms median, 37094 tris, 99 draws, 21 chunks | region: 270 ms median, 123494 tris, 189 draws, 111 chunks | settlement: 472 ms median, 357315 tris, 715 draws, 132 chunks | home: 671 ms median, 473546 tris, 763 draws, 167 chunks | heap 20 MB | save 122 KB"
   },
   {
    "suite": "browser",
@@ -1420,9 +1429,29 @@
     "LW-089"
    ],
    "status": "pass",
-   "ms": 15770,
+   "ms": 15889,
    "error": null,
    "note": null
+  },
+  {
+   "suite": "browser",
+   "id": "B15",
+   "name": "LAN in the game: two browsers join one hosted world; edits are shared; roles and the one-controller rule hold",
+   "reqs": [
+    "LW-021",
+    "LW-053",
+    "LW-054",
+    "LW-055",
+    "LW-116",
+    "LW-120",
+    "LW-121",
+    "LW-141",
+    "LW-153"
+   ],
+   "status": "pass",
+   "ms": 33284,
+   "error": null,
+   "note": "three browsers (owner, editor, visitor) on one host; host revision 5"
   }
  ]
 }

@@ -97,7 +97,7 @@ If the game is slow on your device, choose Low: it turns shadows off and lowers 
 - Character speech is scripted from their real state and labelled as such. No language model is
   included; free-text conversation is disabled.
 - One planet, spherical only. No vehicles are drawn; era affects travel speed and building colours.
-- LAN play: a host program exists and is tested, but the game has no screen to join one yet.
+- LAN play re-sends the whole world to each player after every edit, so it suits small worlds on a good network.
 - No APK. `android/` is unbuilt wrapper source.
 
 ## Build and test from source
@@ -120,9 +120,12 @@ needs no compiler or bundler and works offline; see DEVELOPMENT_STATUS.md.
 
     node src/lan/host.cjs --world MyWorld.lwworld --port 8787
 
-It prints an owner token, issues single-use invitations, orders and validates every command, enforces
-one controller per character and lets only the owner run the clock. Traffic is unencrypted HTTP. See
-`tests/lan.cjs` for the API. The single-player game never contacts it.
+It prints an owner token and serves the game itself. On each device on the same network, open
+`http://<host-computer-address>:8787/` in a browser: the title screen then shows **Shared world on this
+network**. The owner joins with the owner token and creates single-use invitations from **Menu → Shared
+LAN world**; others join with an invitation as editor or visitor. The host orders and validates every
+change, allows one controller per character, and only the owner runs the clock. Traffic is unencrypted
+HTTP: use it only on a network you trust. The game opened as a file never contacts anything.
 
 ## Privacy
 

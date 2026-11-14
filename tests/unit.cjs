@@ -403,9 +403,12 @@ test('U31','kernel purity: no wall clock, unseeded randomness, network, eval or 
     for(const bad of ['Math.random','Date.now','new Date','fetch(','XMLHttpRequest','WebSocket','eval(','new Function','document.','window.','setTimeout','importScripts','localStorage'])assert(s.indexOf(bad)<0,f+' contains '+bad);}
   const html=fs.readFileSync(path.join(__dirname,'..','Living_World.html'),'utf8');
   assert(!/https?:\/\//.test(html),'no remote URLs in the shipped file');
-  for(const bad of ['fetch(','XMLHttpRequest','WebSocket(','sendBeacon','EventSource','importScripts','<link','eval(','new Function'])assert(html.indexOf(bad)<0,'shipped file contains '+bad);
+  for(const bad of ['XMLHttpRequest','WebSocket(','sendBeacon','EventSource','importScripts','<link','eval(','new Function'])assert(html.indexOf(bad)<0,'shipped file contains '+bad);
+  // the only network call in the whole game is the optional LAN client's same-origin fetch, which is inert unless the page is served by a LAN host
+  const ui=path.join(__dirname,'..','src','ui');for(const f of fs.readdirSync(ui))if(f!=='65-lan.js')assert(fs.readFileSync(path.join(ui,f),'utf8').indexOf('fetch(')<0,f+' must not make requests');
+  assert.strictEqual(html.split('fetch(').length-1,1,'exactly one fetch call site');assert(/const http=\/\^https\?:\$\/\.test\(location\.protocol\)/.test(html),'LAN client is gated on being served over http');
   assert(!/<(script|img|iframe|audio|video|source)[^>]*\ssrc=/i.test(html),'no external resource tags');
-  assert(html.indexOf("connect-src 'none'")>0,'CSP forbids all network connections');
+  assert(html.indexOf("connect-src 'self'")>0&&html.indexOf('default-src \'none\'')>0,'CSP forbids every connection except back to the page\'s own origin (nothing, when opened as a file)');
   return n+' kernel modules, shipped file '+(html.length/1024).toFixed(0)+' KB';
 });
 test('U32','build is reproducible: rebuilding yields a byte-identical Living_World.html',['LW-123','LW-143'],()=>{

@@ -16,7 +16,7 @@
     "LW-073"
    ],
    "status": "pass",
-   "ms": 5,
+   "ms": 4,
    "error": null,
    "note": null
   },
@@ -29,7 +29,7 @@
     "LW-015"
    ],
    "status": "pass",
-   "ms": 165,
+   "ms": 134,
    "error": null,
    "note": null
   },
@@ -56,7 +56,7 @@
     "LW-014"
    ],
    "status": "pass",
-   "ms": 1,
+   "ms": 2,
    "error": null,
    "note": null
   },
@@ -70,7 +70,7 @@
     "LW-076"
    ],
    "status": "pass",
-   "ms": 2,
+   "ms": 1,
    "error": null,
    "note": null
   },
@@ -83,7 +83,7 @@
     "LW-146"
    ],
    "status": "pass",
-   "ms": 127,
+   "ms": 154,
    "error": null,
    "note": null
   },
@@ -96,7 +96,7 @@
     "LW-121"
    ],
    "status": "pass",
-   "ms": 7,
+   "ms": 9,
    "error": null,
    "note": null
   },
@@ -108,7 +108,7 @@
     "LW-121"
    ],
    "status": "pass",
-   "ms": 18,
+   "ms": 24,
    "error": null,
    "note": null
   },
@@ -122,7 +122,7 @@
     "LW-009"
    ],
    "status": "pass",
-   "ms": 214,
+   "ms": 254,
    "error": null,
    "note": null
   },
@@ -136,7 +136,7 @@
     "LW-080"
    ],
    "status": "pass",
-   "ms": 123,
+   "ms": 134,
    "error": null,
    "note": null
   },
@@ -152,7 +152,7 @@
     "LW-149"
    ],
    "status": "pass",
-   "ms": 152,
+   "ms": 138,
    "error": null,
    "note": null
   },
@@ -169,7 +169,7 @@
     "LW-137"
    ],
    "status": "pass",
-   "ms": 156,
+   "ms": 127,
    "error": null,
    "note": null
   },
@@ -186,7 +186,7 @@
     "LW-099"
    ],
    "status": "pass",
-   "ms": 131,
+   "ms": 127,
    "error": null,
    "note": "chain: person.failed <- river.dried <- terrain.edited"
   },
@@ -202,7 +202,7 @@
     "LW-100"
    ],
    "status": "pass",
-   "ms": 111,
+   "ms": 120,
    "error": null,
    "note": null
   },
@@ -216,7 +216,7 @@
     "LW-037"
    ],
    "status": "pass",
-   "ms": 352,
+   "ms": 324,
    "error": null,
    "note": null
   },
@@ -232,7 +232,7 @@
     "LW-139"
    ],
    "status": "pass",
-   "ms": 206,
+   "ms": 208,
    "error": null,
    "note": null
   },
@@ -247,7 +247,7 @@
     "LW-152"
    ],
    "status": "pass",
-   "ms": 1101,
+   "ms": 1044,
    "error": null,
    "note": "archive 139 KB"
   },
@@ -259,7 +259,7 @@
     "LW-056"
    ],
    "status": "pass",
-   "ms": 40,
+   "ms": 31,
    "error": null,
    "note": null
   },
@@ -272,7 +272,7 @@
     "LW-129"
    ],
    "status": "pass",
-   "ms": 19,
+   "ms": 16,
    "error": null,
    "note": null
   },
@@ -285,7 +285,7 @@
     "LW-129"
    ],
    "status": "pass",
-   "ms": 370,
+   "ms": 285,
    "error": null,
    "note": "replayed 5 commands"
   },
@@ -298,7 +298,7 @@
     "LW-129"
    ],
    "status": "pass",
-   "ms": 28,
+   "ms": 22,
    "error": null,
    "note": null
   },
@@ -311,7 +311,7 @@
     "LW-033"
    ],
    "status": "pass",
-   "ms": 395,
+   "ms": 317,
    "error": null,
    "note": null
   },
@@ -328,7 +328,7 @@
     "LW-034"
    ],
    "status": "pass",
-   "ms": 822,
+   "ms": 661,
    "error": null,
    "note": "settlement after 0 days, building after 2 days, techs: fire,tools,farming"
   },
@@ -343,7 +343,7 @@
     "LW-022"
    ],
    "status": "pass",
-   "ms": 327,
+   "ms": 267,
    "error": null,
    "note": "animals alive 1, hunts 7"
   },
@@ -355,7 +355,7 @@
     "LW-051"
    ],
    "status": "pass",
-   "ms": 139,
+   "ms": 141,
    "error": null,
    "note": null
   },
@@ -371,7 +371,7 @@
     "LW-138"
    ],
    "status": "pass",
-   "ms": 135,
+   "ms": 155,
    "error": null,
    "note": "scripted: I am sure there is water at the place I call 6825 (I saw it myself)."
   },
@@ -385,7 +385,7 @@
     "LW-141"
    ],
    "status": "pass",
-   "ms": 139,
+   "ms": 112,
    "error": null,
    "note": null
   },
@@ -400,7 +400,7 @@
     "LW-147"
    ],
    "status": "pass",
-   "ms": 425,
+   "ms": 417,
    "error": null,
    "note": null
   },
@@ -413,7 +413,7 @@
     "LW-085"
    ],
    "status": "pass",
-   "ms": 262,
+   "ms": 269,
    "error": null,
    "note": null
   },
@@ -424,7 +424,7 @@
     "LW-104"
    ],
    "status": "pass",
-   "ms": 6,
+   "ms": 8,
    "error": null,
    "note": null
   },
@@ -440,9 +440,9 @@
     "LW-106"
    ],
    "status": "pass",
-   "ms": 4,
+   "ms": 7,
    "error": null,
-   "note": "11 kernel modules, shipped file 329 KB"
+   "note": "11 kernel modules, shipped file 337 KB"
   },
   {
    "id": "U32",
@@ -452,7 +452,7 @@
     "LW-143"
    ],
    "status": "pass",
-   "ms": 42,
+   "ms": 46,
    "error": null,
    "note": null
   },
@@ -465,7 +465,7 @@
     "LW-115"
    ],
    "status": "pass",
-   "ms": 144,
+   "ms": 148,
    "error": null,
    "note": null
   },
@@ -477,9 +477,9 @@
     "LW-117"
    ],
    "status": "pass",
-   "ms": 2301,
+   "ms": 2236,
    "error": null,
-   "note": "152 people, 140 animals: mean 1.007 ms/tick (desktop Node, not a phone)"
+   "note": "152 people, 140 animals: mean 0.924 ms/tick (desktop Node, not a phone)"
   },
   {
    "id": "U35",
@@ -490,7 +490,7 @@
     "LW-149"
    ],
    "status": "pass",
-   "ms": 125,
+   "ms": 117,
    "error": null,
    "note": "2 waypoints round the house; 7 round the lake"
   },
@@ -504,7 +504,7 @@
     "LW-152"
    ],
    "status": "pass",
-   "ms": 391,
+   "ms": 308,
    "error": null,
    "note": "soil range 58..255 after 12 days"
   },
@@ -515,7 +515,7 @@
     "LW-040"
    ],
    "status": "pass",
-   "ms": 145,
+   "ms": 111,
    "error": null,
    "note": "69% of the day spent on the scheduled activity"
   }

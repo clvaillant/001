@@ -105,7 +105,7 @@ so there is no polygon count to match, and none of its art was copied.
 | LW-110 Three.js candidate, choose after device benchmarks | Direct WebGL2 with no library, chosen without device benchmarks | Allowed by the directive ("native WebGL2 … if more reliable"); keeps the file at 290 KB with zero third-party code | Renderer is isolated in `src/ui/10–30`; it can be swapped without touching the kernel |
 | LW-106/123 Android installable package | Only unbuilt wrapper source | No Android SDK, Gradle or device here | `android/README.md` lists the exact commands |
 | LW-006/118/138 local-model dialogue | Adapter contract only; scripted fallback is labelled | No weights or on-device runtime available | `LW.localAI.register` in a native build |
-| LW-021/053–055/141 LAN play | Host only; the game has no join UI | Time | Add a join screen that mirrors host state through `/api/sync` and sends commands to `/api/command` |
+| Offline CSP | `connect-src` is now `'self'` instead of `'none'` | The LAN client must reach the host that served the page | Opened as a file there is no origin to connect to; test U31 checks the single gated `fetch` call site and B01 that no request is made |
 | LW-041 vehicles, LW-075 multiple bodies, LW-074 other shapes | Not implemented | Scope | `body.shape`, a body record and era transport names are the extension points |
 | LW-062 physics-based motion | Kinematic gait cycles | Scope | `G.creature` takes the species body plan; a physics rig can replace it per plan |
 | LW-155 reference phone | Not measured | No device | Run `tests/browser.cjs` B13 logic on the phone via Chrome remote debugging |
@@ -115,8 +115,9 @@ so there is no polygon count to match, and none of its art was copied.
 ## Roadmap countdown (resumed after the graphics passes)
 
 Done: **10** pathfinding round buildings and water · **9** weather with consequences (soil moisture,
-droughts, storms; schema 1.1 with a migration from 1.0) · **8** schedule editor.
-Remaining: **7** LAN join screen · **6** rivers that carve channels · **5** roads and era vehicles ·
+droughts, storms; schema 1.1 with a migration from 1.0) · **8** schedule editor · **7** LAN play from
+inside the game (join screen, invitations, shared clock; tested with three browsers).
+Remaining: **6** rivers that carve channels · **5** roads and era vehicles ·
 **4** ownership, personal trade, institutions · **3** larger caves with tunnel navigation ·
 **2** more celestial bodies · **1** Android build, real-phone measurement and a local language model
 (blocked in this environment).
