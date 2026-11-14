@@ -4,7 +4,10 @@
 const LW=globalThis.LW;
 const SV=LW.save={};
 SV.MAX_BYTES=96*1024*1024;
-SV.MIGRATIONS={};       // {'1.0':world=>world} keyed by source "major.minor"; none needed yet for schema 1.0
+// keyed by source "major.minor"; each returns the world upgraded one step
+SV.MIGRATIONS={
+  '1.0':w=>{if(w.env&&Array.isArray(w.env.veg)&&!Array.isArray(w.env.soil))w.env.soil=new Array(w.env.veg.length).fill(128);w.schema={major:1,minor:1};return w;}   // 1.1 adds soil moisture
+};
 
 SV.pack=function(world){
   const body=LW.canonical(world);
@@ -37,7 +40,7 @@ SV.validate=function(w){
   for(const k of ['seed','landFraction','relief','roughness','continentScale','ridges','terrace','moisture','minerals'])need(fin(b.gen[k]),'bad gen.'+k);
   need(Number.isInteger(b.envN)&&b.envN>=8&&b.envN<=96,'bad envN');
   const C=6*b.envN*b.envN,en=w.env;
-  need(isObj(en)&&en.N===b.envN&&Array.isArray(en.veg)&&en.veg.length===C&&Array.isArray(en.vsp)&&en.vsp.length===C&&Array.isArray(en.plants),'bad environment grid');
+  need(isObj(en)&&en.N===b.envN&&Array.isArray(en.veg)&&en.veg.length===C&&Array.isArray(en.vsp)&&en.vsp.length===C&&Array.isArray(en.soil)&&en.soil.length===C&&Array.isArray(en.plants),'bad environment grid');
   need(en.river===null||(Array.isArray(en.river)&&en.river.length===C),'bad water grid');
   need(isObj(en.dirty)&&Array.isArray(en.dirty.causes)&&isObj(en.chg)&&isObj(en.mined),'bad environment state');
   need(Array.isArray(w.protectedGens)&&w.protectedGens.length===w.genEpoch,'bad regeneration history');

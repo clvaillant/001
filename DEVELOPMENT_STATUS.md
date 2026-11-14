@@ -84,8 +84,8 @@ so there is no polygon count to match, and none of its art was copied.
   back-face or occlusion culling; this is the first thing to measure and tune on a device.
 - LOD transitions pop; trees are regenerated per chunk and differ between levels.
 - Rivers are ribbons between ~600 m cells and can cut through small hills; they do not carve beds.
-  Edits much smaller than a cell do not change hydrology. Rain is visual/audio only.
-- Outdoor walking is straight-line; people can pass through other buildings' walls. No tunnel pathfinding.
+  Edits much smaller than a cell do not change hydrology.
+- Outdoor routes avoid buildings and water within about 900 m; longer detours fail as "no route". No tunnel pathfinding.
 - The start of a new world is local midnight at some longitudes, so first Play can be dark; use
   Menu → "Creator light".
 - The inspector is rebuilt every 2.5 s while open, which can interrupt scrolling in long lists.
@@ -111,6 +111,15 @@ so there is no polygon count to match, and none of its art was copied.
 | LW-155 reference phone | Not measured | No device | Run `tests/browser.cjs` B13 logic on the phone via Chrome remote debugging |
 | Acceptance cases | The 155 planned cases were not executed; 51 new tests map to requirement IDs instead | `ACCEPTANCE_CASES_v1.1.csv` and the C12 prototype were not attached | Map each planned case to these tests or add it |
 | Existing repo files | `package.json` (a Vite/Three.js stub named "rgemergence") was replaced | The project has no dependencies; the old file would have pointed at tools that are not used | Original is in git history (first commit) |
+
+## Roadmap countdown (resumed after the graphics passes)
+
+Done: **10** pathfinding round buildings and water · **9** weather with consequences (soil moisture,
+droughts, storms; schema 1.1 with a migration from 1.0) · **8** schedule editor.
+Remaining: **7** LAN join screen · **6** rivers that carve channels · **5** roads and era vehicles ·
+**4** ownership, personal trade, institutions · **3** larger caves with tunnel navigation ·
+**2** more celestial bodies · **1** Android build, real-phone measurement and a local language model
+(blocked in this environment).
 
 ## Next work, in order of impact
 

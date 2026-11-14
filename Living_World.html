@@ -78,14 +78,14 @@ progress{width:100%;height:14px}
 <div id="modal" hidden></div>
 <noscript><p style="padding:24px">Living World needs JavaScript (it runs entirely on this device; nothing is sent anywhere).</p></noscript>
 <script>
-globalThis.LW_BUILD="2e5a8312ec6c";
+globalThis.LW_BUILD="5bfd7f19cb6f";
 // ===== src/core/00-util.js =====
 // world-core / utilities: deterministic maths, hashing, seeded noise, canonical JSON.
 // No DOM, no wall-clock and no unseeded randomness in this file or anything under src/core.
 ;(function(){'use strict';
 const LW=globalThis.LW=globalThis.LW||{};
 LW.VERSION='0.1.0';
-LW.SCHEMA={major:1,minor:0};
+LW.SCHEMA={major:1,minor:1};
 LW.GENERATOR_VERSION=1;
 LW.TICK_SECONDS=15;            // one logical tick = 15 simulated seconds
 LW.TPH=240;                    // ticks per simulated hour
@@ -240,7 +240,7 @@ LW.createWorld=function(cfg){
 LW.newId=(world,prefix)=>prefix+'_'+(world.nextId++).toString(36);
 
 // ---- events ---------------------------------------------------------------
-const KEY_EVENTS={'person.born':1,'person.died':1,'settlement.founded':1,'building.completed':1,'tech.discovered':1,
+const KEY_EVENTS={'drought':1,'storm':1,'person.born':1,'person.died':1,'settlement.founded':1,'building.completed':1,'tech.discovered':1,
   'world.created':1,'world.play':1,'river.dried':1,'river.formed':1,'partnership':1,'world.regenerated':1};
 LW.emit=function(world,type,data,causes,refs){
   const e={id:'e'+(world.nextId++).toString(36),t:world.tick,type,d:data||{},c:(causes||[]).filter(Boolean),r:refs||{}};
@@ -724,7 +724,7 @@ E.classify=function(temp,moist,altRel){
 
 E.init=function(world){
   const N=world.body.envN,C=6*N*N;
-  world.env={N,veg:new Array(C).fill(0),vsp:new Array(C).fill(0),plants:[],river:null,chg:{},dirty:{pending:true,causes:[]},mined:{}};
+  world.env={N,veg:new Array(C).fill(0),vsp:new Array(C).fill(0),soil:new Array(C).fill(128),plants:[],river:null,chg:{},dirty:{pending:true,causes:[]},mined:{}};
 };
 E.cellOf=function(world,n){const N=world.env.N,q=LW.dirFace(n);
   return q[0]*N*N+Math.min(N-1,Math.floor((q[2]+1)*0.5*N))*N+Math.min(N-1,Math.floor((q[1]+1)*0.5*N));};
@@ -828,6 +828,7 @@ E.climate=function(world,n,h,cell){
   const d=E.d(world),c=cell===undefined?E.cellOf(world,n):cell,b=world.body;
   let temp=E.tempAt(world,n,h),moist=d.moist[c];
   const wk=E.waterKind(world,d,c);
+  moist=LW.clamp(moist+(world.env.soil[c]/255-0.5)*0.24,0,1);
   if(wk===1||wk===2)moist=Math.min(1,moist+0.25);
   const pb=LW.planet.paintedBiome(world,n);
   let biome;
@@ -869,15 +870,38 @@ E.rain=function(world,n,cell){
 E.fresh=function(world,c){if(!world.env.river)E.settle(world);const k=world.env.river[c];return k===1||k===2;};
 // 0..1 growing-water factor for crops/plants in a cell
 E.waterFactor=function(world,c){
-  const d=E.d(world);let f=d.moist[c]*0.7;
+  const d=E.d(world);let f=d.moist[c]*0.4+world.env.soil[c]/255*0.4;       // climate + recent rain actually held by the soil
   if(E.fresh(world,c))f+=0.5;else for(let k=0;k<4;k++)if(E.fresh(world,d.nb[c*4+k])){f+=0.25;break;}
   return LW.clamp(f,0,1);
 };
 
 LW.def('env.settle',{perm:'edit',validate:()=>null,apply(w){return {public:{changed:E.settle(w)}};}});
 
+// weather with consequences: the day's rain soaks the soil, dry spells drain it; settlements feel droughts and storms
+E.weather=function(world){
+  const d=E.d(world),en=world.env,C=d.C,t=world.tick,sea=world.body.seaLevel;
+  for(let c=0;c<C;c++){
+    if(d.h[c]<sea)continue;
+    const n=[d.dirs[c*3],d.dirs[c*3+1],d.dirs[c*3+2]];let r=0;
+    for(let k=0;k<4;k++)r+=LW.smooth(0.6,0.86,E.cloud(n,t-k*LW.TPD/4)+(d.moist[c]-0.5)*0.3);
+    r=r/4*Math.min(1.5,world.body.atmosphere.density);
+    en.soil[c]=Math.round(LW.clamp(en.soil[c]*0.9+r*90+3+(E.fresh(world,c)?5:0),0,255));
+  }
+  if(!world.rules.hazards)return;
+  for(const id in world.settlements){
+    const s=world.settlements[id];if(!s.members.length)continue;
+    const c=E.cellOf(world,s.n),rain=E.rain(world,s.n,c);
+    if(en.soil[c]<46&&!s.drought){s.drought=world.tick;s.droughtEv=LW.emit(world,'drought',{settlement:s.id,name:s.name,soil:en.soil[c]},[],{n:s.n,cell:c});}
+    else if(en.soil[c]>90&&s.drought){s.drought=0;LW.emit(world,'drought.ended',{settlement:s.id,name:s.name},[s.droughtEv],{n:s.n});}
+    if(rain>0.92*world.rules.hazards&&LW.rand(world)<0.5){
+      const ev=LW.emit(world,'storm',{settlement:s.id,name:s.name},[],{n:s.n,cell:c});let hit=0;
+      for(const b of s.buildings){const f=world.buildings[b];if(f&&f.kind==='field'&&f.growth>0.1){f.growth=Math.max(0,f.growth-0.2);hit++;}}
+      for(const m of s.members){const q=world.persons[m];if(q&&q.lod==='active')LW.mind.remember(world,q,'storm','A storm tore through '+s.name+(hit?' and flattened the crops':''),0.7,ev);}
+    }
+  }
+};
 E.daily=function(world){
-  E.settle(world);
+  E.settle(world);E.weather(world);
   const d=E.d(world),en=world.env,C=d.C;let touched=0;
   for(let c=0;c<C;c++){
     let v=en.veg[c];if(!v)continue;
@@ -998,14 +1022,75 @@ function roomPath(world,b,from,to){     // BFS over the room graph; -1 = outdoor
 }
 LW.nav={};
 // waypoints (canonical directions) from a to b through real doors; null if no route
-LW.nav.path=function(world,from,to){
+const obstacle=o=>o.kind!=='field'&&(o.rooms.length||o.rad);
+const passable=(world,n,sp)=>!sp||LW.life.canEnter(world,n,sp);
+// is the straight walk a->b free of water (for this species)?
+function clearOfWater(world,a,b,sp){
+  if(!sp||sp.move.swim||sp.move.fly)return true;
+  const L=LW.arcDist(a,b,world.body.radius),n=Math.min(160,Math.ceil(L/4));
+  for(let k=1;k<n;k++)if(!LW.life.canEnter(world,V.norm(V.lerp(a,b,k/n)),sp))return false;
+  return true;
+}
+// steer round building footprints: detour to the nearer side of the first structure the segment would cross
+function around(world,a,b,depth){
+  const R=world.body.radius,f=LW.frame(a),to2=n=>[V.dot(V.sub(n,a),f.e)*R,V.dot(V.sub(n,a),f.t)*R],B2=to2(b),L=Math.hypot(B2[0],B2[1]);
+  if(L<1||depth>7)return [b];
+  let hit=null;
+  for(const id in world.buildings){const o=world.buildings[id];if(!obstacle(o))continue;
+    const r=B.radius(o)+0.9,c=to2(o.n);if(Math.hypot(c[0],c[1])<r||Math.hypot(c[0]-B2[0],c[1]-B2[1])<r)continue;     // an endpoint at its door: not an obstacle for this leg
+    const t=(c[0]*B2[0]+c[1]*B2[1])/(L*L);if(t<=0||t>=1)continue;
+    const dx=c[0]-B2[0]*t,dz=c[1]-B2[1]*t;if(Math.hypot(dx,dz)<r&&(!hit||t<hit.t))hit={c,r,t,dx,dz};}
+  if(!hit)return [b];
+  const px=-B2[1]/L,pz=B2[0]/L,side=(hit.dx*px+hit.dz*pz)>0?-1:1,wp=LW.offsetDir(a,hit.c[0]+px*side*(hit.r+1.1),hit.c[1]+pz*side*(hit.r+1.1),R);
+  return around(world,a,wp,depth+1).concat(around(world,wp,b,depth+1));
+}
+// A* over a local grid when water (or anything impassable) lies on the straight line
+function gridPath(world,a,b,sp){
+  const R=world.body.radius,L=LW.arcDist(a,b,R);if(L>900)return null;
+  const N=48,cell=LW.clamp(L/22,3,20),mid=V.norm(V.lerp(a,b,0.5)),f=LW.frame(mid),half=N/2;
+  const to2=n=>[V.dot(V.sub(n,mid),f.e)*R,V.dot(V.sub(n,mid),f.t)*R],dirOf=(i,k)=>LW.offsetDir(mid,(i-half+0.5)*cell,(k-half+0.5)*cell,R);
+  const ix=p=>[LW.clamp(Math.floor(p[0]/cell+half),0,N-1),LW.clamp(Math.floor(p[1]/cell+half),0,N-1)],s=ix(to2(a)),g=ix(to2(b));
+  const obs=[];for(const id in world.buildings){const o=world.buildings[id];if(obstacle(o))obs.push([to2(o.n),B.radius(o)+0.6]);}
+  const pass=new Int8Array(N*N),ok=(i,k)=>{const q=k*N+i;if(pass[q])return pass[q]>0;
+    if((i===s[0]&&k===s[1])||(i===g[0]&&k===g[1])){pass[q]=1;return true;}
+    const x=(i-half+0.5)*cell,z=(k-half+0.5)*cell;let fine=passable(world,dirOf(i,k),sp);
+    if(fine)for(const o of obs)if(Math.hypot(x-o[0][0],z-o[0][1])<o[1]){fine=false;break;}
+    pass[q]=fine?1:-1;return fine;};
+  const gs=new Float32Array(N*N).fill(1e9),from=new Int32Array(N*N).fill(-1),open=[s[1]*N+s[0]],closed=new Uint8Array(N*N);gs[open[0]]=0;
+  const hfn=q=>Math.hypot(q%N-g[0],Math.floor(q/N)-g[1]);
+  while(open.length){
+    let bi=0;for(let k=1;k<open.length;k++)if(gs[open[k]]+hfn(open[k])<gs[open[bi]]+hfn(open[bi]))bi=k;
+    const q=open.splice(bi,1)[0];if(closed[q])continue;closed[q]=1;
+    const i=q%N,k=Math.floor(q/N);
+    if(i===g[0]&&k===g[1]){const cells=[];for(let c=q;c>=0;c=from[c])cells.unshift(c);
+      const out=[];for(let m=1;m<cells.length-1;m++){const p0=cells[m-1],p1=cells[m],p2=cells[m+1];if((p1-p0)!==(p2-p1))out.push(dirOf(p1%N,Math.floor(p1/N)));}   // keep only the turns
+      out.push(b);return out;}
+    for(let dk=-1;dk<=1;dk++)for(let di=-1;di<=1;di++){if(!di&&!dk)continue;const ni=i+di,nk=k+dk;if(ni<0||nk<0||ni>=N||nk>=N)continue;
+      if(!ok(ni,nk)||(di&&dk&&(!ok(ni,k)||!ok(i,nk))))continue;const nq=nk*N+ni,c=gs[q]+(di&&dk?1.414:1);if(c<gs[nq]){gs[nq]=c;from[nq]=q;open.push(nq);}}
+  }
+  return null;
+}
+// outdoor leg a->b: straight when clear, round buildings, or routed across a local grid past water
+LW.nav.outdoor=function(world,a,b,sp){
+  if(!passable(world,b,sp))return null;
+  if(clearOfWater(world,a,b,sp)){const p=around(world,a,b,0);let prev=a,fine=true;for(const q of p){if(!clearOfWater(world,prev,q,sp)){fine=false;break;}prev=q;}if(fine)return p;}
+  return gridPath(world,a,b,sp);
+};
+// waypoints (canonical directions) from a to b: through real doors indoors, round obstacles outdoors; null if no route
+LW.nav.path=function(world,from,to,sp){
   const A=B.locate(world,from),Z=B.locate(world,to);
-  if(!A&&!Z)return [to];
   if(A&&Z&&A.b===Z.b){if(A.room===Z.room)return [to];const p=roomPath(world,A.b,A.room,Z.room);return p?p.concat([to]):null;}
   let pts=[];
   if(A){const p=roomPath(world,A.b,A.room,-1);if(!p)return null;pts=p;}
   if(Z){const p=roomPath(world,Z.b,-1,Z.room);if(!p)return null;pts=pts.concat(p);}
-  pts.push(to);return pts;
+  pts.push(to);
+  const out=[];let prev=from;
+  for(const q of pts){
+    if(!B.locate(world,prev)&&!B.locate(world,q)){const leg=LW.nav.outdoor(world,prev,q,sp);if(!leg)return null;for(const x of leg)out.push(x);}
+    else out.push(q);
+    prev=q;
+  }
+  return out;
 };
 
 B.create=function(world,tpl,n,yaw,opts){
@@ -1399,7 +1484,7 @@ M.perceive=function(w,p,sp){
 // ---- actions ---------------------------------------------------------------------
 function speed(w,p,sp){let s=sp.move.speed;const st=w.settlements[p.settlement];if(st&&st.techs.indexOf('wheel')>=0)s*=1.25;if(p.needs.energy<8)s*=0.6;return s;}
 function go(w,p,a,sp){
-  if(!a.path){a.path=LW.nav.path(w,p.n,a.to);a.i=0;if(!a.path)return 'no route';p.posture='stand';}
+  if(!a.path){a.path=LW.nav.path(w,p.n,a.to,sp);a.i=0;if(!a.path)return 'no route';p.posture='stand';}
   let budget=speed(w,p,sp);
   while(a.i<a.path.length){
     const d=LW.arcDist(p.n,a.path[a.i],w.body.radius);
@@ -1882,7 +1967,7 @@ S.assignHomes=function(w){
 S.harvest=function(w,b,p,wf){
   const s=w.settlements[b.settlement],tech=s&&s.techs.indexOf('farming')>=0?1.7:1,y=Math.round(10*(0.4+wf)*tech);
   b.growth=0;if(s)s.stock.food+=y;else if(p)p.inv.food+=y;
-  const ev=LW.emit(w,'harvest',{field:b.id,yield:y,water:+wf.toFixed(2)},wf<0.4?[w.env.chg[E.cellOf(w,b.n)]]:[],{n:b.n,e:[b.id]});
+  const ev=LW.emit(w,'harvest',{field:b.id,yield:y,water:+wf.toFixed(2)},wf<0.4?[w.env.chg[E.cellOf(w,b.n)],s&&s.drought?s.droughtEv:null]:[],{n:b.n,e:[b.id]});
   if(p)M.remember(w,p,'harvest',y<6?'The harvest was thin; the land is too dry':'We brought in a good harvest',0.5,ev);
 };
 S.maybePartner=function(w,a,b,r){
@@ -2052,7 +2137,10 @@ LW.census=function(w){
 const LW=globalThis.LW;
 const SV=LW.save={};
 SV.MAX_BYTES=96*1024*1024;
-SV.MIGRATIONS={};       // {'1.0':world=>world} keyed by source "major.minor"; none needed yet for schema 1.0
+// keyed by source "major.minor"; each returns the world upgraded one step
+SV.MIGRATIONS={
+  '1.0':w=>{if(w.env&&Array.isArray(w.env.veg)&&!Array.isArray(w.env.soil))w.env.soil=new Array(w.env.veg.length).fill(128);w.schema={major:1,minor:1};return w;}   // 1.1 adds soil moisture
+};
 
 SV.pack=function(world){
   const body=LW.canonical(world);
@@ -2085,7 +2173,7 @@ SV.validate=function(w){
   for(const k of ['seed','landFraction','relief','roughness','continentScale','ridges','terrace','moisture','minerals'])need(fin(b.gen[k]),'bad gen.'+k);
   need(Number.isInteger(b.envN)&&b.envN>=8&&b.envN<=96,'bad envN');
   const C=6*b.envN*b.envN,en=w.env;
-  need(isObj(en)&&en.N===b.envN&&Array.isArray(en.veg)&&en.veg.length===C&&Array.isArray(en.vsp)&&en.vsp.length===C&&Array.isArray(en.plants),'bad environment grid');
+  need(isObj(en)&&en.N===b.envN&&Array.isArray(en.veg)&&en.veg.length===C&&Array.isArray(en.vsp)&&en.vsp.length===C&&Array.isArray(en.soil)&&en.soil.length===C&&Array.isArray(en.plants),'bad environment grid');
   need(en.river===null||(Array.isArray(en.river)&&en.river.length===C),'bad water grid');
   need(isObj(en.dirty)&&Array.isArray(en.dirty.causes)&&isObj(en.chg)&&isObj(en.mined),'bad environment state');
   need(Array.isArray(w.protectedGens)&&w.protectedGens.length===w.genEpoch,'bad regeneration history');
@@ -3947,7 +4035,7 @@ function evText(w,e){
     case 'settlement.founded':return d.name+' was founded by '+nm(d.by);case 'settlement.joined':return nm(d.id)+' joined a settlement';
     case 'building.completed':return 'A '+d.kind+' was completed'+(d.by&&d.by!=='player'?' by '+nm(d.by):d.by==='player'?' (placed by the creator)':'');
     case 'building.planned':return 'A '+d.kind+' was planned'+(d.why?': '+d.why:'');case 'building.flooded':return 'A building was flooded';
-    case 'harvest':return 'Harvest of '+d.yield+' food (water '+d.water+')';case 'tech.discovered':return d.name+' discovered — '+d.era;
+    case 'harvest':return 'Harvest of '+d.yield+' food (water '+d.water+')';case 'drought':return 'Drought struck '+d.name;case 'drought.ended':return 'The drought at '+d.name+' broke';case 'storm':return 'A storm hit '+d.name;case 'tech.discovered':return d.name+' discovered — '+d.era;
     case 'partnership':return nm(d.a)+' and '+nm(d.b)+' became partners';case 'talk':return nm(d.a)+' talked with '+nm(d.b);
     case 'life.introduced':return 'Life introduced: '+d.count+' × '+((w.species[d.species]||{}).name||d.species);
     case 'plants.seeded':return 'Plants seeded: '+((w.species[d.species]||{}).name||d.species);case 'plants.diedOut':return 'Plants died out here';
@@ -3999,6 +4087,14 @@ UI.renderInspector=function(){
       h('h4',{text:'Goals'}),p.goals.length?p.goals.map(g=>h('div',{class:'row'},h('span',{text:(g.src==='player'?'★ ':'')+M.goalText(g)+(g.src==='self'?' (their own)':' (set by you)')}),btn('✕',()=>{App.do('person.setGoal',{id:p.id,remove:g.id});UI.renderInspector();},'ghost icon'))):h('p',{class:'note',text:'No long-term goals yet; they form their own over time.'}),
       select('Give a goal',[['','choose…'],['explore','Explore the world'],['invent','Seek understanding'],['partner','Find a partner'],['socialize','Be among others'],['master:farming','Master farming'],['master:building','Master building']].concat(Object.values(w.activities).map(a=>['activity:'+a.id,'Activity: '+a.name])),'',v=>{if(!v)return;const q=v.split(':');
         App.do('person.setGoal',{id:p.id,goal:q[0]==='master'?{type:'master',skill:q[1]}:q[0]==='activity'?{type:'activity',activity:q[1]}:{type:q[0]}});UI.renderInspector();}),
+      h('h4',{text:'Daily schedule'}),
+      p.schedule.length?p.schedule.map((sc,i)=>h('div',{class:'row'},h('span',{class:'grow',text:String(sc.h0).padStart(2,'0')+':00 – '+String(sc.h1).padStart(2,'0')+':00 · '+(sc.what==='activity'?'activity: '+((w.activities[sc.data]||{}).name||'?'):sc.what)}),
+        btn('✕',()=>{App.do('person.setSchedule',{id:p.id,schedule:p.schedule.filter((x,k)=>k!==i)});UI.renderInspector();},'ghost icon','Remove schedule entry'))):h('p',{class:'note',text:'No fixed hours: they decide for themselves all day.'}),
+      (()=>{const d=UI.schedDraft||(UI.schedDraft={h0:8,h1:12,what:'work'}),hrs=[...Array(25).keys()].map(x=>[x,String(x).padStart(2,'0')+':00']);
+        return h('div',{class:'node'},select('From',hrs.slice(0,24),d.h0,v=>{d.h0=+v;}),select('To',hrs.slice(1),d.h1,v=>{d.h1=+v;}),
+          select('Do',[['work','Work'],['sleep','Sleep'],['socialize','Socialise'],['study','Study'],['explore','Explore']].concat(Object.values(w.activities).map(a=>['activity:'+a.id,'Activity: '+a.name])),d.what,v=>{d.what=v;}),
+          btn('Add',()=>{const q=String(d.what).split(':'),e=q[0]==='activity'?{h0:d.h0,h1:d.h1,what:'activity',data:q[1]}:{h0:d.h0,h1:d.h1,what:d.what};
+            if(App.do('person.setSchedule',{id:p.id,schedule:p.schedule.concat([e])}).ok)UI.renderInspector();},'primary'));})(),
       btn('Activity editor…',()=>UI.activityEditor(),'ghost'),
       p.hypo>0.05?h('p',{class:'note',text:'Unexplained events witnessed: '+Math.round(p.anomalies)+' · suspicion that the world is shaped by an unseen will: '+Math.round(p.hypo*100)+'%'}):null];
     else if(UI.tab==='memory')tab=[p.origin&&p.origin.unknownPast?h('p',{class:'note',text:'Emerged from an anonymous population: their earlier life was not simulated in detail and is recorded as unknown.'}):null,
@@ -4063,7 +4159,7 @@ UI.renderInspector=function(){
     const c=E.info(w,s.cell),h0=P.height(w,s.n),cl=E.climate(w,s.n,h0),B0=LW.BIOMES[cl.biome],wk=['none','river','lake','sea'][(w.env.river||[])[s.cell]||0];
     title=B0.name+(cl.painted?' (painted)':'');sub='elevation '+fmtM(h0-w.body.seaLevel)+' · '+cl.temp.toFixed(0)+' °C · moisture '+Math.round(cl.moist*100)+'%';
     const plants=Object.values(w.species).filter(x=>x.kind==='plant').map(x=>[x.name,E.suit(x,cl)]).sort((a,b)=>b[1]-a[1]).slice(0,4);
-    body=[h('p',{text:'Water: '+wk+(wk==='river'?' (flow '+c.flux.toFixed(0)+')':'')+' · rain now: '+Math.round(E.rain(w,s.n,s.cell)*100)+'%'}),
+    body=[h('p',{text:'Water: '+wk+(wk==='river'?' (flow '+c.flux.toFixed(0)+')':'')+' · rain now: '+Math.round(E.rain(w,s.n,s.cell)*100)+'% · soil moisture: '+Math.round(w.env.soil[s.cell]/2.55)+'%'}),
       h('p',{text:c.plant?'Living here: '+c.plant.name+' (cover '+Math.round(c.veg/2.55)+'%)':'No plants live here'+(cl.biome?' — the climate could support life, but none has been introduced.':'.')}),
       h('p',{text:'Suitability: '+plants.map(x=>x[0]+' '+Math.round(x[1]*100)+'%').join(' · ')}),
       h('p',{text:'Minerals: stone '+c.minerals.stone+', ore '+c.minerals.ore+', clay '+c.minerals.clay+' · subsurface: '+['soil','clay','rock'].join(' / ')}),

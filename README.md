@@ -89,10 +89,11 @@ If the game is slow on your device, choose Low: it turns shadows off and lowers 
   not carve their own beds, and a small dam does not stop them. Hydrology reacts to edits roughly the
   size of a cell or larger.
 - Level-of-detail changes pop rather than morph, and trees differ between detail levels.
+- Rain soaks the soil and dry spells cause droughts, but there is no erosion or long-term climate drift.
 - Caves exist only inside 48 × 48 × 33 m dig sites you create (24 per world). Characters walk on cave
   floors and are blocked by rock, but do not plan routes through tunnels.
-- People walk straight lines outdoors (through other buildings' walls if those are in the way) and
-  through doors indoors.
+- People route round buildings and water outdoors and through doors indoors. Very long detours
+  (over about 900 m round a sea or lake) are reported as "no route".
 - Character speech is scripted from their real state and labelled as such. No language model is
   included; free-text conversation is disabled.
 - One planet, spherical only. No vehicles are drawn; era affects travel speed and building colours.

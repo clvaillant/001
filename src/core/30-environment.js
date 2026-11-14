@@ -27,7 +27,7 @@ E.classify=function(temp,moist,altRel){
 
 E.init=function(world){
   const N=world.body.envN,C=6*N*N;
-  world.env={N,veg:new Array(C).fill(0),vsp:new Array(C).fill(0),plants:[],river:null,chg:{},dirty:{pending:true,causes:[]},mined:{}};
+  world.env={N,veg:new Array(C).fill(0),vsp:new Array(C).fill(0),soil:new Array(C).fill(128),plants:[],river:null,chg:{},dirty:{pending:true,causes:[]},mined:{}};
 };
 E.cellOf=function(world,n){const N=world.env.N,q=LW.dirFace(n);
   return q[0]*N*N+Math.min(N-1,Math.floor((q[2]+1)*0.5*N))*N+Math.min(N-1,Math.floor((q[1]+1)*0.5*N));};
@@ -131,6 +131,7 @@ E.climate=function(world,n,h,cell){
   const d=E.d(world),c=cell===undefined?E.cellOf(world,n):cell,b=world.body;
   let temp=E.tempAt(world,n,h),moist=d.moist[c];
   const wk=E.waterKind(world,d,c);
+  moist=LW.clamp(moist+(world.env.soil[c]/255-0.5)*0.24,0,1);
   if(wk===1||wk===2)moist=Math.min(1,moist+0.25);
   const pb=LW.planet.paintedBiome(world,n);
   let biome;
@@ -172,15 +173,38 @@ E.rain=function(world,n,cell){
 E.fresh=function(world,c){if(!world.env.river)E.settle(world);const k=world.env.river[c];return k===1||k===2;};
 // 0..1 growing-water factor for crops/plants in a cell
 E.waterFactor=function(world,c){
-  const d=E.d(world);let f=d.moist[c]*0.7;
+  const d=E.d(world);let f=d.moist[c]*0.4+world.env.soil[c]/255*0.4;       // climate + recent rain actually held by the soil
   if(E.fresh(world,c))f+=0.5;else for(let k=0;k<4;k++)if(E.fresh(world,d.nb[c*4+k])){f+=0.25;break;}
   return LW.clamp(f,0,1);
 };
 
 LW.def('env.settle',{perm:'edit',validate:()=>null,apply(w){return {public:{changed:E.settle(w)}};}});
 
+// weather with consequences: the day's rain soaks the soil, dry spells drain it; settlements feel droughts and storms
+E.weather=function(world){
+  const d=E.d(world),en=world.env,C=d.C,t=world.tick,sea=world.body.seaLevel;
+  for(let c=0;c<C;c++){
+    if(d.h[c]<sea)continue;
+    const n=[d.dirs[c*3],d.dirs[c*3+1],d.dirs[c*3+2]];let r=0;
+    for(let k=0;k<4;k++)r+=LW.smooth(0.6,0.86,E.cloud(n,t-k*LW.TPD/4)+(d.moist[c]-0.5)*0.3);
+    r=r/4*Math.min(1.5,world.body.atmosphere.density);
+    en.soil[c]=Math.round(LW.clamp(en.soil[c]*0.9+r*90+3+(E.fresh(world,c)?5:0),0,255));
+  }
+  if(!world.rules.hazards)return;
+  for(const id in world.settlements){
+    const s=world.settlements[id];if(!s.members.length)continue;
+    const c=E.cellOf(world,s.n),rain=E.rain(world,s.n,c);
+    if(en.soil[c]<46&&!s.drought){s.drought=world.tick;s.droughtEv=LW.emit(world,'drought',{settlement:s.id,name:s.name,soil:en.soil[c]},[],{n:s.n,cell:c});}
+    else if(en.soil[c]>90&&s.drought){s.drought=0;LW.emit(world,'drought.ended',{settlement:s.id,name:s.name},[s.droughtEv],{n:s.n});}
+    if(rain>0.92*world.rules.hazards&&LW.rand(world)<0.5){
+      const ev=LW.emit(world,'storm',{settlement:s.id,name:s.name},[],{n:s.n,cell:c});let hit=0;
+      for(const b of s.buildings){const f=world.buildings[b];if(f&&f.kind==='field'&&f.growth>0.1){f.growth=Math.max(0,f.growth-0.2);hit++;}}
+      for(const m of s.members){const q=world.persons[m];if(q&&q.lod==='active')LW.mind.remember(world,q,'storm','A storm tore through '+s.name+(hit?' and flattened the crops':''),0.7,ev);}
+    }
+  }
+};
 E.daily=function(world){
-  E.settle(world);
+  E.settle(world);E.weather(world);
   const d=E.d(world),en=world.env,C=d.C;let touched=0;
   for(let c=0;c<C;c++){
     let v=en.veg[c];if(!v)continue;

@@ -83,7 +83,7 @@ S.assignHomes=function(w){
 S.harvest=function(w,b,p,wf){
   const s=w.settlements[b.settlement],tech=s&&s.techs.indexOf('farming')>=0?1.7:1,y=Math.round(10*(0.4+wf)*tech);
   b.growth=0;if(s)s.stock.food+=y;else if(p)p.inv.food+=y;
-  const ev=LW.emit(w,'harvest',{field:b.id,yield:y,water:+wf.toFixed(2)},wf<0.4?[w.env.chg[E.cellOf(w,b.n)]]:[],{n:b.n,e:[b.id]});
+  const ev=LW.emit(w,'harvest',{field:b.id,yield:y,water:+wf.toFixed(2)},wf<0.4?[w.env.chg[E.cellOf(w,b.n)],s&&s.drought?s.droughtEv:null]:[],{n:b.n,e:[b.id]});
   if(p)M.remember(w,p,'harvest',y<6?'The harvest was thin; the land is too dry':'We brought in a good harvest',0.5,ev);
 };
 S.maybePartner=function(w,a,b,r){

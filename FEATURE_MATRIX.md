@@ -13,14 +13,14 @@ A status describes this build, not the full design. `WORKING_TESTED` means the s
 | Canonical terrain + manual override layers | `WORKING_TESTED` | Height = seeded generator + ordered edit strokes in canonical directions; identical at every LOD; 9 tools incl. mountains, valley, coastline, lake, biome. | No erosion; no per-stroke editing after the fact; 20 000 stroke cap. |
 | Undo/redo, protected regeneration with preview | `WORKING_TESTED` | Stroke-level undo/redo as journaled commands; regeneration keeps hand-edited regions exactly; warning when consequences cannot be undone. | Undo stack capped at 80. |
 | Continuous orbit-to-ground camera, quadtree LOD, floating origin | `WORKING_NOT_DEVICE_VALIDATED` | One camera model and one scene from 6 radii out to 2.5 m; cube-sphere chunks down to <1 m quads; camera-relative rendering verified on a 6371 km planet. | LOD changes pop (no geomorphing); no predictive loading; flora differs between levels. |
-| Hydrology, climate, biomes, seasons | `PARTIAL` | Priority-flood drainage, flow accumulation, rivers/lakes/sea classes, sea-level and painted water, latitude/altitude/season temperature, 11 biomes, painted biome overrides climate. | Cell resolution (~600 m on the default planet); rivers are ribbons, do not carve beds; rain field does not yet feed soil moisture; no long-term climate drift, storms or erosion. |
+| Hydrology, climate, biomes, seasons | `PARTIAL` | Priority-flood drainage, flow accumulation, rivers/lakes/sea classes, sea-level and painted water, latitude/altitude/season temperature, 11 biomes, painted biome overrides climate; rain soaks soil, soil drives plant and crop growth, droughts and storms strike settlements. | Cell resolution (~600 m on the default planet); rivers are ribbons, do not carve beds; no long-term climate drift or erosion. |
 | Life is never spontaneous; plants, succession | `WORKING_TESTED` | Sterile start; ground colour = climate, green only where plants live; seeding, growth by suitability, spread, die-off, grazing consumption. | One dominant plant species per cell. |
 | Animals: needs, grazing, predation, reproduction, death | `PARTIAL` | Individuals with hunger/thirst/energy, water-seeking, herds, hunting, pregnancy/birth, old age; 5 default species + editor. | No migration planning, no learning; simple state machine. |
 | Species editor / anatomy | `PARTIAL` | Parametric body plans (biped, quadruped, hexapod, winged, serpent, amorphous), size, limbs, colours, diet, speed, senses, lifecycle, climate tolerance; artificial life preset. | No body sculpting, clothing or equipment. |
 | People: needs, perception, beliefs with source and confidence, memory | `WORKING_TESTED` | Beliefs come only from observation, being told, being taught or inference; hearsay discounted; episodic memory bounded and consolidated. | No language/culture model beyond settlement lore. |
-| Goals, plans, failure feedback, replanning | `PARTIAL` | Need-driven arbitration with personality weights, self-generated long-term goals, multi-step plans, urgent-need interruption, failures recorded with causes and revise beliefs. | Plans are short templates, not a general planner; schedules have no UI yet. |
+| Goals, plans, failure feedback, replanning | `PARTIAL` | Need-driven arbitration with personality weights, self-generated long-term goals, multi-step plans, urgent-need interruption, failures recorded with causes and revise beliefs. | Plans are short templates, not a general planner. Routes go round buildings and water (local grid search up to ~900 m). |
 | Direct control and release of the same individual | `WORKING_TESTED` | Take control, tap-to-walk, contextual object/person actions, action queue, release resumes suspended plan with memory and needs intact. | One controlled character at a time in the UI. |
-| Buildings, rooms, doors, furniture with capabilities | `WORKING_TESTED` | 6 templates, add rooms, place/move/rotate/delete furniture, door-graph navigation, occupancy, stores; structures follow sculpted terrain; flooding consequence. | Rectangular rooms only; no free-form walls, stairs or multi-storey; outdoor paths ignore other buildings. |
+| Buildings, rooms, doors, furniture with capabilities | `WORKING_TESTED` | 6 templates, add rooms, place/move/rotate/delete furniture, door-graph navigation, occupancy, stores; structures follow sculpted terrain; flooding consequence. | Rectangular rooms only; no free-form walls, stairs or multi-storey. |
 | Interior view | `PARTIAL` | Roof hidden and walls lowered near the camera focus; people visibly lie, sit, walk through doors. | Cutaway is distance-based, not per-wall; no first-person interior camera. |
 | Subsurface volumes (caves) | `PARTIAL` | Up to 24 dig sites of 48×48×33 m in planetary coordinates; carve/fill spheres; real openings to the surface; strata materials; collision; underground cutaway view. | Blocky voxel look; no path planning through tunnels; no mining economy; fixed site size. |
 | Settlements, households, construction, economy | `PARTIAL` | Autonomous founding near water, house/well/field/storehouse/workshop projects, material gathering, stock, harvests; player-built and autonomous buildings share rules. | Economy is a shared stockpile; no prices, ownership or trade routes beyond simple surplus swaps. |
@@ -46,7 +46,7 @@ A status describes this build, not the full design. `WORKING_TESTED` means the s
 
 ## All 155 requirements
 
-Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 79 · `WORKING_TESTED` 63 · `BLOCKED` 5 · `SPECIFIED_ONLY` 2.
+Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 77 · `WORKING_TESTED` 65 · `BLOCKED` 5 · `SPECIFIED_ONLY` 2.
 
 | Req | Status | Tests | Note |
 |---|---|---|---|
@@ -77,7 +77,7 @@ Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 79 · `WORKING_TESTED` 63 
 | LW-025 | `PARTIAL` | — | small drifts from experience |
 | LW-026 | `PARTIAL` | U14 | episodic/semantic/skills/social present, simple |
 | LW-027 | `WORKING_TESTED` | U14 |  |
-| LW-028 | `PARTIAL` | — |  |
+| LW-028 | `PARTIAL` | U35 | need/goal arbitration; routes round obstacles |
 | LW-029 | `WORKING_TESTED` | U12 B07 |  |
 | LW-030 | `WORKING_TESTED` | U26 | free text disabled without model |
 | LW-031 | `PARTIAL` | U23 | households, partners, kin; no institutions |
@@ -89,14 +89,14 @@ Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 79 · `WORKING_TESTED` 63 
 | LW-037 | `PARTIAL` | U15 U16 |  |
 | LW-038 | `WORKING_TESTED` | B05 B07 |  |
 | LW-039 | `PARTIAL` | U11 | authored capabilities; little general physics |
-| LW-040 | `PARTIAL` | U12 | queues and goals in UI; schedules command-only |
+| LW-040 | `WORKING_TESTED` | U12 U37 | queues, goals and a schedule editor |
 | LW-041 | `SPECIFIED_ONLY` | — | speed multiplier only |
 | LW-042 | `WORKING_TESTED` | U25 B14 |  |
 | LW-043 | `WORKING_TESTED` | U23 |  |
 | LW-044 | `PARTIAL` | U23 | stockpile economy |
 | LW-045 | `PARTIAL` | — | untested disputes/raids |
 | LW-046 | `PARTIAL` | U23 |  |
-| LW-047 | `PARTIAL` | U13 | flood/dry consequences; no storms |
+| LW-047 | `PARTIAL` | U13 U36 | floods, dried rivers, droughts and storms; no erosion |
 | LW-048 | `WORKING_TESTED` | U15 |  |
 | LW-049 | `PARTIAL` | B05 |  |
 | LW-050 | `PARTIAL` | U13 B07 B08 | needs, memory, beliefs, history, causes; few statistics |
@@ -133,7 +133,7 @@ Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 79 · `WORKING_TESTED` 63 
 | LW-081 | `PARTIAL` | U10 B09 | inside dig sites |
 | LW-082 | `PARTIAL` | B04 | mountain, valley, coast tools; rivers follow terrain only at cell scale |
 | LW-083 | `WORKING_TESTED` | B04 |  |
-| LW-084 | `PARTIAL` | U24 | seasons only |
+| LW-084 | `PARTIAL` | U24 U36 | seasons and soil moisture that follows the weather; no multi-year drift |
 | LW-085 | `WORKING_TESTED` | U11 U29 |  |
 | LW-086 | `WORKING_TESTED` | U03 U05 B04 |  |
 | LW-087 | `PARTIAL` | B10 | all but the Android test |
@@ -147,7 +147,7 @@ Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 79 · `WORKING_TESTED` 63 
 | LW-095 | `PARTIAL` | U16 | active vs coarse only |
 | LW-096 | `WORKING_TESTED` | U13 U14 |  |
 | LW-097 | `PARTIAL` | U14 |  |
-| LW-098 | `PARTIAL` | — |  |
+| LW-098 | `PARTIAL` | U35 |  |
 | LW-099 | `WORKING_TESTED` | U13 |  |
 | LW-100 | `PARTIAL` | U14 | talk, teaching, settlement lore |
 | LW-101 | `PARTIAL` | U15 U16 |  |
@@ -184,7 +184,7 @@ Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 79 · `WORKING_TESTED` 63 
 | LW-132 | `PARTIAL` | — |  |
 | LW-133 | `WORKING_TESTED` | U04 B10 |  |
 | LW-134 | `PARTIAL` | U10 B09 |  |
-| LW-135 | `PARTIAL` | U09 U24 | water, biomes, seasons; weather is visual/audio |
+| LW-135 | `WORKING_TESTED` | U09 U24 U36 | water, biomes, seasons, rain that soaks soil |
 | LW-136 | `WORKING_TESTED` | U11 B07 |  |
 | LW-137 | `WORKING_TESTED` | U12 B07 |  |
 | LW-138 | `BLOCKED` | U26 | no model |
@@ -198,10 +198,10 @@ Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 79 · `WORKING_TESTED` 63 
 | LW-146 | `WORKING_TESTED` | U06 |  |
 | LW-147 | `WORKING_TESTED` | U28 B02 |  |
 | LW-148 | `WORKING_NOT_DEVICE_VALIDATED` | B03 |  |
-| LW-149 | `PARTIAL` | U11 |  |
+| LW-149 | `PARTIAL` | U11 U35 |  |
 | LW-150 | `PARTIAL` | U10 B09 |  |
 | LW-151 | `WORKING_TESTED` | U01 U02 B02 |  |
-| LW-152 | `WORKING_TESTED` | U17 U18 B11 |  |
+| LW-152 | `WORKING_TESTED` | U17 U18 U36 B11 |  |
 | LW-153 | `PARTIAL` | U27 L03 | host only |
 | LW-154 | `WORKING_TESTED` | U31 B01 |  |
 | LW-155 | `BLOCKED` | — | no device |

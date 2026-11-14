@@ -78,14 +78,75 @@ function roomPath(world,b,from,to){     // BFS over the room graph; -1 = outdoor
 }
 LW.nav={};
 // waypoints (canonical directions) from a to b through real doors; null if no route
-LW.nav.path=function(world,from,to){
+const obstacle=o=>o.kind!=='field'&&(o.rooms.length||o.rad);
+const passable=(world,n,sp)=>!sp||LW.life.canEnter(world,n,sp);
+// is the straight walk a->b free of water (for this species)?
+function clearOfWater(world,a,b,sp){
+  if(!sp||sp.move.swim||sp.move.fly)return true;
+  const L=LW.arcDist(a,b,world.body.radius),n=Math.min(160,Math.ceil(L/4));
+  for(let k=1;k<n;k++)if(!LW.life.canEnter(world,V.norm(V.lerp(a,b,k/n)),sp))return false;
+  return true;
+}
+// steer round building footprints: detour to the nearer side of the first structure the segment would cross
+function around(world,a,b,depth){
+  const R=world.body.radius,f=LW.frame(a),to2=n=>[V.dot(V.sub(n,a),f.e)*R,V.dot(V.sub(n,a),f.t)*R],B2=to2(b),L=Math.hypot(B2[0],B2[1]);
+  if(L<1||depth>7)return [b];
+  let hit=null;
+  for(const id in world.buildings){const o=world.buildings[id];if(!obstacle(o))continue;
+    const r=B.radius(o)+0.9,c=to2(o.n);if(Math.hypot(c[0],c[1])<r||Math.hypot(c[0]-B2[0],c[1]-B2[1])<r)continue;     // an endpoint at its door: not an obstacle for this leg
+    const t=(c[0]*B2[0]+c[1]*B2[1])/(L*L);if(t<=0||t>=1)continue;
+    const dx=c[0]-B2[0]*t,dz=c[1]-B2[1]*t;if(Math.hypot(dx,dz)<r&&(!hit||t<hit.t))hit={c,r,t,dx,dz};}
+  if(!hit)return [b];
+  const px=-B2[1]/L,pz=B2[0]/L,side=(hit.dx*px+hit.dz*pz)>0?-1:1,wp=LW.offsetDir(a,hit.c[0]+px*side*(hit.r+1.1),hit.c[1]+pz*side*(hit.r+1.1),R);
+  return around(world,a,wp,depth+1).concat(around(world,wp,b,depth+1));
+}
+// A* over a local grid when water (or anything impassable) lies on the straight line
+function gridPath(world,a,b,sp){
+  const R=world.body.radius,L=LW.arcDist(a,b,R);if(L>900)return null;
+  const N=48,cell=LW.clamp(L/22,3,20),mid=V.norm(V.lerp(a,b,0.5)),f=LW.frame(mid),half=N/2;
+  const to2=n=>[V.dot(V.sub(n,mid),f.e)*R,V.dot(V.sub(n,mid),f.t)*R],dirOf=(i,k)=>LW.offsetDir(mid,(i-half+0.5)*cell,(k-half+0.5)*cell,R);
+  const ix=p=>[LW.clamp(Math.floor(p[0]/cell+half),0,N-1),LW.clamp(Math.floor(p[1]/cell+half),0,N-1)],s=ix(to2(a)),g=ix(to2(b));
+  const obs=[];for(const id in world.buildings){const o=world.buildings[id];if(obstacle(o))obs.push([to2(o.n),B.radius(o)+0.6]);}
+  const pass=new Int8Array(N*N),ok=(i,k)=>{const q=k*N+i;if(pass[q])return pass[q]>0;
+    if((i===s[0]&&k===s[1])||(i===g[0]&&k===g[1])){pass[q]=1;return true;}
+    const x=(i-half+0.5)*cell,z=(k-half+0.5)*cell;let fine=passable(world,dirOf(i,k),sp);
+    if(fine)for(const o of obs)if(Math.hypot(x-o[0][0],z-o[0][1])<o[1]){fine=false;break;}
+    pass[q]=fine?1:-1;return fine;};
+  const gs=new Float32Array(N*N).fill(1e9),from=new Int32Array(N*N).fill(-1),open=[s[1]*N+s[0]],closed=new Uint8Array(N*N);gs[open[0]]=0;
+  const hfn=q=>Math.hypot(q%N-g[0],Math.floor(q/N)-g[1]);
+  while(open.length){
+    let bi=0;for(let k=1;k<open.length;k++)if(gs[open[k]]+hfn(open[k])<gs[open[bi]]+hfn(open[bi]))bi=k;
+    const q=open.splice(bi,1)[0];if(closed[q])continue;closed[q]=1;
+    const i=q%N,k=Math.floor(q/N);
+    if(i===g[0]&&k===g[1]){const cells=[];for(let c=q;c>=0;c=from[c])cells.unshift(c);
+      const out=[];for(let m=1;m<cells.length-1;m++){const p0=cells[m-1],p1=cells[m],p2=cells[m+1];if((p1-p0)!==(p2-p1))out.push(dirOf(p1%N,Math.floor(p1/N)));}   // keep only the turns
+      out.push(b);return out;}
+    for(let dk=-1;dk<=1;dk++)for(let di=-1;di<=1;di++){if(!di&&!dk)continue;const ni=i+di,nk=k+dk;if(ni<0||nk<0||ni>=N||nk>=N)continue;
+      if(!ok(ni,nk)||(di&&dk&&(!ok(ni,k)||!ok(i,nk))))continue;const nq=nk*N+ni,c=gs[q]+(di&&dk?1.414:1);if(c<gs[nq]){gs[nq]=c;from[nq]=q;open.push(nq);}}
+  }
+  return null;
+}
+// outdoor leg a->b: straight when clear, round buildings, or routed across a local grid past water
+LW.nav.outdoor=function(world,a,b,sp){
+  if(!passable(world,b,sp))return null;
+  if(clearOfWater(world,a,b,sp)){const p=around(world,a,b,0);let prev=a,fine=true;for(const q of p){if(!clearOfWater(world,prev,q,sp)){fine=false;break;}prev=q;}if(fine)return p;}
+  return gridPath(world,a,b,sp);
+};
+// waypoints (canonical directions) from a to b: through real doors indoors, round obstacles outdoors; null if no route
+LW.nav.path=function(world,from,to,sp){
   const A=B.locate(world,from),Z=B.locate(world,to);
-  if(!A&&!Z)return [to];
   if(A&&Z&&A.b===Z.b){if(A.room===Z.room)return [to];const p=roomPath(world,A.b,A.room,Z.room);return p?p.concat([to]):null;}
   let pts=[];
   if(A){const p=roomPath(world,A.b,A.room,-1);if(!p)return null;pts=p;}
   if(Z){const p=roomPath(world,Z.b,-1,Z.room);if(!p)return null;pts=pts.concat(p);}
-  pts.push(to);return pts;
+  pts.push(to);
+  const out=[];let prev=from;
+  for(const q of pts){
+    if(!B.locate(world,prev)&&!B.locate(world,q)){const leg=LW.nav.outdoor(world,prev,q,sp);if(!leg)return null;for(const x of leg)out.push(x);}
+    else out.push(q);
+    prev=q;
+  }
+  return out;
 };
 
 B.create=function(world,tpl,n,yaw,opts){

@@ -207,7 +207,7 @@ function evText(w,e){
     case 'settlement.founded':return d.name+' was founded by '+nm(d.by);case 'settlement.joined':return nm(d.id)+' joined a settlement';
     case 'building.completed':return 'A '+d.kind+' was completed'+(d.by&&d.by!=='player'?' by '+nm(d.by):d.by==='player'?' (placed by the creator)':'');
     case 'building.planned':return 'A '+d.kind+' was planned'+(d.why?': '+d.why:'');case 'building.flooded':return 'A building was flooded';
-    case 'harvest':return 'Harvest of '+d.yield+' food (water '+d.water+')';case 'tech.discovered':return d.name+' discovered — '+d.era;
+    case 'harvest':return 'Harvest of '+d.yield+' food (water '+d.water+')';case 'drought':return 'Drought struck '+d.name;case 'drought.ended':return 'The drought at '+d.name+' broke';case 'storm':return 'A storm hit '+d.name;case 'tech.discovered':return d.name+' discovered — '+d.era;
     case 'partnership':return nm(d.a)+' and '+nm(d.b)+' became partners';case 'talk':return nm(d.a)+' talked with '+nm(d.b);
     case 'life.introduced':return 'Life introduced: '+d.count+' × '+((w.species[d.species]||{}).name||d.species);
     case 'plants.seeded':return 'Plants seeded: '+((w.species[d.species]||{}).name||d.species);case 'plants.diedOut':return 'Plants died out here';
@@ -259,6 +259,14 @@ UI.renderInspector=function(){
       h('h4',{text:'Goals'}),p.goals.length?p.goals.map(g=>h('div',{class:'row'},h('span',{text:(g.src==='player'?'★ ':'')+M.goalText(g)+(g.src==='self'?' (their own)':' (set by you)')}),btn('✕',()=>{App.do('person.setGoal',{id:p.id,remove:g.id});UI.renderInspector();},'ghost icon'))):h('p',{class:'note',text:'No long-term goals yet; they form their own over time.'}),
       select('Give a goal',[['','choose…'],['explore','Explore the world'],['invent','Seek understanding'],['partner','Find a partner'],['socialize','Be among others'],['master:farming','Master farming'],['master:building','Master building']].concat(Object.values(w.activities).map(a=>['activity:'+a.id,'Activity: '+a.name])),'',v=>{if(!v)return;const q=v.split(':');
         App.do('person.setGoal',{id:p.id,goal:q[0]==='master'?{type:'master',skill:q[1]}:q[0]==='activity'?{type:'activity',activity:q[1]}:{type:q[0]}});UI.renderInspector();}),
+      h('h4',{text:'Daily schedule'}),
+      p.schedule.length?p.schedule.map((sc,i)=>h('div',{class:'row'},h('span',{class:'grow',text:String(sc.h0).padStart(2,'0')+':00 – '+String(sc.h1).padStart(2,'0')+':00 · '+(sc.what==='activity'?'activity: '+((w.activities[sc.data]||{}).name||'?'):sc.what)}),
+        btn('✕',()=>{App.do('person.setSchedule',{id:p.id,schedule:p.schedule.filter((x,k)=>k!==i)});UI.renderInspector();},'ghost icon','Remove schedule entry'))):h('p',{class:'note',text:'No fixed hours: they decide for themselves all day.'}),
+      (()=>{const d=UI.schedDraft||(UI.schedDraft={h0:8,h1:12,what:'work'}),hrs=[...Array(25).keys()].map(x=>[x,String(x).padStart(2,'0')+':00']);
+        return h('div',{class:'node'},select('From',hrs.slice(0,24),d.h0,v=>{d.h0=+v;}),select('To',hrs.slice(1),d.h1,v=>{d.h1=+v;}),
+          select('Do',[['work','Work'],['sleep','Sleep'],['socialize','Socialise'],['study','Study'],['explore','Explore']].concat(Object.values(w.activities).map(a=>['activity:'+a.id,'Activity: '+a.name])),d.what,v=>{d.what=v;}),
+          btn('Add',()=>{const q=String(d.what).split(':'),e=q[0]==='activity'?{h0:d.h0,h1:d.h1,what:'activity',data:q[1]}:{h0:d.h0,h1:d.h1,what:d.what};
+            if(App.do('person.setSchedule',{id:p.id,schedule:p.schedule.concat([e])}).ok)UI.renderInspector();},'primary'));})(),
       btn('Activity editor…',()=>UI.activityEditor(),'ghost'),
       p.hypo>0.05?h('p',{class:'note',text:'Unexplained events witnessed: '+Math.round(p.anomalies)+' · suspicion that the world is shaped by an unseen will: '+Math.round(p.hypo*100)+'%'}):null];
     else if(UI.tab==='memory')tab=[p.origin&&p.origin.unknownPast?h('p',{class:'note',text:'Emerged from an anonymous population: their earlier life was not simulated in detail and is recorded as unknown.'}):null,
@@ -323,7 +331,7 @@ UI.renderInspector=function(){
     const c=E.info(w,s.cell),h0=P.height(w,s.n),cl=E.climate(w,s.n,h0),B0=LW.BIOMES[cl.biome],wk=['none','river','lake','sea'][(w.env.river||[])[s.cell]||0];
     title=B0.name+(cl.painted?' (painted)':'');sub='elevation '+fmtM(h0-w.body.seaLevel)+' · '+cl.temp.toFixed(0)+' °C · moisture '+Math.round(cl.moist*100)+'%';
     const plants=Object.values(w.species).filter(x=>x.kind==='plant').map(x=>[x.name,E.suit(x,cl)]).sort((a,b)=>b[1]-a[1]).slice(0,4);
-    body=[h('p',{text:'Water: '+wk+(wk==='river'?' (flow '+c.flux.toFixed(0)+')':'')+' · rain now: '+Math.round(E.rain(w,s.n,s.cell)*100)+'%'}),
+    body=[h('p',{text:'Water: '+wk+(wk==='river'?' (flow '+c.flux.toFixed(0)+')':'')+' · rain now: '+Math.round(E.rain(w,s.n,s.cell)*100)+'% · soil moisture: '+Math.round(w.env.soil[s.cell]/2.55)+'%'}),
       h('p',{text:c.plant?'Living here: '+c.plant.name+' (cover '+Math.round(c.veg/2.55)+'%)':'No plants live here'+(cl.biome?' — the climate could support life, but none has been introduced.':'.')}),
       h('p',{text:'Suitability: '+plants.map(x=>x[0]+' '+Math.round(x[1]*100)+'%').join(' · ')}),
       h('p',{text:'Minerals: stone '+c.minerals.stone+', ore '+c.minerals.ore+', clay '+c.minerals.clay+' · subsurface: '+['soil','clay','rock'].join(' / ')}),

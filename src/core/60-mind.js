@@ -67,7 +67,7 @@ M.perceive=function(w,p,sp){
 // ---- actions ---------------------------------------------------------------------
 function speed(w,p,sp){let s=sp.move.speed;const st=w.settlements[p.settlement];if(st&&st.techs.indexOf('wheel')>=0)s*=1.25;if(p.needs.energy<8)s*=0.6;return s;}
 function go(w,p,a,sp){
-  if(!a.path){a.path=LW.nav.path(w,p.n,a.to);a.i=0;if(!a.path)return 'no route';p.posture='stand';}
+  if(!a.path){a.path=LW.nav.path(w,p.n,a.to,sp);a.i=0;if(!a.path)return 'no route';p.posture='stand';}
   let budget=speed(w,p,sp);
   while(a.i<a.path.length){
     const d=LW.arcDist(p.n,a.path[a.i],w.body.radius);

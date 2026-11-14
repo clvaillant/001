@@ -338,8 +338,8 @@ test('U24','ecology: suitability is not life; seeded plants grow, spread or die 
   let ice=-1;for(let k=0;k<d.C;k++){const cl=LW.env.climate(w,LW.env.cellDir(w,k),d.h[k],k);if(cl.biome===1){ice=k;break;}}
   if(ice>=0){ok(w,'life.seedPlants',{speciesId:'sp_broadleaf',n:LW.env.cellDir(w,ice),r:10,cover:120});assert(w.env.veg[ice]>0);}
   ok(w,'life.spawn',{speciesId:'sp_grazer',n:LW.offsetDir(n,40,0,R(w)),count:8});ok(w,'life.spawn',{speciesId:'sp_stalker',n:LW.offsetDir(n,90,0,R(w)),count:2});
-  run(w,LW.TPD*20);
-  assert(w.env.veg.filter(v=>v>0).length>cover0,'vegetation spread to suitable neighbours');
+  let peak=cover0;for(let dd=0;dd<20;dd++){run(w,LW.TPD);peak=Math.max(peak,w.env.veg.filter(v=>v>0).length);}
+  assert(peak>cover0,'vegetation spread to suitable neighbours');assert(w.events.some(e=>e.type==='plants.diedOut'),'and died out where soil and climate could not sustain it');
   if(ice>=0)assert.strictEqual(w.env.veg[ice],0,'trees seeded on ice died out');
   assert(w.events.some(e=>e.type==='animal.hunted'),'predation happened');
   const t1=LW.env.tempAt(w,[0,0.9,0.43],0);w.tick+=LW.ticksPerYear(w)/2;const t2=LW.env.tempAt(w,[0,0.9,0.43],0);assert(Math.abs(t1-t2)>3,'seasons change temperature');
@@ -424,6 +424,56 @@ test('U34','scale: 150 people + 140 animals simulate within the per-tick budget 
   ok(w,'world.setMode',{mode:'play'});run(w,200);const t0=process.hrtime.bigint();run(w,2000);const ms=Number(process.hrtime.bigint()-t0)/1e6/2000;
   const cs=LW.census(w);assert(cs.persons>=140&&cs.animals>=100);assert(ms<8,'mean tick '+ms.toFixed(3)+' ms');
   return cs.persons+' people, '+cs.animals+' animals: mean '+ms.toFixed(3)+' ms/tick (desktop Node, not a phone)';
+});
+
+test('U35','pathfinding: people walk round buildings and round water instead of through them',['LW-028','LW-098','LW-149'],()=>{
+  const {w,n}=village(41),site=spot(w,n,70),sp=w.species.sp_human;
+  const b=w.buildings[ok(w,'build.place',{template:'house',n:site,yaw:0.3}).result.id],rad=LW.build.radius(b);
+  const A=LW.offsetDir(site,-(rad+14),0.5,R(w)),Z=LW.offsetDir(site,rad+14,-0.5,R(w));
+  const path=LW.nav.path(w,A,Z,sp);assert(path&&path.length>=2,'detours: '+(path&&path.length)+' waypoints');
+  let prev=A,minD=1e9;for(const q of path){for(let k=0;k<=20;k++)minD=Math.min(minD,LW.arcDist(LW.V.norm(LW.V.lerp(prev,q,k/20)),site,R(w)));prev=q;}
+  assert(minD>=rad+0.5,'route stays outside the footprint: closest '+minD.toFixed(1)+' m vs radius '+rad.toFixed(1));
+  const p=w.persons[ok(w,'life.spawn',{speciesId:'sp_human',n:A}).result.ids[0]];ok(w,'world.setMode',{mode:'play'});ok(w,'person.control',{id:p.id,on:true});
+  ok(w,'person.enqueue',{id:p.id,action:{a:'go',to:Z}});let inside=false;for(let i=0;i<400;i++){LW.tick(w);if(LW.build.locate(w,p.n))inside=true;}
+  assert(!inside,'never walked through the house');assert(LW.arcDist(p.n,Z,R(w))<1.5,'arrived');
+  // a lake painted across the way: the straight line is blocked, a way round is found and walked
+  const L0=LW.offsetDir(Z,60,0,R(w));ok(w,'terrain.edit',{tool:'water',n:L0,r:26,s:8});
+  const far=LW.offsetDir(Z,120,0,R(w));assert(!LW.life.canEnter(w,L0,sp),'lake is impassable on foot');
+  const wp=LW.nav.path(w,p.n,far,sp);assert(wp&&wp.length>=2,'route round the lake');
+  prev=p.n;for(const q of wp){for(let k=1;k<=12;k++)assert(LW.life.canEnter(w,LW.V.norm(LW.V.lerp(prev,q,k/12)),sp),'route stays on land');prev=q;}
+  ok(w,'person.enqueue',{id:p.id,action:{a:'go',to:far}});run(w,500);assert(LW.arcDist(p.n,far,R(w))<1.5,'walked round the lake');assert(!w.events.some(e=>e.type==='person.failed'&&e.d.id===p.id));
+  const island=LW.offsetDir(far,400,0,R(w));ok(w,'terrain.edit',{tool:'water',n:island,r:60,s:10});assert.strictEqual(LW.nav.path(w,p.n,island,sp),null,'unreachable target reports no route');
+  return path.length+' waypoints round the house; '+wp.length+' round the lake';
+});
+test('U36','weather matters: rain soaks soil, dry spells bring drought, storms hit crops; schema 1.0 saves migrate to 1.1',['LW-047','LW-084','LW-135','LW-152'],()=>{
+  const {w,c,n}=village(42),d=LW.env.d(w);
+  assert.strictEqual(w.schema.minor,1);assert.strictEqual(w.env.soil.length,d.C);
+  run(w,LW.TPD*12);                                   // creator mode: environment runs, weather included
+  let wet=0,dry=0,mn=255,mx=0;for(let k=0;k<d.C;k++){if(d.h[k]<w.body.seaLevel)continue;const s=w.env.soil[k];mn=Math.min(mn,s);mx=Math.max(mx,s);if(s>140)wet++;if(s<90)dry++;}
+  assert(mx-mn>60,'soil moisture varies with the weather: '+mn+'..'+mx);assert(wet>20&&dry>20,'both wet and dry regions exist');
+  const before=LW.env.waterFactor(w,c);w.env.soil[c]=0;assert(LW.env.waterFactor(w,c)<before-0.1,'dry soil lowers growing water');
+  // a settlement in a parched cell gets a drought event; when rain returns it ends
+  ok(w,'life.spawn',{speciesId:'sp_human',n:LW.offsetDir(n,10,10,R(w)),count:2});ok(w,'world.setMode',{mode:'play'});
+  let days=0;for(;days<10&&!Object.keys(w.settlements).length;days++)run(w,LW.TPD);
+  const s=Object.values(w.settlements)[0];assert(s,'settlement exists');const sc=LW.env.cellOf(w,s.n);
+  w.env.soil[sc]=0;w.env.river[sc]=0;LW.env.weather(w);assert(w.events.some(e=>e.type==='drought'&&e.d.settlement===s.id),'drought recorded');assert(s.drought>0);
+  w.env.soil[sc]=250;LW.env.weather(w);assert(w.events.some(e=>e.type==='drought.ended'),'drought ends when the soil recovers');
+  // migration from the previous schema
+  const o=JSON.parse(LW.save.pack(w));delete o.world.env.soil;o.world.schema={major:1,minor:0};o.schema={major:1,minor:0};o.checksum=LW.checksum(LW.canonical(o.world));
+  const m=LW.save.parse(JSON.stringify(o));assert.deepStrictEqual(m.schema,{major:1,minor:1});assert.strictEqual(m.env.soil.length,d.C);assert(m.env.soil.every(x=>x===128));
+  run(m,LW.TPD);LW.save.validate(m);
+  return 'soil range '+mn+'..'+mx+' after 12 days';
+});
+test('U37','schedules: a character keeps set hours, then returns to their own choices',['LW-040'],()=>{
+  const {w,n}=village(43),p=w.persons[ok(w,'life.spawn',{speciesId:'sp_human',n:LW.offsetDir(n,10,10,R(w))}).result.ids[0]];
+  assert(!D(w,'person.setSchedule',{id:p.id,schedule:[{h0:9,h1:5,what:'study'}]}).ok);assert(!D(w,'person.setSchedule',{id:p.id,schedule:[{h0:1,h1:5,what:'fly'}]}).ok);
+  ok(w,'person.setSchedule',{id:p.id,schedule:[{h0:0,h1:24,what:'study'}]});ok(w,'world.setMode',{mode:'play'});
+  let studied=0,total=0;for(let i=0;i<LW.TPD;i++){LW.tick(w);if(p.plan){total++;if(p.plan.goal==='study')studied++;}}
+  assert(studied/total>0.5,'studies during scheduled hours: '+Math.round(studied/total*100)+'%');assert(p.skills.lore>0.05,'and learns from it');
+  assert(p.alive&&p.needs.thirst>0,'urgent needs still interrupt the schedule');
+  ok(w,'person.setSchedule',{id:p.id,schedule:[]});p.plan=null;let other=0;for(let i=0;i<2000;i++){LW.tick(w);if(p.plan&&p.plan.goal!=='study')other++;}
+  assert(other>800,'free again once the schedule is cleared');assert(LW.undo(w).ok&&p.schedule.length===1,'schedule edits are undoable');
+  return Math.round(studied/total*100)+'% of the day spent on the scheduled activity';
 });
 
 (async()=>{
