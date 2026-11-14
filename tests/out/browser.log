@@ -4,27 +4,26 @@ Living World browser tests (software WebGL, network denied)
   ok   B02 Quick Start creates a unique, editable, uninhabited world; Advanced setup regenerates the planet live
        radius 632 km planet created from the advanced panel
   ok   B03 continuous zoom from orbit to ground in ONE world/scene; LOD refines; floating-origin precision holds on an Earth-sized planet
-       Orbit > Continent > Region > Landscape > Settlement > Home; quads 312736 m -> 1.19 m; float step at camera 0.000 mm vs 0.76 m without floating origin
-  FAIL B04 mouse sculpting with visible brush: immediate terrain change, undo, redo, sea level, biome paint, protected regeneration
-       AssertionError [ERR_ASSERTION]: sea level changed through the UI |     at /home/user/001/tests/browser.cjs:126:5 |     at async test (/home/user/001/tests/browser.cjs:11:12) |     at async /home/user/001/tests/browser.cjs:104:3
+       Orbit > Continent > Region > Landscape > Settlement > Home; quads 312736 m -> 0.60 m; float step at camera 0.001 mm vs 0.76 m without floating origin
+  ok   B04 mouse sculpting with visible brush: immediate terrain change, undo, redo, sea level, biome paint, protected regeneration
+       raised 195.6 m with 4 dabs; undo/redo exact; regeneration preserved the edit
   ok   B05 touch: one-finger drag pans, pinch zooms, tap selects; phone layout keeps every control on screen
        22 controls checked on 360x640 (emulated touch, not a physical phone)
-  FAIL B06 keyboard and mouse navigation alternatives: wheel zoom, right-drag rotate/tilt, keys, double-click focus
-       AssertionError [ERR_ASSERTION]: wheel zooms |     at /home/user/001/tests/browser.cjs:170:120 |     at async test (/home/user/001/tests/browser.cjs:11:12) |     at async /home/user/001/tests/browser.cjs:167:3
-  FAIL B07 integrated path by UI: plants -> home -> person -> command to use bed -> Play -> release -> autonomous life -> inspector
-       page.click: Timeout 45000ms exceeded. | Call log: | [2m  - waiting for locator('#insp').locator('text=Take control')[22m | [2m    28 × locator resolved to <button class="b primary">Take control</button>[22m
-  FAIL B08 cause and effect in the app: terrain edit dries the river; inspector explains why
-       AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value: |  |   assert(/Why the water here changed/.test(await pg.textContent('#insp'))) | 
+  ok   B06 keyboard and mouse navigation alternatives: wheel zoom, right-drag rotate/tilt, keys, double-click focus
+  ok   B07 integrated path by UI: plants -> home -> person -> command to use bed -> Play -> release -> autonomous life -> inspector
+       Detorib slept in the bed on command, then chose "gatherFood" on release
+  ok   B08 cause and effect in the app: terrain edit dries the river; inspector explains why
+       river.dried <- terrain.edited
   ok   B09 dig site: carve by dragging; opening is rendered in the same space; underground view
-       5 carve ops opened 250 surface columns
-  FAIL B10 persistence across a real page reload: same planet, edits, home, resident, memories and history; world keeps advancing
-       AssertionError [ERR_ASSERTION]: post-snapshot edit recovered from the journal |  | 1 !== 2 | 
-  FAIL B11 export/import between independent browser profiles; corrupted file refused and current world untouched
-       AssertionError [ERR_ASSERTION]: imported world is byte-identical | + actual - expected |  | + '2a5aab43b6227674'
+       5 carve ops opened 24 surface columns
+  ok   B10 persistence across a real page reload: same planet, edits, home, resident, memories and history; world keeps advancing
+       hash 7c1395d1878bac64 identical after reload (Restored 1 edits made after the last snapshot.)
+  ok   B11 export/import between independent browser profiles; corrupted file refused and current world untouched
+       archive 68 KB round-tripped; hash 6fad303630e06a95
   ok   B12 storage blocked: game still runs and truthfully warns that nothing is kept; export still works
   ok   B13 frame timing and scene complexity at four scales (SOFTWARE renderer; not device evidence); adaptive quality reacts
-       orbit: 367 ms median, 14566 tris, 87 draws, 15 chunks | region: 385 ms median, 77286 tris, 185 draws, 113 chunks | settlement: 434 ms median, 115660 tris, 357 draws, 119 chunks | home: 451 ms median, 133884 tris, 405 draws, 144 chunks | heap 14 MB | save 90 KB
+       orbit: 116 ms median, 35954 tris, 118 draws, 18 chunks | region: 259 ms median, 126194 tris, 212 draws, 112 chunks | settlement: 505 ms median, 356703 tris, 743 draws, 145 chunks | home: 736 ms median, 545099 tris, 842 draws, 203 chunks | heap 32 MB | save 84 KB
   ok   B14 WebGL context loss is survived; species editor and activity editor create validated content
 
-browser: 8/14 passed
-EXIT 1
+browser: 14/14 passed
+EXIT 0

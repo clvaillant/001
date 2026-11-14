@@ -29,7 +29,7 @@
     "LW-015"
    ],
    "status": "pass",
-   "ms": 160,
+   "ms": 163,
    "error": null,
    "note": null
   },
@@ -56,7 +56,7 @@
     "LW-014"
    ],
    "status": "pass",
-   "ms": 2,
+   "ms": 1,
    "error": null,
    "note": null
   },
@@ -83,7 +83,7 @@
     "LW-146"
    ],
    "status": "pass",
-   "ms": 148,
+   "ms": 152,
    "error": null,
    "note": null
   },
@@ -96,7 +96,7 @@
     "LW-121"
    ],
    "status": "pass",
-   "ms": 6,
+   "ms": 7,
    "error": null,
    "note": null
   },
@@ -108,7 +108,7 @@
     "LW-121"
    ],
    "status": "pass",
-   "ms": 14,
+   "ms": 13,
    "error": null,
    "note": null
   },
@@ -122,7 +122,7 @@
     "LW-009"
    ],
    "status": "pass",
-   "ms": 243,
+   "ms": 259,
    "error": null,
    "note": null
   },
@@ -136,7 +136,7 @@
     "LW-080"
    ],
    "status": "pass",
-   "ms": 120,
+   "ms": 143,
    "error": null,
    "note": null
   },
@@ -152,7 +152,7 @@
     "LW-149"
    ],
    "status": "pass",
-   "ms": 107,
+   "ms": 127,
    "error": null,
    "note": null
   },
@@ -169,7 +169,7 @@
     "LW-137"
    ],
    "status": "pass",
-   "ms": 105,
+   "ms": 134,
    "error": null,
    "note": null
   },
@@ -186,7 +186,7 @@
     "LW-099"
    ],
    "status": "pass",
-   "ms": 129,
+   "ms": 123,
    "error": null,
    "note": "chain: person.failed <- river.dried <- terrain.edited"
   },
@@ -216,7 +216,7 @@
     "LW-037"
    ],
    "status": "pass",
-   "ms": 290,
+   "ms": 254,
    "error": null,
    "note": null
   },
@@ -232,7 +232,7 @@
     "LW-139"
    ],
    "status": "pass",
-   "ms": 180,
+   "ms": 151,
    "error": null,
    "note": null
   },
@@ -247,7 +247,7 @@
     "LW-152"
    ],
    "status": "pass",
-   "ms": 538,
+   "ms": 464,
    "error": null,
    "note": "archive 104 KB"
   },
@@ -259,7 +259,7 @@
     "LW-056"
    ],
    "status": "pass",
-   "ms": 19,
+   "ms": 27,
    "error": null,
    "note": null
   },
@@ -272,7 +272,7 @@
     "LW-129"
    ],
    "status": "pass",
-   "ms": 12,
+   "ms": 13,
    "error": null,
    "note": null
   },
@@ -285,7 +285,7 @@
     "LW-129"
    ],
    "status": "pass",
-   "ms": 327,
+   "ms": 382,
    "error": null,
    "note": "replayed 5 commands"
   },
@@ -298,7 +298,7 @@
     "LW-129"
    ],
    "status": "pass",
-   "ms": 16,
+   "ms": 25,
    "error": null,
    "note": null
   },
@@ -311,7 +311,7 @@
     "LW-033"
    ],
    "status": "pass",
-   "ms": 324,
+   "ms": 390,
    "error": null,
    "note": null
   },
@@ -328,7 +328,7 @@
     "LW-034"
    ],
    "status": "pass",
-   "ms": 681,
+   "ms": 695,
    "error": null,
    "note": "settlement after 0 days, building after 2 days, techs: fire,tools,farming,pottery,masonry"
   },
@@ -343,7 +343,7 @@
     "LW-022"
    ],
    "status": "pass",
-   "ms": 276,
+   "ms": 247,
    "error": null,
    "note": "animals alive 1, hunts 7"
   },
@@ -355,7 +355,7 @@
     "LW-051"
    ],
    "status": "pass",
-   "ms": 109,
+   "ms": 137,
    "error": null,
    "note": null
   },
@@ -371,7 +371,7 @@
     "LW-138"
    ],
    "status": "pass",
-   "ms": 131,
+   "ms": 132,
    "error": null,
    "note": "scripted: I am sure there is water at the place I call 6825 (I saw it myself)."
   },
@@ -385,7 +385,7 @@
     "LW-141"
    ],
    "status": "pass",
-   "ms": 117,
+   "ms": 147,
    "error": null,
    "note": null
   },
@@ -400,7 +400,7 @@
     "LW-147"
    ],
    "status": "pass",
-   "ms": 331,
+   "ms": 388,
    "error": null,
    "note": null
   },
@@ -413,7 +413,7 @@
     "LW-085"
    ],
    "status": "pass",
-   "ms": 228,
+   "ms": 211,
    "error": null,
    "note": null
   },
@@ -442,7 +442,7 @@
    "status": "pass",
    "ms": 4,
    "error": null,
-   "note": "11 kernel modules, shipped file 306 KB"
+   "note": "11 kernel modules, shipped file 321 KB"
   },
   {
    "id": "U32",
@@ -452,7 +452,7 @@
     "LW-143"
    ],
    "status": "pass",
-   "ms": 53,
+   "ms": 33,
    "error": null,
    "note": null
   },
@@ -465,7 +465,7 @@
     "LW-115"
    ],
    "status": "pass",
-   "ms": 147,
+   "ms": 110,
    "error": null,
    "note": null
   },
@@ -477,9 +477,9 @@
     "LW-117"
    ],
    "status": "pass",
-   "ms": 2287,
+   "ms": 2420,
    "error": null,
-   "note": "152 people, 140 animals: mean 0.981 ms/tick (desktop Node, not a phone)"
+   "note": "152 people, 140 animals: mean 1.055 ms/tick (desktop Node, not a phone)"
   }
  ]
 }

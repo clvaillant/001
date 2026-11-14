@@ -275,7 +275,7 @@ const center={x:450,y:300};
     // one more acknowledged edit AFTER the snapshot: must survive through the journal
     await pg.evaluate(()=>{const A=LW.app;A.do('terrain.edit',{tool:'lower',n:LW.offsetDir(T_SITE,-400,0,A.world.body.radius),r:150,s:25});});await settle(pg,400);
     const before=await pg.evaluate(()=>{const w=LW.app.world;return {id:w.id,tick:w.tick,persons:Object.keys(w.persons),mem:Object.values(w.persons).map(p=>p.mem.ep.length),ev:w.events.length,edits:w.terrainEdits.length,h:LW.planet.height(w,T_SITE),site:T_SITE,name:w.name};});before.hash=await worldHash(pg);
-    const dump=()=>pg.evaluate(async()=>{const kv=LW.app.store.kv,ks=await kv.keys(),o=[];for(const k of ks){const r=JSON.parse(await kv.get(k));o.push(k.slice(-8)+' '+(r.cmd?r.cmd.type+'@'+r.tick:'seq'+r.seq+' jseq'+r.jseq+' edits'+JSON.parse(r.text).world.terrainEdits.length));}return o.join(' ; ');});
+    const dump=()=>pg.evaluate(async()=>{const kv=LW.app.store.kv,ks=await kv.keys(),o=[];for(const k of ks){const raw=await kv.get(k);if(!raw)continue;const r=JSON.parse(raw);o.push(k.slice(-8)+' '+(r.cmd?r.cmd.type+'@'+r.tick:'seq'+r.seq+' jseq'+r.jseq+' edits'+JSON.parse(r.text).world.terrainEdits.length));}return o.join(' ; ');});
     const d1=await dump();
     await pg.reload();await pg.waitForFunction(()=>globalThis.LW&&LW.app&&LW.app.booted);
     assert(await pg.isVisible('text=Continue'),'saved world is offered');

@@ -315,7 +315,7 @@ App.frame=function(now){
   if(App.follow&&App.world){const e=App.world.persons[App.follow]||App.world.organisms[App.follow];if(e&&e.alive!==false){const s=App.scene.rs.get(e.id);c.n=(s?s.n:e.n).slice();c.groundOverride=LW.groundAt(App.world,c.n,e);}else App.follow=null;}
   if(!App.follow)c.groundOverride=null;
   G.camUpdate(w,c,cv.clientWidth,cv.clientHeight,dt);
-  App.terrain.update(w,c,App.stroke?9:5);
+  App.terrain.update(w,c,Math.max(App.stroke?9:5,Math.min(45,dt*130)));        // slow frames get a bigger build share so detail still converges
   const rings=[];
   if(App.world){
     const s=App.sel;

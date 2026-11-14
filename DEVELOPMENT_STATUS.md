@@ -52,6 +52,28 @@ lighting and motion: gait bob scales with the planet's gravity, but there is sti
 This roughly doubles triangles near the ground (about 300 000 at a settlement) and adds a second render
 pass; shadows switch off automatically on the low quality tier. Cost on a real phone is unmeasured.
 
+## Models and materials pass (third iteration)
+
+The user asked for models that read as what they are, with detail and textures. Done procedurally (there
+are still no image files):
+
+- **Materials**: thirteen procedural surface materials computed in the fragment shader with relief
+  (bump) shading: siding, brick, plaster, shingles, wood grain, bark, leaves, stone, fabric, fur, hair,
+  soil, and a ground texture that shows grass blades only where plants actually live. Terrain and objects
+  now use separate shader programs, and every material shares three noise lookups, so the cost stays
+  bounded on GPUs that evaluate all branches.
+- **People and animals** are lofted, continuous surfaces (torso from waist to shoulders, shaped head
+  with nose and ears, tapered limbs, shoes, hands, optional skirt and long hair, eyes, brows, mouth;
+  animals with a barrel body, neck, muzzle, ears, hooves) instead of stacked ellipsoids.
+- **Trees** have flared trunks, real branches and irregular leaf masses; conifers have drooping, jagged
+  boughs; rocks are irregular; grass is curved blades; crops grow ears.
+- **Houses** gained shutters, planted window boxes, porches with turned posts and awnings, brick
+  chimneys, stone footings; furniture gained turned bedposts, quilts, curved chest lids, firewood and flames.
+- Three levels of detail for flora keep the triangle count near 400 000 at a settlement.
+
+"Stardew Valley level" was read as a target for charm and density of detail; that game is 2D pixel art,
+so there is no polygon count to match, and none of its art was copied.
+
 ## Known defects and weak spots
 
 - **Performance is unknown on real hardware.** Only a CPU software renderer was available. There a
@@ -67,6 +89,8 @@ pass; shadows switch off automatically on the low quality tier. Cost on a real p
 - The start of a new world is local midnight at some longitudes, so first Play can be dark; use
   Menu → "Creator light".
 - The inspector is rebuilt every 2.5 s while open, which can interrupt scrolling in long lists.
+- Textures are procedural patterns, not painted art: no faces beyond eyes/brows/mouth, no cloth folds,
+  no hand-authored props. Shingle and brick courses skew slightly on some roof and wall orientations.
 - Shadows cover only the area near the camera focus and fade at its edge; there is no ambient occlusion.
 - Four inspector clicks in browser test B07 are dispatched as DOM click events rather than pointer
   presses, because the software renderer's slow frames made pointer-position clicks flaky.
