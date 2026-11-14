@@ -2,8 +2,8 @@
  "suite": "unit",
  "node": "v22.23.4",
  "platform": "linux x64",
- "total": 39,
- "pass": 39,
+ "total": 40,
+ "pass": 40,
  "fail": 0,
  "results": [
   {
@@ -16,7 +16,7 @@
     "LW-073"
    ],
    "status": "pass",
-   "ms": 8,
+   "ms": 7,
    "error": null,
    "note": null
   },
@@ -29,7 +29,7 @@
     "LW-015"
    ],
    "status": "pass",
-   "ms": 181,
+   "ms": 283,
    "error": null,
    "note": null
   },
@@ -42,7 +42,7 @@
     "LW-125"
    ],
    "status": "pass",
-   "ms": 6,
+   "ms": 10,
    "error": null,
    "note": null
   },
@@ -56,7 +56,7 @@
     "LW-014"
    ],
    "status": "pass",
-   "ms": 2,
+   "ms": 4,
    "error": null,
    "note": null
   },
@@ -70,7 +70,7 @@
     "LW-076"
    ],
    "status": "pass",
-   "ms": 1,
+   "ms": 3,
    "error": null,
    "note": null
   },
@@ -83,7 +83,7 @@
     "LW-146"
    ],
    "status": "pass",
-   "ms": 171,
+   "ms": 202,
    "error": null,
    "note": null
   },
@@ -96,7 +96,7 @@
     "LW-121"
    ],
    "status": "pass",
-   "ms": 9,
+   "ms": 13,
    "error": null,
    "note": null
   },
@@ -108,7 +108,7 @@
     "LW-121"
    ],
    "status": "pass",
-   "ms": 27,
+   "ms": 39,
    "error": null,
    "note": null
   },
@@ -122,7 +122,7 @@
     "LW-009"
    ],
    "status": "pass",
-   "ms": 389,
+   "ms": 344,
    "error": null,
    "note": null
   },
@@ -136,7 +136,7 @@
     "LW-080"
    ],
    "status": "pass",
-   "ms": 195,
+   "ms": 140,
    "error": null,
    "note": null
   },
@@ -152,7 +152,7 @@
     "LW-149"
    ],
    "status": "pass",
-   "ms": 140,
+   "ms": 135,
    "error": null,
    "note": null
   },
@@ -169,7 +169,7 @@
     "LW-137"
    ],
    "status": "pass",
-   "ms": 134,
+   "ms": 133,
    "error": null,
    "note": null
   },
@@ -186,7 +186,7 @@
     "LW-099"
    ],
    "status": "pass",
-   "ms": 151,
+   "ms": 148,
    "error": null,
    "note": "chain: person.failed <- river.dried <- terrain.edited"
   },
@@ -202,7 +202,7 @@
     "LW-100"
    ],
    "status": "pass",
-   "ms": 145,
+   "ms": 140,
    "error": null,
    "note": null
   },
@@ -216,7 +216,7 @@
     "LW-037"
    ],
    "status": "pass",
-   "ms": 1053,
+   "ms": 1021,
    "error": null,
    "note": null
   },
@@ -232,7 +232,7 @@
     "LW-139"
    ],
    "status": "pass",
-   "ms": 233,
+   "ms": 325,
    "error": null,
    "note": null
   },
@@ -247,7 +247,7 @@
     "LW-152"
    ],
    "status": "pass",
-   "ms": 2304,
+   "ms": 2314,
    "error": null,
    "note": "archive 143 KB"
   },
@@ -259,7 +259,7 @@
     "LW-056"
    ],
    "status": "pass",
-   "ms": 43,
+   "ms": 39,
    "error": null,
    "note": null
   },
@@ -272,7 +272,7 @@
     "LW-129"
    ],
    "status": "pass",
-   "ms": 25,
+   "ms": 16,
    "error": null,
    "note": null
   },
@@ -285,7 +285,7 @@
     "LW-129"
    ],
    "status": "pass",
-   "ms": 399,
+   "ms": 374,
    "error": null,
    "note": "replayed 5 commands"
   },
@@ -298,7 +298,7 @@
     "LW-129"
    ],
    "status": "pass",
-   "ms": 43,
+   "ms": 24,
    "error": null,
    "note": null
   },
@@ -311,7 +311,7 @@
     "LW-033"
    ],
    "status": "pass",
-   "ms": 433,
+   "ms": 352,
    "error": null,
    "note": null
   },
@@ -328,7 +328,7 @@
     "LW-034"
    ],
    "status": "pass",
-   "ms": 1048,
+   "ms": 1012,
    "error": null,
    "note": "settlement after 0 days, building after 2 days, techs: fire,tools,farming"
   },
@@ -343,7 +343,7 @@
     "LW-022"
    ],
    "status": "pass",
-   "ms": 268,
+   "ms": 264,
    "error": null,
    "note": "animals alive 0, hunts 8"
   },
@@ -355,7 +355,7 @@
     "LW-051"
    ],
    "status": "pass",
-   "ms": 145,
+   "ms": 133,
    "error": null,
    "note": null
   },
@@ -371,7 +371,7 @@
     "LW-138"
    ],
    "status": "pass",
-   "ms": 142,
+   "ms": 132,
    "error": null,
    "note": "scripted: I am sure there is water at the place I call 6825 (I saw it myself)."
   },
@@ -385,7 +385,7 @@
     "LW-141"
    ],
    "status": "pass",
-   "ms": 154,
+   "ms": 138,
    "error": null,
    "note": null
   },
@@ -400,7 +400,7 @@
     "LW-147"
    ],
    "status": "pass",
-   "ms": 516,
+   "ms": 517,
    "error": null,
    "note": null
   },
@@ -413,7 +413,7 @@
     "LW-085"
    ],
    "status": "pass",
-   "ms": 298,
+   "ms": 395,
    "error": null,
    "note": null
   },
@@ -424,7 +424,7 @@
     "LW-104"
    ],
    "status": "pass",
-   "ms": 5,
+   "ms": 6,
    "error": null,
    "note": null
   },
@@ -440,9 +440,9 @@
     "LW-106"
    ],
    "status": "pass",
-   "ms": 6,
+   "ms": 8,
    "error": null,
-   "note": "12 kernel modules, shipped file 350 KB"
+   "note": "12 kernel modules, shipped file 355 KB"
   },
   {
    "id": "U32",
@@ -452,7 +452,7 @@
     "LW-143"
    ],
    "status": "pass",
-   "ms": 50,
+   "ms": 41,
    "error": null,
    "note": null
   },
@@ -465,7 +465,7 @@
     "LW-115"
    ],
    "status": "pass",
-   "ms": 178,
+   "ms": 215,
    "error": null,
    "note": null
   },
@@ -477,9 +477,9 @@
     "LW-117"
    ],
    "status": "pass",
-   "ms": 2992,
+   "ms": 3924,
    "error": null,
-   "note": "152 people, 140 animals: mean 1.295 ms/tick (desktop Node, not a phone)"
+   "note": "152 people, 140 animals: mean 1.697 ms/tick (desktop Node, not a phone)"
   },
   {
    "id": "U35",
@@ -490,7 +490,7 @@
     "LW-149"
    ],
    "status": "pass",
-   "ms": 201,
+   "ms": 232,
    "error": null,
    "note": "2 waypoints round the house; 7 round the lake"
   },
@@ -504,7 +504,7 @@
     "LW-152"
    ],
    "status": "pass",
-   "ms": 438,
+   "ms": 415,
    "error": null,
    "note": "soil range 58..255 after 12 days"
   },
@@ -515,7 +515,7 @@
     "LW-040"
    ],
    "status": "pass",
-   "ms": 158,
+   "ms": 144,
    "error": null,
    "note": "69% of the day spent on the scheduled activity"
   },
@@ -529,7 +529,7 @@
     "LW-019"
    ],
    "status": "pass",
-   "ms": 146,
+   "ms": 147,
    "error": null,
    "note": "channel 0.96 m deep, 13.0 m wide; dam dried 1 downstream cells"
   },
@@ -543,9 +543,23 @@
     "LW-059"
    ],
    "status": "pass",
-   "ms": 178,
+   "ms": 147,
    "error": null,
    "note": "off-road 346 ticks, road 267, cart 217"
+  },
+  {
+   "id": "U40",
+   "name": "society: personal barter and gifts, a chosen leader, rationing enacted and repealed, schools, disputes and raids by rule",
+   "reqs": [
+    "LW-031",
+    "LW-044",
+    "LW-045",
+    "LW-100"
+   ],
+   "status": "pass",
+   "ms": 120,
+   "error": null,
+   "note": "leader Ruibde; conflict events at level 2: raid,raid"
   }
  ]
 }

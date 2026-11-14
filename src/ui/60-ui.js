@@ -208,7 +208,7 @@ function evText(w,e){
     case 'settlement.founded':return d.name+' was founded by '+nm(d.by);case 'settlement.joined':return nm(d.id)+' joined a settlement';
     case 'building.completed':return 'A '+d.kind+' was completed'+(d.by&&d.by!=='player'?' by '+nm(d.by):d.by==='player'?' (placed by the creator)':'');
     case 'building.planned':return 'A '+d.kind+' was planned'+(d.why?': '+d.why:'');case 'building.flooded':return 'A building was flooded';
-    case 'harvest':return 'Harvest of '+d.yield+' food (water '+d.water+')';case 'road.built':return d.by==='player'?'A road was built (by the creator)':(d.name||'A settlement')+' laid a '+(d.to&&d.to.length>10?'road':'path')+' to '+(d.to||'a building');case 'drought':return 'Drought struck '+d.name;case 'drought.ended':return 'The drought at '+d.name+' broke';case 'storm':return 'A storm hit '+d.name;case 'tech.discovered':return d.name+' discovered — '+d.era;
+    case 'harvest':return 'Harvest of '+d.yield+' food (water '+d.water+')';case 'exchange':return nm(d.a)+' traded '+d.gave+' for '+d.got+' with '+nm(d.b);case 'gift':return nm(d.a)+' gave food to '+nm(d.b);case 'leader.chosen':return d.leader+' was chosen to lead '+d.name;case 'law.enacted':return d.name+' began '+d.law;case 'law.repealed':return d.name+' ended '+d.law;case 'institution.founded':return d.name+' founded a '+d.what;case 'raid':return (d.from||'A settlement')+' raided '+(d.against||'its neighbour');case 'dispute':return (d.from||'A settlement')+' quarrelled with '+(d.against||'its neighbour');case 'road.built':return d.by==='player'?'A road was built (by the creator)':(d.name||'A settlement')+' laid a '+(d.to&&d.to.length>10?'road':'path')+' to '+(d.to||'a building');case 'drought':return 'Drought struck '+d.name;case 'drought.ended':return 'The drought at '+d.name+' broke';case 'storm':return 'A storm hit '+d.name;case 'tech.discovered':return d.name+' discovered — '+d.era;
     case 'partnership':return nm(d.a)+' and '+nm(d.b)+' became partners';case 'talk':return nm(d.a)+' talked with '+nm(d.b);
     case 'life.introduced':return 'Life introduced: '+d.count+' × '+((w.species[d.species]||{}).name||d.species);
     case 'plants.seeded':return 'Plants seeded: '+((w.species[d.species]||{}).name||d.species);case 'plants.diedOut':return 'Plants died out here';
@@ -312,9 +312,10 @@ UI.renderInspector=function(){
         btn('Move',moveB),btn('Rotate',()=>App.do('build.move',{id:b.id,n:b.n,yaw:b.yaw+Math.PI/4})),btn('Focus',()=>App.focusOn(b.n,35)),btn('Remove',()=>{App.do('build.remove',{id:b.id});App.select(null);},'ghost'))];
   }else if(s.type==='settlement'){
     const st=w.settlements[s.id];if(!st){App.sel=null;box.hidden=true;return;}
-    title=st.name;sub=LW.society.ERAS[st.era]+' · '+st.members.length+' people · travel: '+LW.society.transport(st);
+    title=st.name;sub=LW.society.ERAS[st.era]+' · '+st.members.length+' people · travel: '+LW.society.transport(st)+(st.leader&&w.persons[st.leader]?' · led by '+w.persons[st.leader].name:'');
     const next=LW.society.TECHS[st.techs.length];
     body=[h('p',{text:'Stores: '+['food','wood','stone','tools'].map(k=>Math.floor(st.stock[k])+' '+k).join(' · ')}),
+      h('p',{text:'Rules in force: '+([st.laws&&st.laws.ration?'rationing':null,st.laws&&st.laws.school?'schooling for the young':null,st.drought?'(drought)':null].filter(Boolean).join(', ')||'none')}),
       h('p',{text:'Knowledge: '+(st.techs.map(t=>LW.society.TECHS.find(x=>x.id===t).name).join(', ')||'none yet')+(next?' · next: '+next.name+' ('+Math.floor(st.know)+'/'+next.cost+')':'')}),
       h('p',{text:'Buildings: '+(st.buildings.map(id=>w.buildings[id]).filter(Boolean).map(b=>b.name+(b.progress<1?' ('+Math.round(b.progress*100)+'%)':'')).join(', ')||'none')}),
       h('div',{class:'chips'},st.members.map(m=>btn(w.persons[m].name,()=>App.select({type:'person',id:m}),'chip'))),h('h4',{text:'Founding'}),chain(w,st.ev)];

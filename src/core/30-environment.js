@@ -203,7 +203,7 @@ E.weather=function(world){
   for(const id in world.settlements){
     const s=world.settlements[id];if(!s.members.length)continue;
     const c=E.cellOf(world,s.n),rain=E.rain(world,s.n,c);
-    if(en.soil[c]<46&&!s.drought){s.drought=world.tick;s.droughtEv=LW.emit(world,'drought',{settlement:s.id,name:s.name,soil:en.soil[c]},[],{n:s.n,cell:c});}
+    if(en.soil[c]<46&&!s.drought){s.drought=world.tick+1;s.droughtEv=LW.emit(world,'drought',{settlement:s.id,name:s.name,soil:en.soil[c]},[],{n:s.n,cell:c});}
     else if(en.soil[c]>90&&s.drought){s.drought=0;LW.emit(world,'drought.ended',{settlement:s.id,name:s.name},[s.droughtEv],{n:s.n});}
     if(rain>0.92*world.rules.hazards&&LW.rand(world)<0.5){
       const ev=LW.emit(world,'storm',{settlement:s.id,name:s.name},[],{n:s.n,cell:c});let hit=0;

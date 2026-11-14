@@ -528,6 +528,34 @@ test('U39','roads speed travel; settlements tread their own paths; vehicles foll
   return 'off-road '+tOff+' ticks, road '+tRoad+', cart '+t;
 });
 
+test('U40','society: personal barter and gifts, a chosen leader, rationing enacted and repealed, schools, disputes and raids by rule',['LW-031','LW-044','LW-045','LW-100'],()=>{
+  const {w,n}=village(46),ids=ok(w,'life.spawn',{speciesId:'sp_human',n:spot(w,n,40),count:4}).result.ids,P=ids.map(i=>w.persons[i]);
+  // barter, then a gift, each remembered by both sides
+  P[0].inv.food=4;P[1].inv.food=0;P[1].inv.wood=2;P[1].needs.hunger=30;LW.mind.converse(w,P[0],P[1]);
+  assert.strictEqual(P[0].inv.food,3);assert.strictEqual(P[1].inv.food,1);assert.strictEqual(P[0].inv.wood,1);assert(w.events.some(e=>e.type==='exchange'&&e.d.got==='wood'));
+  P[2].inv.food=5;P[3].inv.food=0;P[3].needs.hunger=20;P[2].traits.empathy=0.9;LW.mind.converse(w,P[2],P[3]);
+  assert.strictEqual(P[3].inv.food,1,'given food');const r=LW.mind.rel(w,P[2].id,P[3].id);assert(r.owed&&r.aff>0.05,'the gift is owed and warms the relationship');
+  assert(P[3].mem.ep.some(m=>m.k==='gift'&&/fed me/.test(m.x)));
+  P[3].inv.food=0;LW.mind.converse(w,P[2],P[3]);const second=P[3].inv.food;P[3].inv.food=0;LW.mind.converse(w,P[2],P[3]);
+  assert(second===1&&P[3].inv.food===0,'generosity has a limit until it is returned');
+  // leadership and law
+  LW.society.found(w,P[0]);const s=w.settlements[P[0].settlement];for(const q of P)if(q.settlement!==s.id)LW.society.join(w,q,s);
+  s.stock.food=40;LW.society.govern(w,s);assert(s.leader&&w.persons[s.leader],'a leader is chosen');
+  const lead=w.events.find(e=>e.type==='leader.chosen');assert(lead.c.indexOf(s.ev)>=0&&w.persons[s.leader].mem.ep.some(m=>m.k==='office'));
+  assert(!s.laws.ration);s.stock.food=2;LW.society.govern(w,s);assert(s.laws.ration,'rationing enacted in scarcity');
+  s.stock.food=60;LW.society.govern(w,s);assert(!s.laws.ration&&w.events.some(e=>e.type==='law.repealed'),'and repealed in plenty');
+  w.persons[s.leader].alive=false;LW.society.govern(w,s);assert(s.leader&&w.persons[s.leader].alive,'a successor is chosen when the leader dies');
+  s.techs.push('fire','tools','farming','pottery','masonry','wheel','writing');LW.society.govern(w,s);assert(s.laws.school&&w.events.some(e=>e.type==='institution.founded'));
+  // conflict follows the world rule
+  const far=LW.offsetDir(s.n,900,0,R(w)),q2=w.persons[ok(w,'life.spawn',{speciesId:'sp_human',n:far}).result.ids[0]];LW.society.found(w,q2);const s2=w.settlements[q2.settlement];assert(s2&&s2!==s);
+  const clash=level=>{w.rules.conflict=level;s.tension={};s2.tension={};s.stock.food=0;s2.stock.food=30;const e0=w.events.length;ok(w,'world.setMode',{mode:'play'});
+    for(let d=0;d<16;d++){s.stock.food=0;LW.society.daily(w);}return w.events.slice(e0).map(e=>e.type);};
+  const off=clash(0);assert(off.indexOf('raid')<0&&off.indexOf('dispute')<0,'no conflict when the rule is off');
+  const mid=clash(1);assert(mid.indexOf('dispute')>=0&&mid.indexOf('raid')<0,'disputes only at level 1');
+  const food=s2.stock.food=30;const hi=clash(2);assert(hi.indexOf('raid')>=0,'raids at level 2');
+  return 'leader '+w.persons[s.leader].name+'; conflict events at level 2: '+hi.filter(t=>t==='raid'||t==='dispute').join(',');
+});
+
 (async()=>{
   // promise-returning tests registered above
   for(const r of results)if(r.note&&typeof r.note.then==='function'){try{r.note=await r.note;}catch(e){r.status='fail';r.error=String(e&&e.stack||e).split('\n').slice(0,3).join(' | ');r.note=null;console.log('  FAIL '+r.id+' (async) '+r.error);}}

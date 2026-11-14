@@ -86,6 +86,45 @@ S.harvest=function(w,b,p,wf){
   const ev=LW.emit(w,'harvest',{field:b.id,yield:y,water:+wf.toFixed(2)},wf<0.4?[w.env.chg[E.cellOf(w,b.n)],s&&s.drought?s.droughtEv:null]:[],{n:b.n,e:[b.id]});
   if(p)M.remember(w,p,'harvest',y<6?'The harvest was thin; the land is too dry':'We brought in a good harvest',0.5,ev);
 };
+// personal exchange: what a person carries is theirs. Meeting someone in need, they barter if the other has
+// something to give back, or make a gift when they like them; gifts are remembered and returned.
+S.exchange=function(w,a,b,r){
+  for(const [giver,taker] of [[a,b],[b,a]]){
+    if(giver.inv.food<3||taker.inv.food>0||taker.needs.hunger>62)continue;
+    const back=taker.inv.wood>0?'wood':taker.inv.stone>0?'stone':null,owes=(r.owed||0)*(r.a===giver.id?1:-1);      // owes>0: giver is already owed by taker
+    if(back){giver.inv.food--;taker.inv.food++;taker.inv[back]--;giver.inv[back]++;
+      const ev=LW.emit(w,'exchange',{a:giver.id,b:taker.id,gave:'food',got:back},[],{e:[giver.id,taker.id]});
+      M.remember(w,giver,'trade','I traded food for '+back+' with '+taker.name,0.4,ev);M.remember(w,taker,'trade','I traded '+back+' for food with '+giver.name,0.4,ev);r.aff=LW.clamp(r.aff+0.03,-1,1);}
+    else if(r.aff+giver.traits.empathy*0.5>0.3&&owes<2){giver.inv.food--;taker.inv.food++;
+      r.owed=(r.owed||0)+(r.a===giver.id?1:-1);r.aff=LW.clamp(r.aff+0.08,-1,1);
+      const ev=LW.emit(w,'gift',{a:giver.id,b:taker.id,what:'food'},[],{e:[giver.id,taker.id]});
+      M.remember(w,giver,'gift','I gave food to '+taker.name+', who had none',0.5,ev);M.remember(w,taker,'gift',giver.name+' fed me when I had nothing',0.8,ev);M.pushHist(taker,ev);}
+    return;
+  }
+};
+// institutions: a settlement chooses a leader by standing among its people; the leader's council enacts and
+// repeals rules (rationing in scarcity) and, once writing exists, keeps a school that teaches the young
+S.govern=function(w,s){
+  const alive=s.members.map(m=>w.persons[m]).filter(q=>q&&q.alive);if(alive.length<2){s.leader=null;return;}
+  s.laws=s.laws||{};
+  if(!s.leader||!w.persons[s.leader]||!w.persons[s.leader].alive||s.members.indexOf(s.leader)<0){
+    let best=null,bs=-1;
+    for(const q of alive){if(!L.isMature(w,q,w.species[q.speciesId]))continue;let st=q.skills.social*2+q.traits.diligence+q.traits.empathy;
+      for(const o of alive){if(o===q)continue;const r=M.rel(w,q.id,o.id,false);if(r)st+=r.fam*0.5+Math.max(0,r.aff);}
+      if(st>bs){bs=st;best=q;}}
+    if(best){const prev=s.leader;s.leader=best.id;
+      const ev=LW.emit(w,'leader.chosen',{settlement:s.id,name:s.name,id:best.id,leader:best.name,standing:+bs.toFixed(2),after:prev||null},[s.ev],{n:s.n,e:[best.id]});
+      M.remember(w,best,'office','The people of '+s.name+' chose me to lead them',1,ev);M.pushHist(best,ev);
+      for(const q of alive)if(q!==best&&q.lod==='active')M.remember(w,q,'office',best.name+' now leads '+s.name,0.5,ev);}
+  }
+  if(!s.leader)return;
+  const per=s.stock.food/alive.length;
+  if(!s.laws.ration&&per<1.5){s.laws.ration=w.tick+1;s.lawEv=LW.emit(w,'law.enacted',{settlement:s.id,name:s.name,law:'rationing',by:s.leader},[s.drought?s.droughtEv:null],{n:s.n});}
+  else if(s.laws.ration&&per>5){s.laws.ration=0;LW.emit(w,'law.repealed',{settlement:s.id,name:s.name,law:'rationing',by:s.leader},[s.lawEv],{n:s.n});}
+  if(s.techs.indexOf('writing')>=0&&!s.laws.school){s.laws.school=w.tick+1;LW.emit(w,'institution.founded',{settlement:s.id,name:s.name,what:'school'},[s.ev],{n:s.n});}
+  if(s.laws.school){let teacher=null;for(const q of alive)if(!teacher||q.skills.lore>teacher.skills.lore)teacher=q;
+    for(const q of alive)if(!L.isMature(w,q,w.species[q.speciesId]))for(const k in q.skills)if(teacher.skills[k]>q.skills[k])q.skills[k]=Math.min(1,q.skills[k]+0.004);}
+};
 S.maybePartner=function(w,a,b,r){
   if(!w.rules.reproduction||a.partner||b.partner||r.aff<0.5||r.fam<0.55)return;
   const sa=w.species[a.speciesId];if(a.speciesId!==b.speciesId||!L.isMature(w,a,sa)||!L.isMature(w,b,sa))return;
@@ -150,6 +189,7 @@ S.daily=function(w){
       for(const b of s.buildings)if(w.buildings[b])w.buildings[b].era=s.era;
       w.colorEpoch++;
     }
+    S.govern(w,s);
     // institutional memory collects members' first-hand knowledge of water
     for(const m of s.members){const q=w.persons[m];for(const key in q.beliefs){const b=q.beliefs[key];
       if(b.p==='water'&&b.s==='observation'&&b.v&&Object.keys(s.lore).length<12)s.lore[key]={p:b.p,v:true,n:b.n,cell:b.cell,ref:b.ref};
@@ -194,10 +234,10 @@ S.daily=function(w){
     const t=a.tension[b.id];
     if(t<0.5){const rich=a.stock.food>b.stock.food?a:b,poor=rich===a?b:a;
       if(rich.stock.food>rich.members.length*8&&poor.stock.wood>=4){rich.stock.food-=4;poor.stock.food+=4;poor.stock.wood-=4;rich.stock.wood+=4;LW.emit(w,'trade',{a:rich.id,b:poor.id,gave:'food',got:'wood'},[],{n:rich.n});}}
-    else if(t>1&&w.rules.conflict>=1){
+    else if(t>1&&w.rules.conflict>=1&&(w.rules.conflict<2||t>2)){        // at intensity 2 a grievance festers until it becomes a raid
       const raid=t>2&&w.rules.conflict>=2,rich=a.stock.food>b.stock.food?a:b,poor=rich===a?b:a;
       if(raid){const q=Math.floor(rich.stock.food*0.3);rich.stock.food-=q;poor.stock.food+=q;}
-      LW.emit(w,raid?'raid':'dispute',{a:poor.id,b:rich.id},[],{n:rich.n});a.tension[b.id]=0.3;
+      LW.emit(w,raid?'raid':'dispute',{a:poor.id,b:rich.id,from:poor.name,against:rich.name},[poor.lawEv,poor.drought?poor.droughtEv:null],{n:rich.n});a.tension[b.id]=0.3;
       for(const m of a.members)for(const o of b.members.slice(0,3)){const r=M.rel(w,m,o,true);r.aff=LW.clamp(r.aff-0.1,-1,1);}
     }
   }

@@ -21,7 +21,7 @@
     "LW-154"
    ],
    "status": "pass",
-   "ms": 4233,
+   "ms": 4304,
    "error": null,
    "note": "requests: 1 (all file://), storage: indexeddb, renderer: ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftSh"
   },
@@ -37,7 +37,7 @@
     "LW-147"
    ],
    "status": "pass",
-   "ms": 9362,
+   "ms": 9635,
    "error": null,
    "note": "radius 632 km planet created from the advanced panel"
   },
@@ -56,7 +56,7 @@
     "LW-148"
    ],
    "status": "pass",
-   "ms": 19602,
+   "ms": 19823,
    "error": null,
    "note": "Orbit > Continent > Region > Landscape > Settlement > Home; quads 312736 m -> 0.60 m; float step at camera 0.001 mm vs 0.76 m without floating origin"
   },
@@ -76,9 +76,9 @@
     "LW-128"
    ],
    "status": "pass",
-   "ms": 77956,
+   "ms": 74869,
    "error": null,
-   "note": "raised 196.9 m with 5 dabs; undo/redo exact; regeneration preserved the edit"
+   "note": "raised 196.1 m with 5 dabs; undo/redo exact; regeneration preserved the edit"
   },
   {
    "id": "B05",
@@ -91,7 +91,7 @@
     "LW-127"
    ],
    "status": "pass",
-   "ms": 57004,
+   "ms": 66532,
    "error": null,
    "note": "22 controls checked on 360x640 (emulated touch, not a physical phone)"
   },
@@ -103,7 +103,7 @@
     "LW-130"
    ],
    "status": "pass",
-   "ms": 11395,
+   "ms": 12537,
    "error": null,
    "note": null
   },
@@ -124,9 +124,9 @@
     "LW-067"
    ],
    "status": "pass",
-   "ms": 174922,
+   "ms": 128318,
    "error": null,
-   "note": "Wende slept in the bed on command, then chose \"idle\" on release"
+   "note": "Mimo slept in the bed on command, then chose \"gatherFood\" on release"
   },
   {
    "id": "B08",
@@ -138,7 +138,7 @@
     "LW-092"
    ],
    "status": "pass",
-   "ms": 7631,
+   "ms": 7614,
    "error": null,
    "note": "river.dried <- terrain.edited"
   },
@@ -151,9 +151,9 @@
     "LW-150"
    ],
    "status": "pass",
-   "ms": 65033,
+   "ms": 77341,
    "error": null,
-   "note": "5 carve ops opened 91 surface columns"
+   "note": "5 carve ops opened 23 surface columns"
   },
   {
    "id": "B10",
@@ -168,9 +168,9 @@
     "LW-133"
    ],
    "status": "pass",
-   "ms": 38693,
+   "ms": 34681,
    "error": null,
-   "note": "hash abac3d49da2f0f0e identical after reload (undefined)"
+   "note": "hash 10e6ba0fe9ae279d identical after reload (undefined)"
   },
   {
    "id": "B11",
@@ -181,9 +181,9 @@
     "LW-152"
    ],
    "status": "pass",
-   "ms": 17046,
+   "ms": 17241,
    "error": null,
-   "note": "archive 104 KB round-tripped; hash b13464c73777df2a"
+   "note": "archive 106 KB round-tripped; hash 8ee6c9af3144363b"
   },
   {
    "id": "B12",
@@ -193,7 +193,7 @@
     "LW-143"
    ],
    "status": "pass",
-   "ms": 4116,
+   "ms": 4502,
    "error": null,
    "note": null
   },
@@ -206,9 +206,9 @@
     "LW-142"
    ],
    "status": "pass",
-   "ms": 81551,
+   "ms": 82475,
    "error": null,
-   "note": "orbit: 133 ms median, 36346 tris, 103 draws, 21 chunks | region: 303 ms median, 131386 tris, 202 draws, 120 chunks | settlement: 518 ms median, 299571 tris, 706 draws, 136 chunks | home: 763 ms median, 401361 tris, 754 draws, 171 chunks | heap 30 MB | save 122 KB"
+   "note": "orbit: 128 ms median, 35690 tris, 114 draws, 17 chunks | region: 294 ms median, 125930 tris, 208 draws, 111 chunks | settlement: 523 ms median, 306686 tris, 726 draws, 127 chunks | home: 776 ms median, 502540 tris, 798 draws, 163 chunks | heap 25 MB | save 122 KB"
   },
   {
    "id": "B14",
@@ -219,7 +219,7 @@
     "LW-089"
    ],
    "status": "pass",
-   "ms": 19140,
+   "ms": 17658,
    "error": null,
    "note": null
   },
@@ -238,7 +238,7 @@
     "LW-153"
    ],
    "status": "pass",
-   "ms": 43208,
+   "ms": 39327,
    "error": null,
    "note": "three browsers (owner, editor, visitor) on one host; host revision 5"
   }

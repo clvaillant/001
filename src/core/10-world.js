@@ -36,7 +36,7 @@ LW.createWorld=function(cfg){
 LW.newId=(world,prefix)=>prefix+'_'+(world.nextId++).toString(36);
 
 // ---- events ---------------------------------------------------------------
-const KEY_EVENTS={'drought':1,'storm':1,'person.born':1,'person.died':1,'settlement.founded':1,'building.completed':1,'tech.discovered':1,
+const KEY_EVENTS={'leader.chosen':1,'law.enacted':1,'raid':1,'institution.founded':1,'drought':1,'storm':1,'person.born':1,'person.died':1,'settlement.founded':1,'building.completed':1,'tech.discovered':1,
   'world.created':1,'world.play':1,'river.dried':1,'river.formed':1,'partnership':1,'world.regenerated':1};
 LW.emit=function(world,type,data,causes,refs){
   const e={id:'e'+(world.nextId++).toString(36),t:world.tick,type,d:data||{},c:(causes||[]).filter(Boolean),r:refs||{}};

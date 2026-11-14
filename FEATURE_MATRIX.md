@@ -23,9 +23,9 @@ A status describes this build, not the full design. `WORKING_TESTED` means the s
 | Buildings, rooms, doors, furniture with capabilities | `WORKING_TESTED` | 6 templates, add rooms, place/move/rotate/delete furniture, door-graph navigation, occupancy, stores; structures follow sculpted terrain; flooding consequence. | Rectangular rooms only; no free-form walls, stairs or multi-storey. |
 | Interior view | `PARTIAL` | Roof hidden and walls lowered near the camera focus; people visibly lie, sit, walk through doors. | Cutaway is distance-based, not per-wall; no first-person interior camera. |
 | Subsurface volumes (caves) | `PARTIAL` | Up to 24 dig sites of 48×48×33 m in planetary coordinates; carve/fill spheres; real openings to the surface; strata materials; collision; underground cutaway view. | Blocky voxel look; no path planning through tunnels; no mining economy; fixed site size. |
-| Settlements, households, construction, economy | `PARTIAL` | Autonomous founding near water, house/well/field/storehouse/workshop projects, material gathering, stock, harvests; player-built and autonomous buildings share rules. | Economy is a shared stockpile; no prices, ownership or trade routes beyond simple surplus swaps. |
+| Settlements, households, construction, economy | `PARTIAL` | Autonomous founding near water, house/well/field/storehouse/workshop projects, material gathering, stock, harvests; player-built and autonomous buildings share rules. | Shared settlement stock plus personal barter and remembered gifts; no currency, prices, wages or property beyond what a person carries and their household home. |
 | Technology, eras, culture | `PARTIAL` | 14 technologies from fire to spaceflight accumulate from knowledge; era changes building palette and travel speed; discoverer remembered. | Technologies have few gameplay effects; no vehicles, institutions, laws or distinct cultures. |
-| Conflict | `PARTIAL` | Scarcity raises tension between nearby settlements; disputes and (rule-gated) raids move stock and sour relationships. | Not covered by a dedicated test; no combat. |
+| Institutions, law and conflict | `PARTIAL` | Settlements choose a leader by standing and replace one who dies; the council enacts and repeals rationing; schools appear with writing; scarcity raises tension between neighbours, giving disputes or (rule-gated) raids. | One office and two rules only; no courts, votes or factions; raids move stock, there is no combat. |
 | Population cohorts and promotion | `WORKING_TESTED` | Anonymous cohorts with daily dynamics; exact-once promotion to persistent individuals; unknown past is recorded as unknown; bands can found settlements. | Named individuals are never demoted (by design); person cap 400, animal cap 140. |
 | Interest-based detail | `WORKING_TESTED` | People outside the interest region update coarsely; identity, memory and relationships persist; time away recorded as a count. | Coarse mode does not move people or model distant conversations. |
 | Commands, receipts, idempotency, events with provenance | `WORKING_TESTED` | Validated atomic commands, durable receipts, duplicate/reuse semantics, causal chains shown in the inspector. | Receipts kept for the last 3000 commands; events for the last 5000. |
@@ -46,7 +46,7 @@ A status describes this build, not the full design. `WORKING_TESTED` means the s
 
 ## All 155 requirements
 
-Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 69 · `WORKING_TESTED` 74 · `BLOCKED` 5 · `SPECIFIED_ONLY` 1.
+Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 68 · `WORKING_TESTED` 75 · `BLOCKED` 5 · `SPECIFIED_ONLY` 1.
 
 | Req | Status | Tests | Note |
 |---|---|---|---|
@@ -80,7 +80,7 @@ Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 69 · `WORKING_TESTED` 74 
 | LW-028 | `PARTIAL` | U35 | need/goal arbitration; routes round obstacles |
 | LW-029 | `WORKING_TESTED` | U12 B07 |  |
 | LW-030 | `WORKING_TESTED` | U26 | free text disabled without model |
-| LW-031 | `PARTIAL` | U23 | households, partners, kin; no institutions |
+| LW-031 | `PARTIAL` | U23 U40 | households, partners, kin, gifts and debts, leaders, councils, schools |
 | LW-032 | `PARTIAL` | U23 |  |
 | LW-033 | `PARTIAL` | U22 U28 | span/maturity/repro types incl. assembly |
 | LW-034 | `PARTIAL` | U23 | domestic, study, building; little creative/societal |
@@ -93,8 +93,8 @@ Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 69 · `WORKING_TESTED` 74 
 | LW-041 | `PARTIAL` | U39 | roads + five era conveyances; no boats, rail or space travel |
 | LW-042 | `WORKING_TESTED` | U25 B14 |  |
 | LW-043 | `WORKING_TESTED` | U23 U39 |  |
-| LW-044 | `PARTIAL` | U23 | stockpile economy |
-| LW-045 | `PARTIAL` | — | untested disputes/raids |
+| LW-044 | `PARTIAL` | U23 U40 | settlement stock plus personal barter and gifts; no currency or prices |
+| LW-045 | `WORKING_TESTED` | U40 | leaders, rationing law, disputes and raids by rule intensity |
 | LW-046 | `PARTIAL` | U23 |  |
 | LW-047 | `PARTIAL` | U13 U36 | floods, dried rivers, droughts and storms; no erosion |
 | LW-048 | `WORKING_TESTED` | U15 |  |
@@ -149,7 +149,7 @@ Counts: `WORKING_NOT_DEVICE_VALIDATED` 6 · `PARTIAL` 69 · `WORKING_TESTED` 74 
 | LW-097 | `PARTIAL` | U14 |  |
 | LW-098 | `PARTIAL` | U35 |  |
 | LW-099 | `WORKING_TESTED` | U13 |  |
-| LW-100 | `PARTIAL` | U14 | talk, teaching, settlement lore |
+| LW-100 | `PARTIAL` | U14 U40 | talk, teaching, settlement lore |
 | LW-101 | `PARTIAL` | U15 U16 |  |
 | LW-102 | `PARTIAL` | U15 U16 |  |
 | LW-103 | `WORKING_TESTED` | U07 U19 U20 U21 B10 |  |

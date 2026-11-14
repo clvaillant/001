@@ -94,7 +94,7 @@ so there is no polygon count to match, and none of its art was copied.
 - Shadows cover only the area near the camera focus and fade at its edge; there is no ambient occlusion.
 - Four inspector clicks in browser test B07 are dispatched as DOM click events rather than pointer
   presses, because the software renderer's slow frames made pointer-position clicks flaky.
-- Conflict, trade, audio and the catch-up dialog have no dedicated automated tests.
+- Audio and the catch-up dialog have no dedicated automated tests.
 - Person cap 400, animal cap 140, 24 dig sites, 20 000 terrain strokes, 600 buildings.
 
 ## Divergences from the requirements
@@ -118,8 +118,9 @@ Done: **10** pathfinding round buildings and water · **9** weather with consequ
 droughts, storms; schema 1.1 with a migration from 1.0) · **8** schedule editor · **7** LAN play from
 inside the game (join screen, invitations, shared clock; tested with three browsers) · **6** rivers
 carved into the canonical terrain, with sub-cell dams · **5** roads (player-drawn and settlement-laid)
-and five era conveyances (schema 1.2).
-Remaining: **4** ownership, personal trade, institutions · **3** larger caves with tunnel navigation ·
+and five era conveyances (schema 1.2) · **4** personal barter and remembered gifts, chosen leaders,
+rationing law, schools, tested disputes and raids.
+Remaining: **3** larger caves with tunnel navigation ·
 **2** more celestial bodies · **1** Android build, real-phone measurement and a local language model
 (blocked in this environment).
 

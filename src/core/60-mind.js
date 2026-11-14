@@ -223,6 +223,7 @@ M.converse=function(w,a,b){
   a.traits.sociability=clamp(a.traits.sociability+0.002,0,1);
   const ev=LW.emit(w,'talk',{a:a.id,b:b.id,shared},[],{e:[a.id,b.id]});
   M.remember(w,a,'talk','I talked with '+b.name,0.3,ev);M.remember(w,b,'talk',a.name+' talked with me',0.3,ev);
+  LW.society.exchange(w,a,b,r);
   LW.society.maybePartner(w,a,b,r);
 };
 
@@ -313,7 +314,7 @@ M.think=function(w,p,sp){
   const N=p.needs,hour=LW.hourAt(w,p.n),night=hour<5.5||hour>21.5,adult=L.isMature(w,p,sp),st=w.settlements[p.settlement],T=p.traits,C=[];
   const add=(type,score,data)=>{if(score>0)C.push({type,score:score+LW.rand(w)*5-(p.fails[type]||0)*4,data});};
   const en=sp.diet==='energy';
-  if(!en){if(N.thirst<55)add('drink',(62-N.thirst)*2.4);if(N.hunger<50)add('eat',(56-N.hunger)*2.0);}
+  if(!en){if(N.thirst<55)add('drink',(62-N.thirst)*2.4);const eatAt=st&&st.laws&&st.laws.ration?34:50;if(N.hunger<eatAt)add('eat',(eatAt+6-N.hunger)*2.0);}
   if(N.energy<25||(night&&N.energy<72))add('sleep',(night?40:0)+(62-N.energy)*1.5);
   if(N.social<45)add('socialize',(52-N.social)*(0.5+T.sociability));
   for(const s of p.schedule)if(hour>=s.h0&&hour<s.h1)add(s.what==='work'?'_work':s.what,60,s.data);
