@@ -34,17 +34,18 @@ App.initStore=async function(){
   if(!kv){kv=LW.save.memoryKV();}          // truthful fallback: nothing persists; UI tells the player to export
   App.store=new LW.save.Store(kv);App.storeKind=kv.kind;
 };
-LW.onCommit=function(world,cmd,actor){
+LW.onCommit=function(world,cmd,actor,tick){
   if(world!==App.world||!App.store)return;
-  App.store.journal(world,cmd,actor).catch(()=>{App.storeError=true;});
+  App.store.journal(world,cmd,actor,tick).catch(()=>{App.storeError=true;});
 };
 App.snapshot=async function(force){
-  const w=App.world;if(!w||!App.store||App.saving)return false;
+  const w=App.world;if(!w||!App.store)return false;
+  if(App.saving){if(!force)return false;try{await App.saving;}catch(e){}if(App.world!==w)return false;}      // a forced save waits for the one in flight
   if(!force&&w.revision===App.lastSnapRev&&w.tick===App.lastSnapTick)return false;
-  App.saving=true;
-  try{await App.store.snapshot(w,Date.now());App.lastSnapRev=w.revision;App.lastSnapTick=w.tick;App.storeError=false;App.lastSaved=Date.now();return true;}
+  const rev=w.revision,tick=w.tick,job=App.saving=App.store.snapshot(w,Date.now());
+  try{await job;App.lastSnapRev=rev;App.lastSnapTick=tick;App.storeError=false;App.lastSaved=Date.now();return true;}
   catch(e){App.storeError=true;App.toast('Autosave failed ('+(e&&e.name||'storage error')+'). Use Menu → Export to keep this world.','err');return false;}
-  finally{App.saving=false;}
+  finally{if(App.saving===job)App.saving=null;}
 };
 
 // ---- commands -------------------------------------------------------------------------
@@ -86,6 +87,7 @@ App.openSaved=async function(id){
     const r=await App.store.load(id);await App.startWorld(r.world,false);
     App.lastSnapRev=-1;
     if(r.report.recoveredFromOlder)App.toast('The newest save was damaged; recovered the previous generation.','warn');
+    else if(r.report.failed)App.toast('Restored '+r.report.replayed+' later edits; one could not be replayed ('+r.report.error+') and edits after it were dropped.','warn');
     else if(r.report.replayed)App.toast('Restored '+r.report.replayed+' edits made after the last snapshot.');
     return r;
   }catch(e){App.toast('Could not open save: '+(e.message||e.code),'err');return null;}
@@ -230,7 +232,7 @@ App.bindInput=function(cv){
   cv.addEventListener('contextmenu',e=>e.preventDefault());
   cv.addEventListener('pointerdown',e=>{
     LW.audio.start();cv.setPointerCapture(e.pointerId);const p=xy(e);pts.set(e.pointerId,p);
-    if(pts.size===1){moved=0;t0=performance.now();start=p;mode=(e.button===2||e.button===1)?'orbit':'undecided';}
+    if(pts.size===1){moved=0;t0=e.timeStamp;start=p;mode=(e.button===2||e.button===1)?'orbit':'undecided';}
     else if(pts.size===2){if(mode==='stroke')App.strokeEnd();mode='pinch';pinch=null;}
   });
   cv.addEventListener('pointermove',e=>{
@@ -260,7 +262,7 @@ App.bindInput=function(cv){
     if(!pts.has(e.pointerId))return;const p=pts.get(e.pointerId);pts.delete(e.pointerId);
     if(pts.size===0){
       if(mode==='stroke')App.strokeEnd();
-      else if(mode==='undecided'&&moved<8&&performance.now()-t0<500&&App.phase==='play')App.tap(p[0],p[1]);
+      else if(mode==='undecided'&&moved<8&&e.timeStamp-t0<700&&App.phase==='play')App.tap(p[0],p[1]);      // input timestamps, so a slow frame never eats a tap
       mode=null;
     }else if(pts.size===1){mode='pan';pinch=null;}
   };

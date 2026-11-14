@@ -11,3 +11,20 @@ Living World browser tests (software WebGL, network denied)
        22 controls checked on 360x640 (emulated touch, not a physical phone)
   FAIL B06 keyboard and mouse navigation alternatives: wheel zoom, right-drag rotate/tilt, keys, double-click focus
        AssertionError [ERR_ASSERTION]: wheel zooms |     at /home/user/001/tests/browser.cjs:170:120 |     at async test (/home/user/001/tests/browser.cjs:11:12) |     at async /home/user/001/tests/browser.cjs:167:3
+  FAIL B07 integrated path by UI: plants -> home -> person -> command to use bed -> Play -> release -> autonomous life -> inspector
+       page.click: Timeout 45000ms exceeded. | Call log: | [2m  - waiting for locator('#insp').locator('text=Take control')[22m | [2m    28 × locator resolved to <button class="b primary">Take control</button>[22m
+  FAIL B08 cause and effect in the app: terrain edit dries the river; inspector explains why
+       AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value: |  |   assert(/Why the water here changed/.test(await pg.textContent('#insp'))) | 
+  ok   B09 dig site: carve by dragging; opening is rendered in the same space; underground view
+       5 carve ops opened 250 surface columns
+  FAIL B10 persistence across a real page reload: same planet, edits, home, resident, memories and history; world keeps advancing
+       AssertionError [ERR_ASSERTION]: post-snapshot edit recovered from the journal |  | 1 !== 2 | 
+  FAIL B11 export/import between independent browser profiles; corrupted file refused and current world untouched
+       AssertionError [ERR_ASSERTION]: imported world is byte-identical | + actual - expected |  | + '2a5aab43b6227674'
+  ok   B12 storage blocked: game still runs and truthfully warns that nothing is kept; export still works
+  ok   B13 frame timing and scene complexity at four scales (SOFTWARE renderer; not device evidence); adaptive quality reacts
+       orbit: 367 ms median, 14566 tris, 87 draws, 15 chunks | region: 385 ms median, 77286 tris, 185 draws, 113 chunks | settlement: 434 ms median, 115660 tris, 357 draws, 119 chunks | home: 451 ms median, 133884 tris, 405 draws, 144 chunks | heap 14 MB | save 90 KB
+  ok   B14 WebGL context loss is survived; species editor and activity editor create validated content
+
+browser: 8/14 passed
+EXIT 1

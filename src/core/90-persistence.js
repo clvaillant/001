@@ -97,9 +97,10 @@ SV.Store=class{
     for(const k of await this.kv.keys()){const m=/^w:(.+):j:(\d+)$/.exec(k);if(m&&m[1]===id&&+m[2]<=jseq)await this.kv.del(k);}
     return next.seq;
   }
-  async journal(world,cmd,actor){
+  // tick = the logical time at which the command was applied (before any time it advanced itself)
+  async journal(world,cmd,actor,tick){
     const id=world.id,n=this.jn[id]=(this.jn[id]||0)+1;
-    await this.kv.set('w:'+id+':j:'+String(n).padStart(9,'0'),JSON.stringify({n,tick:world.tick,cmd,actor}));
+    await this.kv.set('w:'+id+':j:'+String(n).padStart(9,'0'),JSON.stringify({n,tick:tick===undefined?world.tick:tick,cmd,actor}));
   }
   // load newest valid generation, then replay journaled commands (deterministic: advance to the command's tick, re-dispatch)
   async load(id){
@@ -115,7 +116,7 @@ SV.Store=class{
     try{for(const k of js){let e;try{e=JSON.parse(await this.kv.get(k));}catch(x){rep.failed++;break;}
       maxN=Math.max(maxN,e.n);
       while(w.tick<e.tick)LW.tick(w);
-      const r=LW.dispatch(w,e.cmd,e.actor);if(r.ok)rep.replayed++;else{rep.failed++;break;}}}
+      const r=LW.dispatch(w,e.cmd,e.actor);if(r.ok)rep.replayed++;else{rep.failed++;rep.error=e.cmd.type+': '+(r.error||r.code);break;}}}
     finally{LW.onCommit=hook;}
     this.gen[id]={gen:good.gen,seq:good.seq};this.jn[id]=maxN;
     return {world:w,report:rep};

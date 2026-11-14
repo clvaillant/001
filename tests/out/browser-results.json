@@ -1,112 +1,12 @@
 {
  "suite": "browser",
  "env": {
-  "chromium": "153.0.8010.12",
-  "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftSh"
+  "chromium": "153.0.8010.12"
  },
- "total": 14,
- "pass": 2,
- "fail": 12,
+ "total": 1,
+ "pass": 1,
+ "fail": 0,
  "results": [
-  {
-   "id": "B01",
-   "name": "single file opens from file:// with the network denied; title screen shows a live 3D planet",
-   "reqs": [
-    "LW-001",
-    "LW-011",
-    "LW-066",
-    "LW-070",
-    "LW-114",
-    "LW-124",
-    "LW-154"
-   ],
-   "status": "pass",
-   "ms": 2392,
-   "error": null,
-   "note": "requests: 1 (all file://), storage: indexeddb, renderer: ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftSh"
-  },
-  {
-   "id": "B02",
-   "name": "Quick Start creates a unique, editable, uninhabited world; Advanced setup regenerates the planet live",
-   "reqs": [
-    "LW-012",
-    "LW-072",
-    "LW-073",
-    "LW-125",
-    "LW-151",
-    "LW-147"
-   ],
-   "status": "pass",
-   "ms": 4792,
-   "error": null,
-   "note": "radius 632 km planet created from the advanced panel"
-  },
-  {
-   "id": "B03",
-   "name": "continuous zoom from orbit to ground in ONE world/scene; LOD refines; floating-origin precision holds on an Earth-sized planet",
-   "reqs": [
-    "LW-002",
-    "LW-014",
-    "LW-060",
-    "LW-068",
-    "LW-074",
-    "LW-112",
-    "LW-130",
-    "LW-131",
-    "LW-148"
-   ],
-   "status": "fail",
-   "ms": 300003,
-   "error": "Error: test timed out after 300 s |     at Timeout._onTimeout (/home/user/001/tests/browser.cjs:11:77) |     at listOnTimeout (node:internal/timers:585:17) |     at process.processTimers (node:internal/timers:521:7)",
-   "note": null
-  },
-  {
-   "id": "B04",
-   "name": "mouse sculpting with visible brush: immediate terrain change, undo, redo, sea level, biome paint, protected regeneration",
-   "reqs": [
-    "LW-013",
-    "LW-063",
-    "LW-076",
-    "LW-077",
-    "LW-079",
-    "LW-082",
-    "LW-083",
-    "LW-086",
-    "LW-127",
-    "LW-128"
-   ],
-   "status": "fail",
-   "ms": 108338,
-   "error": "page.click: Timeout 45000ms exceeded. | Call log: | \u001b[2m  - waiting for locator('button[aria-label=\"Sculpt\"]')\u001b[22m | \u001b[2m    - locator resolved to <button class=\"cat sug\" aria-label=\"Sculpt\">…</button>\u001b[22m",
-   "note": null
-  },
-  {
-   "id": "B05",
-   "name": "touch: one-finger drag pans, pinch zooms, tap selects; phone layout keeps every control on screen",
-   "reqs": [
-    "LW-038",
-    "LW-049",
-    "LW-052",
-    "LW-126",
-    "LW-127"
-   ],
-   "status": "fail",
-   "ms": 54429,
-   "error": "AssertionError [ERR_ASSERTION]: drag panned the camera |     at /home/user/001/tests/browser.cjs:143:5 |     at async test (/home/user/001/tests/browser.cjs:11:12) |     at async /home/user/001/tests/browser.cjs:136:3",
-   "note": null
-  },
-  {
-   "id": "B06",
-   "name": "keyboard and mouse navigation alternatives: wheel zoom, right-drag rotate/tilt, keys, double-click focus",
-   "reqs": [
-    "LW-126",
-    "LW-130"
-   ],
-   "status": "fail",
-   "ms": 20375,
-   "error": "page.evaluate: Target page, context or browser has been closed |     at s (/home/user/001/tests/browser.cjs:168:20) |     at /home/user/001/tests/browser.cjs:169:116 |     at async test (/home/user/001/tests/browser.cjs:11:12)",
-   "note": null
-  },
   {
    "id": "B07",
    "name": "integrated path by UI: plants -> home -> person -> command to use bed -> Play -> release -> autonomous life -> inspector",
@@ -123,105 +23,10 @@
     "LW-050",
     "LW-067"
    ],
-   "status": "fail",
-   "ms": 18,
-   "error": "browser.newContext: Protocol error (Target.createBrowserContext): Failed to create browser context. |     at async open (/home/user/001/tests/browser.cjs:15:13) |     at async /home/user/001/tests/browser.cjs:180:25 |     at async test (/home/user/001/tests/browser.cjs:11:12)",
-   "note": null
-  },
-  {
-   "id": "B08",
-   "name": "cause and effect in the app: terrain edit dries the river; inspector explains why",
-   "reqs": [
-    "LW-019",
-    "LW-050",
-    "LW-078",
-    "LW-092"
-   ],
-   "status": "fail",
-   "ms": 10,
-   "error": "browser.newContext: Target page, context or browser has been closed | Browser logs: |  | <launching> /opt/pw-browsers/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --use-gl=swiftshader --enable-unsafe-swiftshader --ignore-gpu-blocklist --user-data-dir=/tmp/playwright_chromiumdev_profile-iex1jh --remote-debugging-pipe --no-startup-window",
-   "note": null
-  },
-  {
-   "id": "B09",
-   "name": "dig site: carve by dragging; opening is rendered in the same space; underground view",
-   "reqs": [
-    "LW-081",
-    "LW-134",
-    "LW-150"
-   ],
-   "status": "fail",
-   "ms": 0,
-   "error": "browser.newContext: Target page, context or browser has been closed |     at async open (/home/user/001/tests/browser.cjs:15:13) |     at async /home/user/001/tests/browser.cjs:250:25 |     at async test (/home/user/001/tests/browser.cjs:11:12)",
-   "note": null
-  },
-  {
-   "id": "B10",
-   "name": "persistence across a real page reload: same planet, edits, home, resident, memories and history; world keeps advancing",
-   "reqs": [
-    "LW-056",
-    "LW-087",
-    "LW-090",
-    "LW-103",
-    "LW-109",
-    "LW-129",
-    "LW-133"
-   ],
-   "status": "fail",
-   "ms": 1,
-   "error": "browser.newContext: Target page, context or browser has been closed |     at async open (/home/user/001/tests/browser.cjs:15:13) |     at async /home/user/001/tests/browser.cjs:266:25 |     at async test (/home/user/001/tests/browser.cjs:11:12)",
-   "note": null
-  },
-  {
-   "id": "B11",
-   "name": "export/import between independent browser profiles; corrupted file refused and current world untouched",
-   "reqs": [
-    "LW-056",
-    "LW-123",
-    "LW-152"
-   ],
-   "status": "fail",
-   "ms": 0,
-   "error": "browser.newContext: Target page, context or browser has been closed |     at async open (/home/user/001/tests/browser.cjs:15:13) |     at async /home/user/001/tests/browser.cjs:286:13 |     at async test (/home/user/001/tests/browser.cjs:11:12)",
-   "note": null
-  },
-  {
-   "id": "B12",
-   "name": "storage blocked: game still runs and truthfully warns that nothing is kept; export still works",
-   "reqs": [
-    "LW-056",
-    "LW-143"
-   ],
-   "status": "fail",
-   "ms": 0,
-   "error": "browser.newContext: Target page, context or browser has been closed |     at async open (/home/user/001/tests/browser.cjs:15:13) |     at async /home/user/001/tests/browser.cjs:308:25 |     at async test (/home/user/001/tests/browser.cjs:11:12)",
-   "note": null
-  },
-  {
-   "id": "B13",
-   "name": "frame timing and scene complexity at four scales (SOFTWARE renderer; not device evidence); adaptive quality reacts",
-   "reqs": [
-    "LW-069",
-    "LW-111",
-    "LW-142"
-   ],
-   "status": "fail",
-   "ms": 1,
-   "error": "browser.newContext: Target page, context or browser has been closed |     at async open (/home/user/001/tests/browser.cjs:15:13) |     at async /home/user/001/tests/browser.cjs:315:25 |     at async test (/home/user/001/tests/browser.cjs:11:12)",
-   "note": null
-  },
-  {
-   "id": "B14",
-   "name": "WebGL context loss is survived; species editor and activity editor create validated content",
-   "reqs": [
-    "LW-023",
-    "LW-042",
-    "LW-089"
-   ],
-   "status": "fail",
-   "ms": 0,
-   "error": "browser.newContext: Target page, context or browser has been closed |     at async open (/home/user/001/tests/browser.cjs:15:13) |     at async /home/user/001/tests/browser.cjs:332:25 |     at async test (/home/user/001/tests/browser.cjs:11:12)",
-   "note": null
+   "status": "pass",
+   "ms": 43784,
+   "error": null,
+   "note": "Kasa slept in the bed on command, then chose \"found\" on release"
   }
  ]
 }

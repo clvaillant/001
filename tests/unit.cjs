@@ -288,12 +288,12 @@ async function asyncTests(){
   });
   await atest('U20','crash recovery: journaled commands after the last snapshot are replayed to the identical state',['LW-103','LW-109','LW-129'],async()=>{
     const kv=LW.save.memoryKV(),st=new LW.save.Store(kv),{w,n}=village(27);
-    const pend=[];LW.onCommit=(world,cmd,actor)=>{if(world===w)pend.push(st.journal(world,cmd,actor));};
+    const pend=[];LW.onCommit=(world,cmd,actor,tick)=>{if(world===w)pend.push(st.journal(world,cmd,actor,tick));};
     ok(w,'life.spawn',{speciesId:'sp_human',n:LW.offsetDir(n,20,20,R(w)),count:2});ok(w,'world.setMode',{mode:'play'});run(w,500);
     await Promise.all(pend);await st.snapshot(w,1);
     // more play + edits, then the process "crashes" without a new snapshot
     ok(w,'terrain.edit',{tool:'raise',n:LW.offsetDir(n,300,0,R(w)),r:200,s:20});run(w,700);
-    ok(w,'build.place',{template:'cottage',n:spot(w,n,70)});run(w,300);ok(w,'life.spawn',{speciesId:'sp_grazer',n:LW.offsetDir(n,-50,0,R(w)),count:3});
+    ok(w,'build.place',{template:'cottage',n:spot(w,n,70)});run(w,300);ok(w,'time.advance',{ticks:250});ok(w,'life.spawn',{speciesId:'sp_grazer',n:LW.offsetDir(n,-50,0,R(w)),count:3});
     assert(LW.undo(w).ok);await Promise.all(pend);LW.onCommit=null;
     const live=hash(w),r=await new LW.save.Store(kv).load(w.id);
     assert(r.report.replayed>=4,'replayed '+r.report.replayed);assert.strictEqual(r.report.failed,0);

@@ -8,8 +8,8 @@ function h(tag,props){
   if(props)for(const k in props){const v=props[k];
     if(k==='class')e.className=v;else if(k==='text')e.textContent=v;else if(k.slice(0,2)==='on')e.addEventListener(k.slice(2),v);
     else if(k==='style')e.style.cssText=v;else if(k==='value')e.value=v;else if(v!==false&&v!=null)e.setAttribute(k,v===true?'':v);}
-  for(let i=2;i<arguments.length;i++){const c=arguments[i];if(c==null||c===false)continue;
-    if(Array.isArray(c))c.forEach(x=>x!=null&&x!==false&&e.append(x.nodeType?x:document.createTextNode(String(x))));else e.append(c.nodeType?c:document.createTextNode(String(c)));}
+  const add=c=>{if(c==null||c===false)return;if(Array.isArray(c))c.forEach(add);else e.append(c.nodeType?c:document.createTextNode(String(c)));};
+  for(let i=2;i<arguments.length;i++)add(arguments[i]);
   return e;
 }
 UI.h=h;
@@ -25,7 +25,7 @@ function select(label,opts,val,fn){
 }
 const fmtM=m=>Math.abs(m)>=10000?(m/1000).toFixed(0)+' km':Math.abs(m)>=1000?(m/1000).toFixed(1)+' km':m.toFixed(m<10?1:0)+' m';
 const el=id=>document.getElementById(id);
-function set(id,nodes){const e=el(id);e.replaceChildren.apply(e,[].concat(nodes).filter(Boolean));return e;}
+function set(id,nodes){const e=el(id);e.replaceChildren.apply(e,[nodes].flat(Infinity).filter(Boolean));return e;}
 
 // ---- start screen --------------------------------------------------------------------------
 const PRESETS={
@@ -141,10 +141,10 @@ UI.renderTop=function(){
 UI.renderTools=function(){
   const t=App.tool,w=App.world;if(!w)return;
   const sug=SUGGEST[App.scale()]||[];
-  set('toolbar',CATS.map(c=>h('button',{class:'cat'+(t.cat===c[0]?' on':'')+(sug.indexOf(c[0])>=0?' sug':''),onclick:()=>{App.setTool(c[0],c[0]==='sculpt'?'raise':c[0]==='paint'?'biome':c[0]==='life'?'plants':c[0]==='build'?'template':c[0]==='dig'?'carve':c[0]);},'aria-label':c[2]},h('span',{class:'ic',text:c[1]}),h('span',{class:'tx',text:c[2]}))));
+  set('toolbar',CATS.map(c=>h('button',{class:'cat'+(t.cat===c[0]?' on':'')+(sug.indexOf(c[0])>=0?' sug':''),onclick:()=>{if(t.cat===c[0]&&c[0]!=='nav'){UI.stripHidden=!UI.stripHidden;return UI.renderTools();}UI.stripHidden=false;App.setTool(c[0],c[0]==='sculpt'?'raise':c[0]==='paint'?'biome':c[0]==='life'?'plants':c[0]==='build'?'template':c[0]==='dig'?'carve':c[0]);},'aria-label':c[2]},h('span',{class:'ic',text:c[1]}),h('span',{class:'tx',text:c[2]}))));
   const editing=App.isBrush()||['carve','fill'].indexOf(t.id)>=0,placing=['creature','person','cohort','template','comp','digsite'].indexOf(t.id)>=0;
   const md=el('mode');md.className=editing?'edit':placing?'place':'navm';
-  md.textContent=App.pending?App.pending.label:editing?'EDIT · drag on the world to '+t.id+' · two fingers / right-drag to move':placing?'PLACE · tap the world':'NAVIGATE · drag to move · pinch / scroll to zoom · tap to inspect';
+  const more=UI.stripHidden?' · tap the tool again for options':'';md.textContent=App.pending?App.pending.label:editing?'EDIT · drag on the world to '+t.id+' · two fingers / right-drag to move':placing?'PLACE · tap the world'+more:'NAVIGATE · drag to move · pinch / scroll to zoom · tap to inspect';
   const tools=(list)=>h('div',{class:'chips'},list.map(x=>btn(x[1],()=>App.setTool(t.cat,x[0]),'chip'+(t.id===x[0]?' on':''))));
   const R=w.body.radius,rad=()=>slider('Brush radius',0,1,0.002,Math.log(t.r/2)/Math.log(R*0.6/2),v=>{t.r=2*Math.pow(R*0.6/2,v);t.lockR=true;},v=>fmtM(2*Math.pow(R*0.6/2,v)));
   const amp=P.amplitude(w.body),str=()=>slider('Strength',0,1,0.002,Math.log(t.s/0.2)/Math.log((amp+10)/0.2),v=>{t.s=0.2*Math.pow((amp+10)/0.2,v);t.lockR=true;},v=>fmtM(0.2*Math.pow((amp+10)/0.2,v)));
@@ -166,7 +166,7 @@ UI.renderTools=function(){
     slider('View depth',0,24,0.5,App.cam.depth,v=>{App.cam.depth=v;},v=>v?v+' m below ground':'surface'),
     h('p',{class:'note',text:'Dig sites are editable 3D volumes in the same planetary space. Carve from the surface to open an entrance, then raise View depth to look inside.'})];
   else if(t.cat==='planet')strip=UI.planetPanel();
-  set('strip',strip?[h('div',{class:'stripin'},strip)]:[]);el('strip').hidden=!strip;
+  set('strip',strip?[h('div',{class:'stripin'},strip)]:[]);el('strip').hidden=!strip||!!UI.stripHidden;
   UI.renderInspector();
 };
 UI.planetPanel=function(){
@@ -452,7 +452,8 @@ UI.frameLabels=function(){
   want.forEach((x,i)=>{const e=box.children[i];if(e.textContent!==x[1])e.textContent=x[1];e.className=x[1]==='•'?'lbl dot':'lbl';e.style.transform='translate('+Math.round(x[2].x)+'px,'+Math.round(x[2].y)+'px)';});
 };
 UI.renderAll=function(){UI.renderTop();UI.renderTools();UI.renderNav();UI.renderHint();};
-let lastScale='',lastMode='',lastSel='';
+let lastScale='',lastMode='',lastSel='',inspT=0;UI.touchT=0;
+addEventListener('pointerdown',e=>{if(e.target&&e.target.closest&&e.target.closest('#insp'))UI.touchT=Date.now();},true);
 App.listeners.push(what=>{
   if(App.phase!=='play'||!App.world){if(what==='toast')UI.renderToast();return;}
   const w=App.world;
@@ -462,7 +463,7 @@ App.listeners.push(what=>{
     el('scale').textContent=App.scale()+' · '+fmtM(Math.max(0,App.cam.alt))+(App.cam.depth>0?' · '+App.cam.depth+' m underground view':'')+(App.terrain.pending>0?' · refining…':'');
     const sc=App.scale();if(sc!==lastScale){lastScale=sc;App.autoBrush();UI.renderTools();}
     if(w.mode!==lastMode){lastMode=w.mode;UI.renderTop();}
-    if(!el('insp').hidden||App.sel)UI.renderInspector();
+    if((!el('insp').hidden||App.sel)&&Date.now()-inspT>2500&&Date.now()-UI.touchT>1500){inspT=Date.now();UI.renderInspector();}
     UI.renderHint();return;
   }
   if(what==='speed'||what==='world'||what==='world.setMode'||what==='undo'||what==='redo')UI.renderTop();

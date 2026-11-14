@@ -78,7 +78,7 @@ progress{width:100%;height:14px}
 <div id="modal" hidden></div>
 <noscript><p style="padding:24px">Living World needs JavaScript (it runs entirely on this device; nothing is sent anywhere).</p></noscript>
 <script>
-globalThis.LW_BUILD="7a1a86b0f921";
+globalThis.LW_BUILD="446610de2413";
 // ===== src/core/00-util.js =====
 // world-core / utilities: deterministic maths, hashing, seeded noise, canonical JSON.
 // No DOM, no wall-clock and no unseeded randomness in this file or anything under src/core.
@@ -299,7 +299,7 @@ LW.dispatch=function(world,cmd,actor){
   let err=null;
   try{err=def.validate?def.validate(world,p,actor):null;}catch(e){err='validation error: '+e.message;}
   if(err)return fail('invalid',err);
-  const ctx={actor,cmd,evt:null};
+  const ctx={actor,cmd,evt:null},tick0=world.tick;
   let res;
   try{res=def.apply(world,p,ctx)||{};}
   catch(e){world.fault=(world.fault||0)+1;return fail('apply_exception',e&&e.message);}
@@ -315,7 +315,7 @@ LW.dispatch=function(world,cmd,actor){
     }
     world.redo=[];
   }
-  if(LW.onCommit)LW.onCommit(world,cmd,actor,receipt);
+  if(LW.onCommit)LW.onCommit(world,cmd,actor,tick0);
   return {ok:true,receipt,result:receipt.result,inverse:res.undo||null,label:res.label};
 };
 // Undo is a compensating command: it reverts the edit itself, never the consequences already simulated.
@@ -373,6 +373,7 @@ LW.def('world.rename',{perm:'owner',validate:(w,p)=>typeof p.name==='string'&&p.
 LW.def('world.setBody',{perm:'edit',
   validate(w,p){
     for(const k of Object.keys(p)){
+      if(k==='gid')continue;
       if(k==='baseTemp'){if(!num(p[k],-120,120))return 'baseTemp out of range';}
       else if(k==='atmDensity'){if(!num(p[k],0,5))return 'atmDensity out of range';}
       else if(k==='starLum'){if(!num(p[k],0.1,4))return 'starLum out of range';}
@@ -384,8 +385,8 @@ LW.def('world.setBody',{perm:'edit',
     const b=w.body,old={};
     const get=k=>k==='baseTemp'?b.atmosphere.baseTemp:k==='atmDensity'?b.atmosphere.density:k==='starLum'?b.star.lum:k==='starColor'?b.star.color.slice():k==='atmColor'?b.atmosphere.color.slice():b[k];
     const set=(k,v)=>{if(k==='baseTemp')b.atmosphere.baseTemp=v;else if(k==='atmDensity')b.atmosphere.density=v;else if(k==='starLum')b.star.lum=v;else if(k==='starColor')b.star.color=v;else if(k==='atmColor')b.atmosphere.color=v;else b[k]=v;};
-    for(const k of Object.keys(p)){old[k]=get(k);set(k,p[k]);}
-    const ev=LW.emit(w,'world.bodyChanged',{fields:Object.keys(p)});
+    for(const k of Object.keys(p)){if(k==='gid')continue;old[k]=get(k);set(k,p[k]);}
+    const ev=LW.emit(w,'world.bodyChanged',{fields:Object.keys(old)});
     LW.env.markAllDirty(w,ev);w.colorEpoch++;
     return {undo:{type:'world.setBody',payload:old},label:'Planet settings',gid:p.gid};}});
 // selective regeneration: new procedural base everywhere EXCEPT regions the player edited by hand
@@ -2144,9 +2145,10 @@ SV.Store=class{
     for(const k of await this.kv.keys()){const m=/^w:(.+):j:(\d+)$/.exec(k);if(m&&m[1]===id&&+m[2]<=jseq)await this.kv.del(k);}
     return next.seq;
   }
-  async journal(world,cmd,actor){
+  // tick = the logical time at which the command was applied (before any time it advanced itself)
+  async journal(world,cmd,actor,tick){
     const id=world.id,n=this.jn[id]=(this.jn[id]||0)+1;
-    await this.kv.set('w:'+id+':j:'+String(n).padStart(9,'0'),JSON.stringify({n,tick:world.tick,cmd,actor}));
+    await this.kv.set('w:'+id+':j:'+String(n).padStart(9,'0'),JSON.stringify({n,tick:tick===undefined?world.tick:tick,cmd,actor}));
   }
   // load newest valid generation, then replay journaled commands (deterministic: advance to the command's tick, re-dispatch)
   async load(id){
@@ -2162,7 +2164,7 @@ SV.Store=class{
     try{for(const k of js){let e;try{e=JSON.parse(await this.kv.get(k));}catch(x){rep.failed++;break;}
       maxN=Math.max(maxN,e.n);
       while(w.tick<e.tick)LW.tick(w);
-      const r=LW.dispatch(w,e.cmd,e.actor);if(r.ok)rep.replayed++;else{rep.failed++;break;}}}
+      const r=LW.dispatch(w,e.cmd,e.actor);if(r.ok)rep.replayed++;else{rep.failed++;rep.error=e.cmd.type+': '+(r.error||r.code);break;}}}
     finally{LW.onCommit=hook;}
     this.gen[id]={gen:good.gen,seq:good.seq};this.jn[id]=maxN;
     return {world:w,report:rep};
@@ -3060,17 +3062,18 @@ App.initStore=async function(){
   if(!kv){kv=LW.save.memoryKV();}          // truthful fallback: nothing persists; UI tells the player to export
   App.store=new LW.save.Store(kv);App.storeKind=kv.kind;
 };
-LW.onCommit=function(world,cmd,actor){
+LW.onCommit=function(world,cmd,actor,tick){
   if(world!==App.world||!App.store)return;
-  App.store.journal(world,cmd,actor).catch(()=>{App.storeError=true;});
+  App.store.journal(world,cmd,actor,tick).catch(()=>{App.storeError=true;});
 };
 App.snapshot=async function(force){
-  const w=App.world;if(!w||!App.store||App.saving)return false;
+  const w=App.world;if(!w||!App.store)return false;
+  if(App.saving){if(!force)return false;try{await App.saving;}catch(e){}if(App.world!==w)return false;}      // a forced save waits for the one in flight
   if(!force&&w.revision===App.lastSnapRev&&w.tick===App.lastSnapTick)return false;
-  App.saving=true;
-  try{await App.store.snapshot(w,Date.now());App.lastSnapRev=w.revision;App.lastSnapTick=w.tick;App.storeError=false;App.lastSaved=Date.now();return true;}
+  const rev=w.revision,tick=w.tick,job=App.saving=App.store.snapshot(w,Date.now());
+  try{await job;App.lastSnapRev=rev;App.lastSnapTick=tick;App.storeError=false;App.lastSaved=Date.now();return true;}
   catch(e){App.storeError=true;App.toast('Autosave failed ('+(e&&e.name||'storage error')+'). Use Menu → Export to keep this world.','err');return false;}
-  finally{App.saving=false;}
+  finally{if(App.saving===job)App.saving=null;}
 };
 
 // ---- commands -------------------------------------------------------------------------
@@ -3112,6 +3115,7 @@ App.openSaved=async function(id){
     const r=await App.store.load(id);await App.startWorld(r.world,false);
     App.lastSnapRev=-1;
     if(r.report.recoveredFromOlder)App.toast('The newest save was damaged; recovered the previous generation.','warn');
+    else if(r.report.failed)App.toast('Restored '+r.report.replayed+' later edits; one could not be replayed ('+r.report.error+') and edits after it were dropped.','warn');
     else if(r.report.replayed)App.toast('Restored '+r.report.replayed+' edits made after the last snapshot.');
     return r;
   }catch(e){App.toast('Could not open save: '+(e.message||e.code),'err');return null;}
@@ -3256,7 +3260,7 @@ App.bindInput=function(cv){
   cv.addEventListener('contextmenu',e=>e.preventDefault());
   cv.addEventListener('pointerdown',e=>{
     LW.audio.start();cv.setPointerCapture(e.pointerId);const p=xy(e);pts.set(e.pointerId,p);
-    if(pts.size===1){moved=0;t0=performance.now();start=p;mode=(e.button===2||e.button===1)?'orbit':'undecided';}
+    if(pts.size===1){moved=0;t0=e.timeStamp;start=p;mode=(e.button===2||e.button===1)?'orbit':'undecided';}
     else if(pts.size===2){if(mode==='stroke')App.strokeEnd();mode='pinch';pinch=null;}
   });
   cv.addEventListener('pointermove',e=>{
@@ -3286,7 +3290,7 @@ App.bindInput=function(cv){
     if(!pts.has(e.pointerId))return;const p=pts.get(e.pointerId);pts.delete(e.pointerId);
     if(pts.size===0){
       if(mode==='stroke')App.strokeEnd();
-      else if(mode==='undecided'&&moved<8&&performance.now()-t0<500&&App.phase==='play')App.tap(p[0],p[1]);
+      else if(mode==='undecided'&&moved<8&&e.timeStamp-t0<700&&App.phase==='play')App.tap(p[0],p[1]);      // input timestamps, so a slow frame never eats a tap
       mode=null;
     }else if(pts.size===1){mode='pan';pinch=null;}
   };
@@ -3374,8 +3378,8 @@ function h(tag,props){
   if(props)for(const k in props){const v=props[k];
     if(k==='class')e.className=v;else if(k==='text')e.textContent=v;else if(k.slice(0,2)==='on')e.addEventListener(k.slice(2),v);
     else if(k==='style')e.style.cssText=v;else if(k==='value')e.value=v;else if(v!==false&&v!=null)e.setAttribute(k,v===true?'':v);}
-  for(let i=2;i<arguments.length;i++){const c=arguments[i];if(c==null||c===false)continue;
-    if(Array.isArray(c))c.forEach(x=>x!=null&&x!==false&&e.append(x.nodeType?x:document.createTextNode(String(x))));else e.append(c.nodeType?c:document.createTextNode(String(c)));}
+  const add=c=>{if(c==null||c===false)return;if(Array.isArray(c))c.forEach(add);else e.append(c.nodeType?c:document.createTextNode(String(c)));};
+  for(let i=2;i<arguments.length;i++)add(arguments[i]);
   return e;
 }
 UI.h=h;
@@ -3391,7 +3395,7 @@ function select(label,opts,val,fn){
 }
 const fmtM=m=>Math.abs(m)>=10000?(m/1000).toFixed(0)+' km':Math.abs(m)>=1000?(m/1000).toFixed(1)+' km':m.toFixed(m<10?1:0)+' m';
 const el=id=>document.getElementById(id);
-function set(id,nodes){const e=el(id);e.replaceChildren.apply(e,[].concat(nodes).filter(Boolean));return e;}
+function set(id,nodes){const e=el(id);e.replaceChildren.apply(e,[nodes].flat(Infinity).filter(Boolean));return e;}
 
 // ---- start screen --------------------------------------------------------------------------
 const PRESETS={
@@ -3507,10 +3511,10 @@ UI.renderTop=function(){
 UI.renderTools=function(){
   const t=App.tool,w=App.world;if(!w)return;
   const sug=SUGGEST[App.scale()]||[];
-  set('toolbar',CATS.map(c=>h('button',{class:'cat'+(t.cat===c[0]?' on':'')+(sug.indexOf(c[0])>=0?' sug':''),onclick:()=>{App.setTool(c[0],c[0]==='sculpt'?'raise':c[0]==='paint'?'biome':c[0]==='life'?'plants':c[0]==='build'?'template':c[0]==='dig'?'carve':c[0]);},'aria-label':c[2]},h('span',{class:'ic',text:c[1]}),h('span',{class:'tx',text:c[2]}))));
+  set('toolbar',CATS.map(c=>h('button',{class:'cat'+(t.cat===c[0]?' on':'')+(sug.indexOf(c[0])>=0?' sug':''),onclick:()=>{if(t.cat===c[0]&&c[0]!=='nav'){UI.stripHidden=!UI.stripHidden;return UI.renderTools();}UI.stripHidden=false;App.setTool(c[0],c[0]==='sculpt'?'raise':c[0]==='paint'?'biome':c[0]==='life'?'plants':c[0]==='build'?'template':c[0]==='dig'?'carve':c[0]);},'aria-label':c[2]},h('span',{class:'ic',text:c[1]}),h('span',{class:'tx',text:c[2]}))));
   const editing=App.isBrush()||['carve','fill'].indexOf(t.id)>=0,placing=['creature','person','cohort','template','comp','digsite'].indexOf(t.id)>=0;
   const md=el('mode');md.className=editing?'edit':placing?'place':'navm';
-  md.textContent=App.pending?App.pending.label:editing?'EDIT · drag on the world to '+t.id+' · two fingers / right-drag to move':placing?'PLACE · tap the world':'NAVIGATE · drag to move · pinch / scroll to zoom · tap to inspect';
+  const more=UI.stripHidden?' · tap the tool again for options':'';md.textContent=App.pending?App.pending.label:editing?'EDIT · drag on the world to '+t.id+' · two fingers / right-drag to move':placing?'PLACE · tap the world'+more:'NAVIGATE · drag to move · pinch / scroll to zoom · tap to inspect';
   const tools=(list)=>h('div',{class:'chips'},list.map(x=>btn(x[1],()=>App.setTool(t.cat,x[0]),'chip'+(t.id===x[0]?' on':''))));
   const R=w.body.radius,rad=()=>slider('Brush radius',0,1,0.002,Math.log(t.r/2)/Math.log(R*0.6/2),v=>{t.r=2*Math.pow(R*0.6/2,v);t.lockR=true;},v=>fmtM(2*Math.pow(R*0.6/2,v)));
   const amp=P.amplitude(w.body),str=()=>slider('Strength',0,1,0.002,Math.log(t.s/0.2)/Math.log((amp+10)/0.2),v=>{t.s=0.2*Math.pow((amp+10)/0.2,v);t.lockR=true;},v=>fmtM(0.2*Math.pow((amp+10)/0.2,v)));
@@ -3532,7 +3536,7 @@ UI.renderTools=function(){
     slider('View depth',0,24,0.5,App.cam.depth,v=>{App.cam.depth=v;},v=>v?v+' m below ground':'surface'),
     h('p',{class:'note',text:'Dig sites are editable 3D volumes in the same planetary space. Carve from the surface to open an entrance, then raise View depth to look inside.'})];
   else if(t.cat==='planet')strip=UI.planetPanel();
-  set('strip',strip?[h('div',{class:'stripin'},strip)]:[]);el('strip').hidden=!strip;
+  set('strip',strip?[h('div',{class:'stripin'},strip)]:[]);el('strip').hidden=!strip||!!UI.stripHidden;
   UI.renderInspector();
 };
 UI.planetPanel=function(){
@@ -3818,7 +3822,8 @@ UI.frameLabels=function(){
   want.forEach((x,i)=>{const e=box.children[i];if(e.textContent!==x[1])e.textContent=x[1];e.className=x[1]==='•'?'lbl dot':'lbl';e.style.transform='translate('+Math.round(x[2].x)+'px,'+Math.round(x[2].y)+'px)';});
 };
 UI.renderAll=function(){UI.renderTop();UI.renderTools();UI.renderNav();UI.renderHint();};
-let lastScale='',lastMode='',lastSel='';
+let lastScale='',lastMode='',lastSel='',inspT=0;UI.touchT=0;
+addEventListener('pointerdown',e=>{if(e.target&&e.target.closest&&e.target.closest('#insp'))UI.touchT=Date.now();},true);
 App.listeners.push(what=>{
   if(App.phase!=='play'||!App.world){if(what==='toast')UI.renderToast();return;}
   const w=App.world;
@@ -3828,7 +3833,7 @@ App.listeners.push(what=>{
     el('scale').textContent=App.scale()+' · '+fmtM(Math.max(0,App.cam.alt))+(App.cam.depth>0?' · '+App.cam.depth+' m underground view':'')+(App.terrain.pending>0?' · refining…':'');
     const sc=App.scale();if(sc!==lastScale){lastScale=sc;App.autoBrush();UI.renderTools();}
     if(w.mode!==lastMode){lastMode=w.mode;UI.renderTop();}
-    if(!el('insp').hidden||App.sel)UI.renderInspector();
+    if((!el('insp').hidden||App.sel)&&Date.now()-inspT>2500&&Date.now()-UI.touchT>1500){inspT=Date.now();UI.renderInspector();}
     UI.renderHint();return;
   }
   if(what==='speed'||what==='world'||what==='world.setMode'||what==='undo'||what==='redo')UI.renderTop();

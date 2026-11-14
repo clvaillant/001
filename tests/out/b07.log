@@ -1,0 +1,5 @@
+Living World browser tests (software WebGL, network denied)
+  FAIL B07 integrated path by UI: plants -> home -> person -> command to use bed -> Play -> release -> autonomous life -> inspector
+       page.click: Timeout 45000ms exceeded. | Call log: | [2m  - waiting for locator('#insp').locator('text=Release')[22m | [2m    - locator resolved to <button class="b warn">Release</button>[22m
+
+browser: 0/1 passed

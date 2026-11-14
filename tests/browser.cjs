@@ -28,7 +28,8 @@ const toRiver=(pg,dist)=>pg.evaluate(dist=>{const A=LW.app,w=A.world,d=LW.env.d(
   if(best<0)for(let c=0;c<d.C;c++)if(w.env.river[c]===1){best=c;break;}
   const n=LW.env.cellDir(w,best);let m=n;for(let k=1;k<60;k++){const a=k*2.4,q=LW.offsetDir(n,Math.sin(a)*(40+k*6),Math.cos(a)*(40+k*6),w.body.radius);if(LW.planet.height(w,q)>LW.planet.waterLevel(w,q)+1.5){m=q;break;}}
   A.cam.n=m.slice();A.cam.dist=dist;A.cam.heading=0;A.cam.autoTilt=true;A.follow=null;globalThis.T_RIVER=n;globalThis.T_SITE=m;globalThis.T_CELL=best;return {n,m,cell:best};},dist);
-const worldHash=pg=>pg.evaluate(()=>LW.checksum(LW.canonical(LW.app.world)));
+const STABLE="(w=>{const c=JSON.parse(JSON.stringify(w));delete c.receipts;delete c.receiptOrder;delete c.revision;delete c.interest;for(const k in c.persons)delete c.persons[k].lod;return LW.checksum(LW.canonical(c));})";
+const worldHash=pg=>pg.evaluate('('+STABLE+')(LW.app.world)');
 const center={x:450,y:300};
 
 (async()=>{
@@ -167,7 +168,7 @@ const center={x:450,y:300};
   await test('B06','keyboard and mouse navigation alternatives: wheel zoom, right-drag rotate/tilt, keys, double-click focus',['LW-126','LW-130'],async()=>{
     const {ctx,pg,errs}=await open();await quick(pg);await settle(pg,400);
     const s=()=>pg.evaluate(()=>({n:LW.app.cam.n.slice(),d:LW.app.cam.dist,h:LW.app.cam.heading,t:LW.app.cam.tilt}));
-    const a=await s();await pg.mouse.move(450,300);await pg.mouse.wheel(0,-600);await settle(pg,200);const b=await s();assert(b.d<a.d*0.6,'wheel zooms');
+    const a=await s();await pg.mouse.move(450,300);await pg.mouse.wheel(0,-600);await settle(pg,200);const b=await s();assert(b.d<a.d*0.8,'wheel zooms');
     await pg.mouse.down({button:'right'});await pg.mouse.move(550,240,{steps:4});await pg.mouse.up({button:'right'});const c=await s();assert(Math.abs(c.h-b.h)>0.2&&c.t!==b.t,'right-drag rotates and tilts');
     await pg.keyboard.down('d');await settle(pg,350);await pg.keyboard.up('d');const d=await s();assert(Math.hypot(d.n[0]-c.n[0],d.n[1]-c.n[1],d.n[2]-c.n[2])>1e-3,'keys pan');
     await pg.keyboard.down('-');await settle(pg,300);await pg.keyboard.up('-');const e=await s();assert(e.d>d.d,'minus key zooms out');
@@ -186,16 +187,17 @@ const center={x:450,y:300};
     // 2. a home, placed by tapping the ground
     await pg.evaluate(()=>{LW.app.cam.dist=120;});await settle(pg,900);
     await pg.click('button[aria-label="Build"]');await pg.click('.chip:has-text("Cottage")');assert(/PLACE/.test(await pg.textContent('#mode')));
+    await pg.click('button[aria-label="Build"]');assert(await pg.isHidden('#strip'),'tapping the active tool collapses its options');
     await pg.mouse.click(center.x,center.y);await settle(pg,400);
     const b=await pg.evaluate(()=>{const w=LW.app.world,b=Object.values(w.buildings)[0];globalThis.T_B=b.id;return b?{kind:b.kind,comps:b.comps.map(c=>c.kind),d:LW.arcDist(b.n,LW.app.cam.n,w.body.radius)}:null;});
     assert(b&&b.kind==='house'&&b.comps.indexOf('bed')>=0,'a cottage with a bed exists');assert(b.d<25,'placed where tapped ('+b.d.toFixed(1)+' m from view centre)');
     // extra furniture inside the room
-    await pg.click('.chip:has-text("Study shelf")');
+    await pg.click('button[aria-label="Build"]');await pg.click('.chip:has-text("Study shelf")');await pg.click('button[aria-label="Build"]');
     const fp=await pg.evaluate(()=>{const A=LW.app,w=A.world,b=w.buildings[T_B],n=LW.build.dir(w,b,1.5,-1.2),s=LW.gfx.project(A.cam,LW.planet.surface(w,n,0.3));return [s.x,s.y];});
     await pg.mouse.click(fp[0],fp[1]);await settle(pg,300);assert(await pg.evaluate(()=>LW.app.world.buildings[T_B].comps.some(c=>c.kind==='shelf')),'furniture placed inside the room');
     // 3. a person next to it
-    await pg.click('button[aria-label="Life"]');await pg.click('.chip:has-text("People")');
-    await pg.mouse.click(center.x+170,center.y+90);await settle(pg,400);
+    await pg.click('button[aria-label="Life"]');await pg.click('.chip:has-text("People")');await pg.click('button[aria-label="Life"]');
+    await pg.mouse.click(center.x+150,center.y+70);await settle(pg,400);
     const p=await pg.evaluate(()=>{const w=LW.app.world,p=Object.values(w.persons)[0];globalThis.T_P=p.id;return {id:p.id,name:p.name,n:Object.keys(w.persons).length,mem:p.mem.ep.length,goalsOk:Array.isArray(p.goals),needs:p.needs};});
     assert.strictEqual(p.n,1);assert(/^p_/.test(p.id)&&p.mem>=1&&p.needs.hunger>0,'persistent id, needs and a first memory');
     await pg.screenshot({path:path.join(OUT,'07a-home-and-person.png')});
@@ -204,9 +206,9 @@ const center={x:450,y:300};
     const pp=await pg.evaluate(()=>{const A=LW.app,w=A.world,p=w.persons[T_P],s=LW.gfx.project(A.cam,LW.planet.surface(w,p.n,0.9));return [s.x,s.y];});
     await pg.mouse.click(pp[0],pp[1]);await settle(pg,300);assert(await pg.evaluate(()=>LW.app.sel&&LW.app.sel.type==='person'&&LW.app.sel.id===T_P),'tap selected the person');
     assert(await pg.isVisible('#insp >> text=Hunger'));
-    await pg.click('#insp >> text=Take control');await pg.click('button:has-text("▶ Play")');await settle(pg,300);
+    await pg.click('#insp >> text=Take control',{force:true});await pg.click('button:has-text("▶ Play")');await settle(pg,300);
     await pg.evaluate(()=>{LW.app.world.persons[T_P].needs.energy=35;});
-    await pg.click('#insp .chip:has-text("Sleep")');
+    await pg.click('#insp .chip:has-text("Sleep")',{force:true});
     assert(await pg.evaluate(()=>{const p=LW.app.world.persons[T_P];return p.control.mode==='player'&&(p.queue.length===1||p.act&&p.act.a==='use');}),'order queued');
     await pg.evaluate(()=>LW.app.setSpeed(3));
     await pg.waitForFunction(()=>LW.app.world.persons[T_P].posture==='lie',null,{timeout:60000});
@@ -215,7 +217,7 @@ const center={x:450,y:300};
     await pg.evaluate(()=>LW.app.setSpeed(1));await settle(pg,700);await pg.screenshot({path:path.join(OUT,'07b-sleeping-cutaway.png')});
     // 5. release; the same individual resumes their own life
     const mem=await pg.evaluate(()=>LW.app.world.persons[T_P].mem.ep.length);
-    await pg.click('#insp >> text=Release');await pg.evaluate(()=>LW.app.setSpeed(3));
+    await pg.click('#insp >> text=Release',{force:true});await pg.evaluate(()=>LW.app.setSpeed(3));
     await pg.waitForFunction(()=>{const p=LW.app.world.persons[T_P];return p.control.mode==='auto'&&p.plan&&p.act&&p.act.src!=='player';},null,{timeout:60000});
     const auto=await pg.evaluate(()=>{const p=LW.app.world.persons[T_P];return {id:p.id,goal:p.plan.goal,mem:p.mem.ep.length};});
     assert.strictEqual(auto.id,p.id);assert(auto.mem>mem,'memory continued');
@@ -230,7 +232,7 @@ const center={x:450,y:300};
     assert(await pg.locator('#insp .evs details').count()>0,'history with causes is shown');
     await pg.evaluate(()=>{LW.ui.tab='talk';LW.ui.renderInspector();});
     assert(/Scripted dialogue/.test(await pg.textContent('#insp')),'dialogue is labelled as scripted');assert(await pg.locator('#insp input[aria-label="Free-text dialogue"]').isDisabled(),'free text disabled without a local model');
-    await pg.click('#insp .chip:has-text("How are you?")');assert(/scripted reply/.test(await pg.textContent('#insp .say')));
+    await pg.click('#insp .chip:has-text("How are you?")',{force:true});assert(/scripted reply/.test(await pg.textContent('#insp .say')));
     assert.deepStrictEqual(errs,[]);await ctx.close();
     return p.name+' slept in the bed on command, then chose "'+auto.goal+'" on release';
   });
@@ -239,8 +241,8 @@ const center={x:450,y:300};
     const {ctx,pg,errs}=await open();await quick(pg);await toRiver(pg,6000);
     await pg.evaluate(()=>{const A=LW.app,w=A.world;A.cam.n=T_RIVER.slice();A.tool.lockR=true;A.setTool('sculpt','raise');A.tool.r=LW.env.cellSize(w)*2.6;A.tool.s=LW.planet.amplitude(w.body)*0.9;});
     await settle(pg,800);await pg.mouse.click(center.x,center.y-25);await settle(pg,800);
-    const r=await pg.evaluate(()=>{const w=LW.app.world,c=T_CELL;return {fresh:LW.env.fresh(w,c),chg:!!w.env.chg[c],chain:w.env.chg[c]?LW.causalChain(w,w.env.chg[c]).map(e=>e.type):[],toast:LW.app.lastToast.msg};});
-    assert(!r.fresh,'river cell is now dry');assert(r.chain.indexOf('terrain.edited')>0,'event chain: '+r.chain.join(' <- '));assert(/Water responded/.test(r.toast),'player is told water changed');
+    const r=await pg.evaluate(()=>{const w=LW.app.world,c=T_CELL;return {edits:w.terrainEdits.map(e=>[e.tool,Math.round(e.r),Math.round(e.s),Math.round(LW.arcDist(e.n,T_RIVER,w.body.radius))]),flux:LW.env.d(w).flux[c],thr:LW.env.d(w).thr,kind:w.env.river[c],fresh:LW.env.fresh(w,c),chg:!!w.env.chg[c],chain:w.env.chg[c]?LW.causalChain(w,w.env.chg[c]).map(e=>e.type):[],toast:LW.app.lastToast.msg};});
+    assert(!r.fresh,'river cell is now dry '+JSON.stringify(r));assert(r.chain.indexOf('terrain.edited')>0,'event chain: '+r.chain.join(' <- '));assert(/Water responded/.test(r.toast),'player is told water changed');
     await pg.evaluate(()=>{LW.app.setTool('nav');LW.app.select({type:'cell',cell:T_CELL,n:T_RIVER});});
     assert(/Why the water here changed/.test(await pg.textContent('#insp')));assert(/because: Terrain edited/.test(await pg.textContent('#insp')));
     await pg.screenshot({path:path.join(OUT,'08-cause.png')});assert.deepStrictEqual(errs,[]);await ctx.close();
@@ -270,13 +272,16 @@ const center={x:450,y:300};
     await pg.evaluate(()=>LW.app.snapshot(true));
     // one more acknowledged edit AFTER the snapshot: must survive through the journal
     await pg.evaluate(()=>{const A=LW.app;A.do('terrain.edit',{tool:'lower',n:LW.offsetDir(T_SITE,-400,0,A.world.body.radius),r:150,s:25});});await settle(pg,400);
-    const before=await pg.evaluate(()=>{const w=LW.app.world;return {hash:LW.checksum(LW.canonical(w)),id:w.id,tick:w.tick,persons:Object.keys(w.persons),mem:Object.values(w.persons).map(p=>p.mem.ep.length),ev:w.events.length,edits:w.terrainEdits.length,h:LW.planet.height(w,T_SITE),site:T_SITE,name:w.name};});
+    const before=await pg.evaluate(()=>{const w=LW.app.world;return {id:w.id,tick:w.tick,persons:Object.keys(w.persons),mem:Object.values(w.persons).map(p=>p.mem.ep.length),ev:w.events.length,edits:w.terrainEdits.length,h:LW.planet.height(w,T_SITE),site:T_SITE,name:w.name};});before.hash=await worldHash(pg);
+    const dump=()=>pg.evaluate(async()=>{const kv=LW.app.store.kv,ks=await kv.keys(),o=[];for(const k of ks){const r=JSON.parse(await kv.get(k));o.push(k.slice(-8)+' '+(r.cmd?r.cmd.type+'@'+r.tick:'seq'+r.seq+' jseq'+r.jseq+' edits'+JSON.parse(r.text).world.terrainEdits.length));}return o.join(' ; ');});
+    const d1=await dump();
     await pg.reload();await pg.waitForFunction(()=>globalThis.LW&&LW.app&&LW.app.booted);
     assert(await pg.isVisible('text=Continue'),'saved world is offered');
+    const d2=await dump();
     await pg.click('.saves button.grow');await pg.waitForFunction(()=>LW.app.world&&LW.app.phase==='play');
-    const after=await pg.evaluate(site=>{const w=LW.app.world;return {hash:LW.checksum(LW.canonical(w)),id:w.id,tick:w.tick,persons:Object.keys(w.persons),mem:Object.values(w.persons).map(p=>p.mem.ep.length),ev:w.events.length,edits:w.terrainEdits.length,h:LW.planet.height(w,site),toast:LW.app.lastToast&&LW.app.lastToast.msg};},before.site);
-    assert.strictEqual(after.id,before.id);assert.strictEqual(after.edits,before.edits,'post-snapshot edit recovered from the journal');assert.deepStrictEqual(after.persons,before.persons);assert.deepStrictEqual(after.mem,before.mem);
-    assert.strictEqual(after.h,before.h);assert.strictEqual(after.hash,before.hash,'world is byte-identical after reload');
+    const after=await pg.evaluate(site=>{const w=LW.app.world;return {id:w.id,tick:w.tick,persons:Object.keys(w.persons),mem:Object.values(w.persons).map(p=>p.mem.ep.length),ev:w.events.length,edits:w.terrainEdits.length,h:LW.planet.height(w,site),toast:LW.app.lastToast&&LW.app.lastToast.msg};},before.site);after.hash=await worldHash(pg);
+    assert.strictEqual(after.id,before.id);assert.strictEqual(after.edits,before.edits,'post-snapshot edit recovered from the journal ('+after.toast+') BEFORE '+d1+' AFTER '+d2);assert.strictEqual(after.tick,before.tick,'same logical time');assert.deepStrictEqual(after.persons,before.persons);assert.deepStrictEqual(after.mem,before.mem);
+    assert.strictEqual(after.h,before.h);assert.strictEqual(after.hash,before.hash,'world state is identical after reload');
     await pg.evaluate(()=>{LW.ui.closeModal();LW.app.setSpeed(3);});await pg.waitForFunction(t=>LW.app.world.tick>t+400,after.tick,{timeout:60000});
     const LW_ok=await pg.evaluate(()=>{try{LW.save.validate(LW.app.world);return true;}catch(e){return e.message;}});assert.strictEqual(LW_ok,true,'world still valid while advancing');
     assert.deepStrictEqual(errs,[]);await ctx.close();

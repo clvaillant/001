@@ -29,7 +29,7 @@
     "LW-015"
    ],
    "status": "pass",
-   "ms": 132,
+   "ms": 151,
    "error": null,
    "note": null
   },
@@ -42,7 +42,7 @@
     "LW-125"
    ],
    "status": "pass",
-   "ms": 3,
+   "ms": 5,
    "error": null,
    "note": null
   },
@@ -56,7 +56,7 @@
     "LW-014"
    ],
    "status": "pass",
-   "ms": 2,
+   "ms": 1,
    "error": null,
    "note": null
   },
@@ -70,7 +70,7 @@
     "LW-076"
    ],
    "status": "pass",
-   "ms": 1,
+   "ms": 2,
    "error": null,
    "note": null
   },
@@ -83,7 +83,7 @@
     "LW-146"
    ],
    "status": "pass",
-   "ms": 123,
+   "ms": 144,
    "error": null,
    "note": null
   },
@@ -96,7 +96,7 @@
     "LW-121"
    ],
    "status": "pass",
-   "ms": 6,
+   "ms": 7,
    "error": null,
    "note": null
   },
@@ -108,7 +108,7 @@
     "LW-121"
    ],
    "status": "pass",
-   "ms": 13,
+   "ms": 12,
    "error": null,
    "note": null
   },
@@ -122,7 +122,7 @@
     "LW-009"
    ],
    "status": "pass",
-   "ms": 265,
+   "ms": 221,
    "error": null,
    "note": null
   },
@@ -136,7 +136,7 @@
     "LW-080"
    ],
    "status": "pass",
-   "ms": 136,
+   "ms": 118,
    "error": null,
    "note": null
   },
@@ -152,7 +152,7 @@
     "LW-149"
    ],
    "status": "pass",
-   "ms": 128,
+   "ms": 106,
    "error": null,
    "note": null
   },
@@ -169,7 +169,7 @@
     "LW-137"
    ],
    "status": "pass",
-   "ms": 130,
+   "ms": 103,
    "error": null,
    "note": null
   },
@@ -186,7 +186,7 @@
     "LW-099"
    ],
    "status": "pass",
-   "ms": 134,
+   "ms": 104,
    "error": null,
    "note": "chain: person.failed <- river.dried <- terrain.edited"
   },
@@ -202,7 +202,7 @@
     "LW-100"
    ],
    "status": "pass",
-   "ms": 143,
+   "ms": 102,
    "error": null,
    "note": null
   },
@@ -216,7 +216,7 @@
     "LW-037"
    ],
    "status": "pass",
-   "ms": 309,
+   "ms": 260,
    "error": null,
    "note": null
   },
@@ -232,7 +232,7 @@
     "LW-139"
    ],
    "status": "pass",
-   "ms": 155,
+   "ms": 175,
    "error": null,
    "note": null
   },
@@ -247,7 +247,7 @@
     "LW-152"
    ],
    "status": "pass",
-   "ms": 482,
+   "ms": 514,
    "error": null,
    "note": "archive 104 KB"
   },
@@ -259,7 +259,7 @@
     "LW-056"
    ],
    "status": "pass",
-   "ms": 20,
+   "ms": 25,
    "error": null,
    "note": null
   },
@@ -272,7 +272,7 @@
     "LW-129"
    ],
    "status": "pass",
-   "ms": 11,
+   "ms": 12,
    "error": null,
    "note": null
   },
@@ -285,9 +285,9 @@
     "LW-129"
    ],
    "status": "pass",
-   "ms": 289,
+   "ms": 340,
    "error": null,
-   "note": "replayed 4 commands"
+   "note": "replayed 5 commands"
   },
   {
    "id": "U21",
@@ -298,7 +298,7 @@
     "LW-129"
    ],
    "status": "pass",
-   "ms": 13,
+   "ms": 16,
    "error": null,
    "note": null
   },
@@ -311,7 +311,7 @@
     "LW-033"
    ],
    "status": "pass",
-   "ms": 338,
+   "ms": 397,
    "error": null,
    "note": null
   },
@@ -328,7 +328,7 @@
     "LW-034"
    ],
    "status": "pass",
-   "ms": 583,
+   "ms": 649,
    "error": null,
    "note": "settlement after 0 days, building after 2 days, techs: fire,tools,farming,pottery,masonry"
   },
@@ -343,7 +343,7 @@
     "LW-022"
    ],
    "status": "pass",
-   "ms": 240,
+   "ms": 286,
    "error": null,
    "note": "animals alive 1, hunts 7"
   },
@@ -355,7 +355,7 @@
     "LW-051"
    ],
    "status": "pass",
-   "ms": 107,
+   "ms": 129,
    "error": null,
    "note": null
   },
@@ -371,7 +371,7 @@
     "LW-138"
    ],
    "status": "pass",
-   "ms": 106,
+   "ms": 134,
    "error": null,
    "note": "scripted: I am sure there is water at the place I call 6825 (I saw it myself)."
   },
@@ -385,7 +385,7 @@
     "LW-141"
    ],
    "status": "pass",
-   "ms": 114,
+   "ms": 129,
    "error": null,
    "note": null
   },
@@ -400,7 +400,7 @@
     "LW-147"
    ],
    "status": "pass",
-   "ms": 329,
+   "ms": 380,
    "error": null,
    "note": null
   },
@@ -413,7 +413,7 @@
     "LW-085"
    ],
    "status": "pass",
-   "ms": 209,
+   "ms": 245,
    "error": null,
    "note": null
   },
@@ -442,7 +442,7 @@
    "status": "pass",
    "ms": 4,
    "error": null,
-   "note": "11 kernel modules, shipped file 285 KB"
+   "note": "11 kernel modules, shipped file 286 KB"
   },
   {
    "id": "U32",
@@ -452,7 +452,7 @@
     "LW-143"
    ],
    "status": "pass",
-   "ms": 33,
+   "ms": 38,
    "error": null,
    "note": null
   },
@@ -465,7 +465,7 @@
     "LW-115"
    ],
    "status": "pass",
-   "ms": 137,
+   "ms": 120,
    "error": null,
    "note": null
   },
@@ -477,9 +477,9 @@
     "LW-117"
    ],
    "status": "pass",
-   "ms": 2402,
+   "ms": 2368,
    "error": null,
-   "note": "152 people, 140 animals: mean 1.031 ms/tick (desktop Node, not a phone)"
+   "note": "152 people, 140 animals: mean 1.005 ms/tick (desktop Node, not a phone)"
   }
  ]
 }

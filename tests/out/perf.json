@@ -1,0 +1,55 @@
+{
+ "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftSh",
+ "note": "software rasteriser on a CI container CPU; NOT an Android device measurement",
+ "scales": [
+  {
+   "label": "orbit",
+   "dist": 48000,
+   "med": 367,
+   "p90": 392.39999999990687,
+   "tris": 14566,
+   "draws": 87,
+   "chunks": 15,
+   "cached": 42,
+   "q": 0.9,
+   "heap": 14
+  },
+  {
+   "label": "region",
+   "dist": 5000,
+   "med": 384.59999999962747,
+   "p90": 410.60000000009313,
+   "tris": 77286,
+   "draws": 185,
+   "chunks": 113,
+   "cached": 194,
+   "q": 0.8,
+   "heap": 14
+  },
+  {
+   "label": "settlement",
+   "dist": 150,
+   "med": 434.20000000018626,
+   "p90": 453,
+   "tris": 115660,
+   "draws": 357,
+   "chunks": 119,
+   "cached": 550,
+   "q": 0.7000000000000001,
+   "heap": 14
+  },
+  {
+   "label": "home",
+   "dist": 25,
+   "med": 450.89999999990687,
+   "p90": 486.59999999962747,
+   "tris": 133884,
+   "draws": 405,
+   "chunks": 144,
+   "cached": 670,
+   "q": 0.6000000000000001,
+   "heap": 14
+  }
+ ],
+ "archiveBytes": 91689
+}

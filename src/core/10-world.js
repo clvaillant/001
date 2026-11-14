@@ -95,7 +95,7 @@ LW.dispatch=function(world,cmd,actor){
   let err=null;
   try{err=def.validate?def.validate(world,p,actor):null;}catch(e){err='validation error: '+e.message;}
   if(err)return fail('invalid',err);
-  const ctx={actor,cmd,evt:null};
+  const ctx={actor,cmd,evt:null},tick0=world.tick;
   let res;
   try{res=def.apply(world,p,ctx)||{};}
   catch(e){world.fault=(world.fault||0)+1;return fail('apply_exception',e&&e.message);}
@@ -111,7 +111,7 @@ LW.dispatch=function(world,cmd,actor){
     }
     world.redo=[];
   }
-  if(LW.onCommit)LW.onCommit(world,cmd,actor,receipt);
+  if(LW.onCommit)LW.onCommit(world,cmd,actor,tick0);
   return {ok:true,receipt,result:receipt.result,inverse:res.undo||null,label:res.label};
 };
 // Undo is a compensating command: it reverts the edit itself, never the consequences already simulated.
@@ -169,6 +169,7 @@ LW.def('world.rename',{perm:'owner',validate:(w,p)=>typeof p.name==='string'&&p.
 LW.def('world.setBody',{perm:'edit',
   validate(w,p){
     for(const k of Object.keys(p)){
+      if(k==='gid')continue;
       if(k==='baseTemp'){if(!num(p[k],-120,120))return 'baseTemp out of range';}
       else if(k==='atmDensity'){if(!num(p[k],0,5))return 'atmDensity out of range';}
       else if(k==='starLum'){if(!num(p[k],0.1,4))return 'starLum out of range';}
@@ -180,8 +181,8 @@ LW.def('world.setBody',{perm:'edit',
     const b=w.body,old={};
     const get=k=>k==='baseTemp'?b.atmosphere.baseTemp:k==='atmDensity'?b.atmosphere.density:k==='starLum'?b.star.lum:k==='starColor'?b.star.color.slice():k==='atmColor'?b.atmosphere.color.slice():b[k];
     const set=(k,v)=>{if(k==='baseTemp')b.atmosphere.baseTemp=v;else if(k==='atmDensity')b.atmosphere.density=v;else if(k==='starLum')b.star.lum=v;else if(k==='starColor')b.star.color=v;else if(k==='atmColor')b.atmosphere.color=v;else b[k]=v;};
-    for(const k of Object.keys(p)){old[k]=get(k);set(k,p[k]);}
-    const ev=LW.emit(w,'world.bodyChanged',{fields:Object.keys(p)});
+    for(const k of Object.keys(p)){if(k==='gid')continue;old[k]=get(k);set(k,p[k]);}
+    const ev=LW.emit(w,'world.bodyChanged',{fields:Object.keys(old)});
     LW.env.markAllDirty(w,ev);w.colorEpoch++;
     return {undo:{type:'world.setBody',payload:old},label:'Planet settings',gid:p.gid};}});
 // selective regeneration: new procedural base everywhere EXCEPT regions the player edited by hand
