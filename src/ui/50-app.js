@@ -78,7 +78,7 @@ App.newDraft=function(cfg){
 App.startWorld=async function(world,fresh){
   App.world=world;App.draft=null;App.preview=null;App.sel=null;App.speed=0;App.acc=0;App.phase='play';
   App.terrain.reset();App.scene.reset();
-  if(fresh){LW.emit(world,'world.created',{seed:world.seed,radius:world.body.radius});E.settle(world);await App.snapshot(true);}
+  if(fresh){LW.emit(world,'world.created',{seed:world.seed,radius:world.body.radius});E.settle(world);App.snapshot(true);}        // first save runs in the background; the game is usable at once
   App.cam.dist=Math.min(App.cam.dist,world.body.radius*3.1);
   App.changed('world');
 };
@@ -262,7 +262,7 @@ App.bindInput=function(cv){
     if(!pts.has(e.pointerId))return;const p=pts.get(e.pointerId);pts.delete(e.pointerId);
     if(pts.size===0){
       if(mode==='stroke')App.strokeEnd();
-      else if(mode==='undecided'&&moved<8&&e.timeStamp-t0<700&&App.phase==='play')App.tap(p[0],p[1]);      // input timestamps, so a slow frame never eats a tap
+      else if(mode==='undecided'&&moved<8&&App.phase==='play')App.tap(p[0],p[1]);      // no time limit: a slow frame must never eat a tap
       mode=null;
     }else if(pts.size===1){mode='pan';pinch=null;}
   };
@@ -337,5 +337,6 @@ App.frame=function(now){
   if(LW.ui)LW.ui.frameLabels();
   if(App.world&&now-saveT>20000){saveT=now;App.snapshot(false);}
 };
-App.toast=function(msg,kind){App.lastToast={msg,kind:kind||'',t:Date.now()};App.changed('toast');};
+App.toastLog=[];
+App.toast=function(msg,kind){App.lastToast={msg,kind:kind||'',t:Date.now()};App.toastLog.push(msg);if(App.toastLog.length>20)App.toastLog.shift();App.changed('toast');};
 })();

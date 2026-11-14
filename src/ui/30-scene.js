@@ -314,7 +314,7 @@ G.render=function(world,cam,terrain,scene,dt,opt){
   gl.uniformMatrix4fv(u.uVP,false,cam.vp);gl.uniform3fv(u.uSun,sun);gl.uniform3fv(u.uSunCol,sc);gl.uniform3fv(u.uCenter,center);
   gl.uniform3f(u.uFog,(atm[0]*0.9+0.1)*dayC,(atm[1]*0.9+0.1)*dayC,(atm[2]*0.9+0.1)*dayC);
   gl.uniform1f(u.uFogD,inAtm*b.atmosphere.density*(cam.depth>0?0:1)/Math.max(400,Math.sqrt(2*R*Math.max(2,cam.alt))*1.6));
-  gl.uniform1f(u.uTime,world.tick/LW.TPD*0.9);gl.uniform1f(u.uAmb,opt.studio?0.5:0.2);
+  gl.uniform1f(u.uTime,world.tick/LW.TPD*0.9);gl.uniform1f(u.uAmb,opt.studio?0.5:0.3);
   gl.uniform1f(u.uCloud,opt.clouds===false?0:LW.smooth(R*0.25,R*1.2,cam.alt)*Math.min(1,b.atmosphere.density));
   gl.uniform2f(u.uWater,1/Math.max(1.5,amp*0.12),Math.max(0.15,Math.min(amp*0.012,cam.dist*0.02)));
   const cutOn=cam.depth>0.5;

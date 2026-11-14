@@ -36,9 +36,9 @@ input[type=text],input[type=number],select{background:#0f1320;color:#eef1f6;bord
 .speeds{display:flex;gap:3px}.sp{min-width:40px;padding:6px 6px;font-size:13px}
 #mode{position:fixed;top:calc(58px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);max-width:94%;padding:4px 10px;border-radius:12px;font-size:11px;letter-spacing:.03em;pointer-events:none;text-align:center;background:rgba(10,14,24,.6);color:#b9c3d6}
 #mode.edit{background:rgba(160,60,40,.85);color:#fff;font-weight:600}#mode.place{background:rgba(40,110,150,.85);color:#fff;font-weight:600}
-#hint{position:fixed;top:calc(88px + env(safe-area-inset-top));left:8px;right:60px;max-width:460px;background:rgba(20,26,44,.88);border:1px solid #3a4568;border-radius:12px;padding:6px 6px 6px 12px;display:flex;align-items:center;gap:6px;font-size:12.5px}
+#hint{position:fixed;top:calc(88px + env(safe-area-inset-top));left:8px;right:106px;max-width:460px;background:rgba(20,26,44,.88);border:1px solid #3a4568;border-radius:12px;padding:6px 6px 6px 12px;display:flex;align-items:center;gap:6px;font-size:12.5px}
 #hint span{flex:1}
-#nav{position:fixed;right:calc(6px + env(safe-area-inset-right));top:calc(96px + env(safe-area-inset-top));display:flex;flex-direction:column;gap:4px}#nav .b{background:rgba(20,26,44,.8);min-height:40px;min-width:40px}
+#nav{position:fixed;right:calc(6px + env(safe-area-inset-right));top:calc(96px + env(safe-area-inset-top));display:flex;flex-direction:column;flex-wrap:wrap-reverse;align-content:flex-start;gap:4px}#nav .b{background:rgba(20,26,44,.8);min-height:40px;min-width:40px}
 #scale{position:fixed;left:8px;bottom:calc(64px + env(safe-area-inset-bottom));font-size:11px;color:#dfe6f3;text-shadow:0 1px 3px #000;pointer-events:none}
 #toolbar{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;gap:2px;padding:4px 4px calc(4px + env(safe-area-inset-bottom));background:rgba(10,13,22,.92);border-top:1px solid #262d44;overflow-x:auto}
 .cat{appearance:none;flex:1 1 0;max-width:96px;min-width:46px;min-height:50px;border:1px solid transparent;border-radius:10px;background:transparent;color:#d6dcea;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;position:relative;font:inherit;touch-action:manipulation}
@@ -78,7 +78,7 @@ progress{width:100%;height:14px}
 <div id="modal" hidden></div>
 <noscript><p style="padding:24px">Living World needs JavaScript (it runs entirely on this device; nothing is sent anywhere).</p></noscript>
 <script>
-globalThis.LW_BUILD="446610de2413";
+globalThis.LW_BUILD="42af4fa9f311";
 // ===== src/core/00-util.js =====
 // world-core / utilities: deterministic maths, hashing, seeded noise, canonical JSON.
 // No DOM, no wall-clock and no unseeded randomness in this file or anything under src/core.
@@ -2963,7 +2963,7 @@ G.render=function(world,cam,terrain,scene,dt,opt){
   gl.uniformMatrix4fv(u.uVP,false,cam.vp);gl.uniform3fv(u.uSun,sun);gl.uniform3fv(u.uSunCol,sc);gl.uniform3fv(u.uCenter,center);
   gl.uniform3f(u.uFog,(atm[0]*0.9+0.1)*dayC,(atm[1]*0.9+0.1)*dayC,(atm[2]*0.9+0.1)*dayC);
   gl.uniform1f(u.uFogD,inAtm*b.atmosphere.density*(cam.depth>0?0:1)/Math.max(400,Math.sqrt(2*R*Math.max(2,cam.alt))*1.6));
-  gl.uniform1f(u.uTime,world.tick/LW.TPD*0.9);gl.uniform1f(u.uAmb,opt.studio?0.5:0.2);
+  gl.uniform1f(u.uTime,world.tick/LW.TPD*0.9);gl.uniform1f(u.uAmb,opt.studio?0.5:0.3);
   gl.uniform1f(u.uCloud,opt.clouds===false?0:LW.smooth(R*0.25,R*1.2,cam.alt)*Math.min(1,b.atmosphere.density));
   gl.uniform2f(u.uWater,1/Math.max(1.5,amp*0.12),Math.max(0.15,Math.min(amp*0.012,cam.dist*0.02)));
   const cutOn=cam.depth>0.5;
@@ -3106,7 +3106,7 @@ App.newDraft=function(cfg){
 App.startWorld=async function(world,fresh){
   App.world=world;App.draft=null;App.preview=null;App.sel=null;App.speed=0;App.acc=0;App.phase='play';
   App.terrain.reset();App.scene.reset();
-  if(fresh){LW.emit(world,'world.created',{seed:world.seed,radius:world.body.radius});E.settle(world);await App.snapshot(true);}
+  if(fresh){LW.emit(world,'world.created',{seed:world.seed,radius:world.body.radius});E.settle(world);App.snapshot(true);}        // first save runs in the background; the game is usable at once
   App.cam.dist=Math.min(App.cam.dist,world.body.radius*3.1);
   App.changed('world');
 };
@@ -3290,7 +3290,7 @@ App.bindInput=function(cv){
     if(!pts.has(e.pointerId))return;const p=pts.get(e.pointerId);pts.delete(e.pointerId);
     if(pts.size===0){
       if(mode==='stroke')App.strokeEnd();
-      else if(mode==='undecided'&&moved<8&&e.timeStamp-t0<700&&App.phase==='play')App.tap(p[0],p[1]);      // input timestamps, so a slow frame never eats a tap
+      else if(mode==='undecided'&&moved<8&&App.phase==='play')App.tap(p[0],p[1]);      // no time limit: a slow frame must never eat a tap
       mode=null;
     }else if(pts.size===1){mode='pan';pinch=null;}
   };
@@ -3365,7 +3365,8 @@ App.frame=function(now){
   if(LW.ui)LW.ui.frameLabels();
   if(App.world&&now-saveT>20000){saveT=now;App.snapshot(false);}
 };
-App.toast=function(msg,kind){App.lastToast={msg,kind:kind||'',t:Date.now()};App.changed('toast');};
+App.toastLog=[];
+App.toast=function(msg,kind){App.lastToast={msg,kind:kind||'',t:Date.now()};App.toastLog.push(msg);if(App.toastLog.length>20)App.toastLog.shift();App.changed('toast');};
 })();
 // ===== src/ui/60-ui.js =====
 // presentation / interface: minimalist, touch-first, contextual panels. All world-derived strings are set
@@ -3514,7 +3515,8 @@ UI.renderTools=function(){
   set('toolbar',CATS.map(c=>h('button',{class:'cat'+(t.cat===c[0]?' on':'')+(sug.indexOf(c[0])>=0?' sug':''),onclick:()=>{if(t.cat===c[0]&&c[0]!=='nav'){UI.stripHidden=!UI.stripHidden;return UI.renderTools();}UI.stripHidden=false;App.setTool(c[0],c[0]==='sculpt'?'raise':c[0]==='paint'?'biome':c[0]==='life'?'plants':c[0]==='build'?'template':c[0]==='dig'?'carve':c[0]);},'aria-label':c[2]},h('span',{class:'ic',text:c[1]}),h('span',{class:'tx',text:c[2]}))));
   const editing=App.isBrush()||['carve','fill'].indexOf(t.id)>=0,placing=['creature','person','cohort','template','comp','digsite'].indexOf(t.id)>=0;
   const md=el('mode');md.className=editing?'edit':placing?'place':'navm';
-  const more=UI.stripHidden?' · tap the tool again for options':'';md.textContent=App.pending?App.pending.label:editing?'EDIT · drag on the world to '+t.id+' · two fingers / right-drag to move':placing?'PLACE · tap the world'+more:'NAVIGATE · drag to move · pinch / scroll to zoom · tap to inspect';
+  const more=UI.stripHidden?' · tap the tool again for options':'',narrow=innerWidth<560;
+  md.textContent=App.pending?App.pending.label:editing?'EDIT · drag to '+t.id+(narrow?'':' · two fingers / right-drag to move'):placing?'PLACE · tap the world'+(narrow?'':more):narrow?'NAVIGATE':'NAVIGATE · drag to move · pinch / scroll to zoom · tap to inspect';
   const tools=(list)=>h('div',{class:'chips'},list.map(x=>btn(x[1],()=>App.setTool(t.cat,x[0]),'chip'+(t.id===x[0]?' on':''))));
   const R=w.body.radius,rad=()=>slider('Brush radius',0,1,0.002,Math.log(t.r/2)/Math.log(R*0.6/2),v=>{t.r=2*Math.pow(R*0.6/2,v);t.lockR=true;},v=>fmtM(2*Math.pow(R*0.6/2,v)));
   const amp=P.amplitude(w.body),str=()=>slider('Strength',0,1,0.002,Math.log(t.s/0.2)/Math.log((amp+10)/0.2),v=>{t.s=0.2*Math.pow((amp+10)/0.2,v);t.lockR=true;},v=>fmtM(0.2*Math.pow((amp+10)/0.2,v)));
@@ -3537,6 +3539,7 @@ UI.renderTools=function(){
     h('p',{class:'note',text:'Dig sites are editable 3D volumes in the same planetary space. Carve from the surface to open an entrance, then raise View depth to look inside.'})];
   else if(t.cat==='planet')strip=UI.planetPanel();
   set('strip',strip?[h('div',{class:'stripin'},strip)]:[]);el('strip').hidden=!strip||!!UI.stripHidden;
+  UI.layout();
   UI.renderInspector();
 };
 UI.planetPanel=function(){
@@ -3598,9 +3601,14 @@ function evList(w,ids){
   if(!ev.length)return h('p',{class:'note',text:'No recorded events yet.'});
   return h('div',{class:'evs'},ev.map(e=>h('details',null,h('summary',{text:when(w,e.t)+' — '+evText(w,e)}),chain(w,e.id))));
 }
+// keep the scale readout and the navigation buttons clear of whatever bottom panel is open
+UI.layout=function(){
+  const s=el('strip'),i=el('insp'),open=!s.hidden?s:(!i.hidden&&innerWidth<900?i:null),hgt=open?open.getBoundingClientRect().height:0;
+  el('scale').style.bottom=(64+hgt)+'px';el('nav').style.maxHeight=Math.max(96,innerHeight-100-64-hgt)+'px';
+};
 UI.renderInspector=function(){
   const w=App.world,s=App.sel,box=el('insp');if(!w)return;
-  if(!s||App.tool.cat!=='nav'){box.hidden=true;return;}
+  if(!s||App.tool.cat!=='nav'){if(!box.hidden){box.hidden=true;UI.layout();}return;}
   if(box.contains(document.activeElement)&&/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)&&document.activeElement.type!=='checkbox')return;
   let body=null,title='',sub='';
   const close=btn('✕',()=>App.select(null),'icon ghost','Close');
@@ -3693,7 +3701,7 @@ UI.renderInspector=function(){
       w.env.chg[s.cell]?[h('h4',{text:'Why the water here changed'}),chain(w,w.env.chg[s.cell])]:null,
       h('div',{class:'row'},btn('Zoom here',()=>App.focusOn(s.n,Math.max(30,App.cam.dist*0.25))))];
   }
-  set('insp',[h('div',{class:'ihead'},h('div',null,h('b',{text:title}),h('span',{text:sub})),close)].concat(body||[]));box.hidden=false;
+  set('insp',[h('div',{class:'ihead'},h('div',null,h('b',{text:title}),h('span',{text:sub})),close)].concat(body||[]));box.hidden=false;UI.layout();
 };
 function actText(w,a){
   switch(a.a){case 'go':return 'walking';case 'use':return a.cap+(w.buildings[a.b]?' ('+((B.comp(w.buildings[a.b],a.c)||{}).kind||'?')+')':'');case 'talk':return 'talking to '+((w.persons[a.id]||{}).name||'someone');
@@ -3798,7 +3806,7 @@ UI.activityEditor=function(){
 UI.renderHint=function(){
   const w=App.world,box=el('hint');if(!w||!App.opts.hints){box.hidden=true;return;}
   const alive=Object.values(w.persons).some(p=>p.alive),plants=w.env.plants.length>0;
-  const step=!w.terrainEdits.length?'1 · Shape the land: choose ⛰ Sculpt and drag on the planet. Zoom in for finer tools.':
+  const step=!w.terrainEdits.length&&!plants&&!alive&&!Object.keys(w.buildings).length?'1 · Shape the land: choose ⛰ Sculpt and drag on the planet. Zoom in for finer tools.':
     !plants?'2 · This world is sterile. Choose 🌱 Life ▸ Plants and paint vegetation where the climate suits it.':
     !alive?'3 · Zoom toward a river (blue lines) and use 🌱 Life ▸ People to introduce someone.':
     !Object.keys(w.buildings).length?'4 · Give them shelter: 🏠 Build ▸ Cottage, tap near your people.':

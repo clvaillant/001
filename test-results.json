@@ -1,0 +1,1377 @@
+{
+ "generated": "2026-11-14T02:35:16.967Z",
+ "environment": {
+  "date": "2026-11-14T02:35:16.967Z",
+  "node": "v22.23.4",
+  "os": "Linux 6.18.44-fc-v470 x64",
+  "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+  "cores": 4,
+  "ramGB": 15.7,
+  "browser": "Chromium 153.0.8010.12",
+  "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftSh",
+  "artifact": {
+   "file": "Living_World.html",
+   "bytes": 294227,
+   "sha256": "8e8bf4fe0e568b1318b36124f647d4c96cf939d47f38fee7ad8a7e8c0a66cc11"
+  }
+ },
+ "summary": {
+  "total": 51,
+  "pass": 51,
+  "fail": 0,
+  "suitesMissing": []
+ },
+ "physicalAndroidDeviceTested": false,
+ "plannedAcceptanceCases": {
+  "supplied": false,
+  "note": "No ACCEPTANCE_CASES_v1.1.csv was attached to this run; the 155 planned acceptance cases were NOT executed. Tests below are new and map to requirement IDs."
+ },
+ "requirementsWithAutomatedEvidence": 130,
+ "requirementsWithoutAutomatedEvidence": [
+  "LW-005",
+  "LW-008",
+  "LW-010",
+  "LW-016",
+  "LW-024",
+  "LW-025",
+  "LW-028",
+  "LW-041",
+  "LW-045",
+  "LW-057",
+  "LW-058",
+  "LW-059",
+  "LW-062",
+  "LW-064",
+  "LW-065",
+  "LW-075",
+  "LW-098",
+  "LW-105",
+  "LW-107",
+  "LW-108",
+  "LW-110",
+  "LW-113",
+  "LW-122",
+  "LW-132",
+  "LW-155"
+ ],
+ "requirementToTests": {
+  "LW-012": [
+   "U01",
+   "B02"
+  ],
+  "LW-151": [
+   "U01",
+   "U02",
+   "B02"
+  ],
+  "LW-072": [
+   "U01",
+   "B02"
+  ],
+  "LW-073": [
+   "U01",
+   "B02"
+  ],
+  "LW-144": [
+   "U02"
+  ],
+  "LW-015": [
+   "U02",
+   "B07"
+  ],
+  "LW-086": [
+   "U03",
+   "U05",
+   "B04"
+  ],
+  "LW-093": [
+   "U03",
+   "U17",
+   "U31"
+  ],
+  "LW-125": [
+   "U03",
+   "B02"
+  ],
+  "LW-060": [
+   "U04",
+   "B03"
+  ],
+  "LW-112": [
+   "U04",
+   "B03"
+  ],
+  "LW-133": [
+   "U04",
+   "B10"
+  ],
+  "LW-014": [
+   "U04",
+   "B03"
+  ],
+  "LW-063": [
+   "U05",
+   "B04"
+  ],
+  "LW-145": [
+   "U05",
+   "U29"
+  ],
+  "LW-076": [
+   "U05",
+   "B04"
+  ],
+  "LW-128": [
+   "U06",
+   "B04"
+  ],
+  "LW-129": [
+   "U06",
+   "U19",
+   "U20",
+   "U21",
+   "B10"
+  ],
+  "LW-146": [
+   "U06"
+  ],
+  "LW-088": [
+   "U07",
+   "U08"
+  ],
+  "LW-103": [
+   "U07",
+   "U19",
+   "U20",
+   "U21",
+   "B10"
+  ],
+  "LW-121": [
+   "U07",
+   "U08",
+   "L02"
+  ],
+  "LW-077": [
+   "U09",
+   "B04"
+  ],
+  "LW-079": [
+   "U09",
+   "U24",
+   "B04"
+  ],
+  "LW-135": [
+   "U09",
+   "U24"
+  ],
+  "LW-009": [
+   "U09"
+  ],
+  "LW-081": [
+   "U10",
+   "B09"
+  ],
+  "LW-134": [
+   "U10",
+   "B09"
+  ],
+  "LW-150": [
+   "U10",
+   "B09"
+  ],
+  "LW-080": [
+   "U10"
+  ],
+  "LW-020": [
+   "U11",
+   "B07"
+  ],
+  "LW-039": [
+   "U11"
+  ],
+  "LW-061": [
+   "U11"
+  ],
+  "LW-085": [
+   "U11",
+   "U29"
+  ],
+  "LW-136": [
+   "U11",
+   "B07"
+  ],
+  "LW-149": [
+   "U11"
+  ],
+  "LW-003": [
+   "U12",
+   "B07"
+  ],
+  "LW-029": [
+   "U12",
+   "B07"
+  ],
+  "LW-035": [
+   "U12",
+   "B07"
+  ],
+  "LW-040": [
+   "U12"
+  ],
+  "LW-090": [
+   "U12",
+   "U17",
+   "B10"
+  ],
+  "LW-094": [
+   "U12"
+  ],
+  "LW-137": [
+   "U12",
+   "B07"
+  ],
+  "LW-019": [
+   "U13",
+   "U29",
+   "B08"
+  ],
+  "LW-047": [
+   "U13"
+  ],
+  "LW-050": [
+   "U13",
+   "B07",
+   "B08"
+  ],
+  "LW-078": [
+   "U13",
+   "B08"
+  ],
+  "LW-092": [
+   "U13",
+   "U22",
+   "B08"
+  ],
+  "LW-096": [
+   "U13",
+   "U14"
+  ],
+  "LW-099": [
+   "U13"
+  ],
+  "LW-026": [
+   "U14"
+  ],
+  "LW-027": [
+   "U14"
+  ],
+  "LW-036": [
+   "U14"
+  ],
+  "LW-097": [
+   "U14"
+  ],
+  "LW-100": [
+   "U14"
+  ],
+  "LW-048": [
+   "U15"
+  ],
+  "LW-101": [
+   "U15",
+   "U16"
+  ],
+  "LW-102": [
+   "U15",
+   "U16"
+  ],
+  "LW-037": [
+   "U15",
+   "U16"
+  ],
+  "LW-091": [
+   "U16",
+   "U22"
+  ],
+  "LW-095": [
+   "U16"
+  ],
+  "LW-139": [
+   "U16",
+   "B07"
+  ],
+  "LW-056": [
+   "U17",
+   "U18",
+   "U19",
+   "U21",
+   "B10",
+   "B11",
+   "B12"
+  ],
+  "LW-123": [
+   "U17",
+   "U32",
+   "B11"
+  ],
+  "LW-152": [
+   "U17",
+   "U18",
+   "B11"
+  ],
+  "LW-109": [
+   "U20",
+   "L03",
+   "B10"
+  ],
+  "LW-033": [
+   "U22",
+   "U28"
+  ],
+  "LW-043": [
+   "U23"
+  ],
+  "LW-044": [
+   "U23"
+  ],
+  "LW-046": [
+   "U23"
+  ],
+  "LW-140": [
+   "U23"
+  ],
+  "LW-031": [
+   "U23"
+  ],
+  "LW-032": [
+   "U23"
+  ],
+  "LW-034": [
+   "U23"
+  ],
+  "LW-017": [
+   "U24"
+  ],
+  "LW-084": [
+   "U24"
+  ],
+  "LW-022": [
+   "U24",
+   "U28"
+  ],
+  "LW-042": [
+   "U25",
+   "B14"
+  ],
+  "LW-051": [
+   "U25"
+  ],
+  "LW-006": [
+   "U26"
+  ],
+  "LW-030": [
+   "U26"
+  ],
+  "LW-071": [
+   "U26"
+  ],
+  "LW-118": [
+   "U26"
+  ],
+  "LW-119": [
+   "U26"
+  ],
+  "LW-138": [
+   "U26"
+  ],
+  "LW-053": [
+   "U27",
+   "L01"
+  ],
+  "LW-054": [
+   "U27",
+   "L02"
+  ],
+  "LW-153": [
+   "U27",
+   "L03"
+  ],
+  "LW-141": [
+   "U27",
+   "L02"
+  ],
+  "LW-023": [
+   "U28",
+   "B14"
+  ],
+  "LW-004": [
+   "U28"
+  ],
+  "LW-147": [
+   "U28",
+   "B02"
+  ],
+  "LW-104": [
+   "U30"
+  ],
+  "LW-001": [
+   "U31",
+   "B01"
+  ],
+  "LW-011": [
+   "U31",
+   "B01"
+  ],
+  "LW-070": [
+   "U31",
+   "B01"
+  ],
+  "LW-154": [
+   "U31",
+   "B01"
+  ],
+  "LW-106": [
+   "U31"
+  ],
+  "LW-143": [
+   "U32",
+   "B12"
+  ],
+  "LW-007": [
+   "U33"
+  ],
+  "LW-018": [
+   "U33"
+  ],
+  "LW-115": [
+   "U33"
+  ],
+  "LW-069": [
+   "U34",
+   "B13"
+  ],
+  "LW-117": [
+   "U34"
+  ],
+  "LW-021": [
+   "L01"
+  ],
+  "LW-120": [
+   "L01"
+  ],
+  "LW-116": [
+   "L02"
+  ],
+  "LW-055": [
+   "L03"
+  ],
+  "LW-066": [
+   "B01"
+  ],
+  "LW-114": [
+   "B01"
+  ],
+  "LW-124": [
+   "B01"
+  ],
+  "LW-002": [
+   "B03"
+  ],
+  "LW-068": [
+   "B03"
+  ],
+  "LW-074": [
+   "B03"
+  ],
+  "LW-130": [
+   "B03",
+   "B06"
+  ],
+  "LW-131": [
+   "B03"
+  ],
+  "LW-148": [
+   "B03"
+  ],
+  "LW-013": [
+   "B04"
+  ],
+  "LW-082": [
+   "B04"
+  ],
+  "LW-083": [
+   "B04"
+  ],
+  "LW-127": [
+   "B04",
+   "B05"
+  ],
+  "LW-038": [
+   "B05",
+   "B07"
+  ],
+  "LW-049": [
+   "B05"
+  ],
+  "LW-052": [
+   "B05"
+  ],
+  "LW-126": [
+   "B05",
+   "B06"
+  ],
+  "LW-067": [
+   "B07"
+  ],
+  "LW-087": [
+   "B10"
+  ],
+  "LW-111": [
+   "B13"
+  ],
+  "LW-142": [
+   "B13"
+  ],
+  "LW-089": [
+   "B14"
+  ]
+ },
+ "performance": {
+  "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftSh",
+  "note": "software rasteriser on a CI container CPU; NOT an Android device measurement",
+  "scales": [
+   {
+    "label": "orbit",
+    "dist": 48000,
+    "med": 37.299999999813735,
+    "p90": 45.299999999813735,
+    "tris": 15556,
+    "draws": 81,
+    "chunks": 15,
+    "cached": 70,
+    "q": 0.9,
+    "heap": 14
+   },
+   {
+    "label": "region",
+    "dist": 5000,
+    "med": 84.29999999981374,
+    "p90": 91.5,
+    "tris": 83396,
+    "draws": 187,
+    "chunks": 121,
+    "cached": 222,
+    "q": 0.8,
+    "heap": 14
+   },
+   {
+    "label": "settlement",
+    "dist": 150,
+    "med": 159.59999999962747,
+    "p90": 183.6000000005588,
+    "tris": 199526,
+    "draws": 463,
+    "chunks": 179,
+    "cached": 694,
+    "q": 0.6000000000000001,
+    "heap": 14
+   },
+   {
+    "label": "home",
+    "dist": 25,
+    "med": 174.30000000074506,
+    "p90": 194.6000000005588,
+    "tris": 193098,
+    "draws": 476,
+    "chunks": 202,
+    "cached": 850,
+    "q": 0.5000000000000001,
+    "heap": 14
+   }
+  ],
+  "archiveBytes": 91241
+ },
+ "tests": [
+  {
+   "suite": "unit",
+   "id": "U01",
+   "name": "new world is uninhabited with typed, range-checked planetary settings",
+   "reqs": [
+    "LW-012",
+    "LW-151",
+    "LW-072",
+    "LW-073"
+   ],
+   "status": "pass",
+   "ms": 5,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U02",
+   "name": "Play never creates life in a sterile world",
+   "reqs": [
+    "LW-144",
+    "LW-151",
+    "LW-015"
+   ],
+   "status": "pass",
+   "ms": 156,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U03",
+   "name": "seeded generation is deterministic; different seeds differ",
+   "reqs": [
+    "LW-086",
+    "LW-093",
+    "LW-125"
+   ],
+   "status": "pass",
+   "ms": 5,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U04",
+   "name": "terrain sampling is identical at every LOD parametrisation; edits apply at all levels",
+   "reqs": [
+    "LW-060",
+    "LW-112",
+    "LW-133",
+    "LW-014"
+   ],
+   "status": "pass",
+   "ms": 1,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U05",
+   "name": "manual edits override procedural regeneration; regeneration is selective and revertible",
+   "reqs": [
+    "LW-063",
+    "LW-086",
+    "LW-145",
+    "LW-076"
+   ],
+   "status": "pass",
+   "ms": 2,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U06",
+   "name": "undo/redo of terrain strokes; undo after simulated time warns and keeps consequences",
+   "reqs": [
+    "LW-128",
+    "LW-129",
+    "LW-146"
+   ],
+   "status": "pass",
+   "ms": 122,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U07",
+   "name": "command idempotency: duplicate id has no further effect; reused id with other content fails; new id repeats",
+   "reqs": [
+    "LW-088",
+    "LW-103",
+    "LW-121"
+   ],
+   "status": "pass",
+   "ms": 6,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U08",
+   "name": "rejected commands are atomic: canonical state is unchanged",
+   "reqs": [
+    "LW-088",
+    "LW-121"
+   ],
+   "status": "pass",
+   "ms": 11,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U09",
+   "name": "sea level, painted water and painted biome produce consistent results",
+   "reqs": [
+    "LW-077",
+    "LW-079",
+    "LW-135",
+    "LW-009"
+   ],
+   "status": "pass",
+   "ms": 231,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U10",
+   "name": "subsurface volume: carve opens a real entrance in the shared frame; collision and undo",
+   "reqs": [
+    "LW-081",
+    "LW-134",
+    "LW-150",
+    "LW-080"
+   ],
+   "status": "pass",
+   "ms": 143,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U11",
+   "name": "functional home: rooms, door navigation, object use; structure follows sculpted terrain",
+   "reqs": [
+    "LW-020",
+    "LW-039",
+    "LW-061",
+    "LW-085",
+    "LW-136",
+    "LW-149"
+   ],
+   "status": "pass",
+   "ms": 138,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U12",
+   "name": "direct control overrides autonomy; release resumes the SAME individual with memory and needs intact",
+   "reqs": [
+    "LW-003",
+    "LW-029",
+    "LW-035",
+    "LW-040",
+    "LW-090",
+    "LW-094",
+    "LW-137"
+   ],
+   "status": "pass",
+   "ms": 165,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U13",
+   "name": "causal chain: terrain edit dries a river -> resident fails to drink -> belief revised -> provenance recorded",
+   "reqs": [
+    "LW-019",
+    "LW-047",
+    "LW-050",
+    "LW-078",
+    "LW-092",
+    "LW-096",
+    "LW-099"
+   ],
+   "status": "pass",
+   "ms": 148,
+   "error": null,
+   "note": "chain: person.failed <- river.dried <- terrain.edited"
+  },
+  {
+   "suite": "unit",
+   "id": "U14",
+   "name": "knowledge is personal: no omniscience; hearsay is tagged with source and lower confidence",
+   "reqs": [
+    "LW-026",
+    "LW-027",
+    "LW-036",
+    "LW-096",
+    "LW-097",
+    "LW-100"
+   ],
+   "status": "pass",
+   "ms": 131,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U15",
+   "name": "cohorts: promotion debits exactly once, never duplicates identity, even on retry",
+   "reqs": [
+    "LW-048",
+    "LW-101",
+    "LW-102",
+    "LW-037"
+   ],
+   "status": "pass",
+   "ms": 292,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U16",
+   "name": "interest-based detail: dormant people keep identity, memory and needs; coarse updates stay consequential",
+   "reqs": [
+    "LW-037",
+    "LW-091",
+    "LW-095",
+    "LW-101",
+    "LW-102",
+    "LW-139"
+   ],
+   "status": "pass",
+   "ms": 181,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U17",
+   "name": "archive round-trip restores the same world; simulation continues identically (determinism)",
+   "reqs": [
+    "LW-056",
+    "LW-090",
+    "LW-093",
+    "LW-123",
+    "LW-152"
+   ],
+   "status": "pass",
+   "ms": 528,
+   "error": null,
+   "note": "archive 104 KB"
+  },
+  {
+   "suite": "unit",
+   "id": "U18",
+   "name": "corrupted, oversized, hostile and future-version archives are rejected without side effects",
+   "reqs": [
+    "LW-152",
+    "LW-056"
+   ],
+   "status": "pass",
+   "ms": 26,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U19",
+   "name": "two-generation storage: a damaged newest save falls back to the previous generation",
+   "reqs": [
+    "LW-056",
+    "LW-103",
+    "LW-129"
+   ],
+   "status": "pass",
+   "ms": 9,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U20",
+   "name": "crash recovery: journaled commands after the last snapshot are replayed to the identical state",
+   "reqs": [
+    "LW-103",
+    "LW-109",
+    "LW-129"
+   ],
+   "status": "pass",
+   "ms": 307,
+   "error": null,
+   "note": "replayed 5 commands"
+  },
+  {
+   "suite": "unit",
+   "id": "U21",
+   "name": "a failed snapshot write leaves the previous save loadable; named snapshots restore",
+   "reqs": [
+    "LW-056",
+    "LW-103",
+    "LW-129"
+   ],
+   "status": "pass",
+   "ms": 13,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U22",
+   "name": "pending work (births) is applied exactly once across save/reload",
+   "reqs": [
+    "LW-091",
+    "LW-092",
+    "LW-033"
+   ],
+   "status": "pass",
+   "ms": 412,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U23",
+   "name": "autonomous civilisation: people found a settlement and construct a building themselves",
+   "reqs": [
+    "LW-043",
+    "LW-044",
+    "LW-046",
+    "LW-140",
+    "LW-031",
+    "LW-032",
+    "LW-034"
+   ],
+   "status": "pass",
+   "ms": 649,
+   "error": null,
+   "note": "settlement after 0 days, building after 2 days, techs: fire,tools,farming,pottery,masonry"
+  },
+  {
+   "suite": "unit",
+   "id": "U24",
+   "name": "ecology: suitability is not life; seeded plants grow, spread or die by climate; grazing and predation occur",
+   "reqs": [
+    "LW-017",
+    "LW-079",
+    "LW-084",
+    "LW-135",
+    "LW-022"
+   ],
+   "status": "pass",
+   "ms": 299,
+   "error": null,
+   "note": "animals alive 1, hunts 7"
+  },
+  {
+   "suite": "unit",
+   "id": "U25",
+   "name": "activities are bounded declarative graphs: validated, never executable code",
+   "reqs": [
+    "LW-042",
+    "LW-051"
+   ],
+   "status": "pass",
+   "ms": 137,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U26",
+   "name": "dialogue: rule-based fallback is labelled; no generative output without a registered local model",
+   "reqs": [
+    "LW-006",
+    "LW-030",
+    "LW-071",
+    "LW-118",
+    "LW-119",
+    "LW-138"
+   ],
+   "status": "pass",
+   "ms": 134,
+   "error": null,
+   "note": "scripted: I am sure there is water at the place I call 6825 (I saw it myself)."
+  },
+  {
+   "suite": "unit",
+   "id": "U27",
+   "name": "roles and exclusive control: visitors cannot edit; one controller per character",
+   "reqs": [
+    "LW-053",
+    "LW-054",
+    "LW-153",
+    "LW-141"
+   ],
+   "status": "pass",
+   "ms": 138,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U28",
+   "name": "species: validated custom anatomy/lifecycle; artificial life has a different physiology",
+   "reqs": [
+    "LW-022",
+    "LW-023",
+    "LW-033",
+    "LW-004",
+    "LW-147"
+   ],
+   "status": "pass",
+   "ms": 412,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U29",
+   "name": "natural consequences reach player-built structures (flooding is not blocked by manual placement)",
+   "reqs": [
+    "LW-019",
+    "LW-145",
+    "LW-085"
+   ],
+   "status": "pass",
+   "ms": 301,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U30",
+   "name": "bounded history: event log is tiered and capped; key events are retained",
+   "reqs": [
+    "LW-104"
+   ],
+   "status": "pass",
+   "ms": 7,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U31",
+   "name": "kernel purity: no wall clock, unseeded randomness, network, eval or DOM in src/core; offline single file",
+   "reqs": [
+    "LW-001",
+    "LW-011",
+    "LW-070",
+    "LW-093",
+    "LW-154",
+    "LW-106"
+   ],
+   "status": "pass",
+   "ms": 6,
+   "error": null,
+   "note": "11 kernel modules, shipped file 287 KB"
+  },
+  {
+   "suite": "unit",
+   "id": "U32",
+   "name": "build is reproducible: rebuilding yields a byte-identical Living_World.html",
+   "reqs": [
+    "LW-123",
+    "LW-143"
+   ],
+   "status": "pass",
+   "ms": 38,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U33",
+   "name": "catch-up and time control are bounded and explicit",
+   "reqs": [
+    "LW-007",
+    "LW-018",
+    "LW-115"
+   ],
+   "status": "pass",
+   "ms": 120,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "unit",
+   "id": "U34",
+   "name": "scale: 150 people + 140 animals simulate within the per-tick budget on this machine",
+   "reqs": [
+    "LW-069",
+    "LW-117"
+   ],
+   "status": "pass",
+   "ms": 2587,
+   "error": null,
+   "note": "152 people, 140 animals: mean 1.104 ms/tick (desktop Node, not a phone)"
+  },
+  {
+   "suite": "lan",
+   "id": "L01",
+   "name": "owner issues locally validated single-use invitations; no account needed",
+   "reqs": [
+    "LW-021",
+    "LW-053",
+    "LW-120"
+   ],
+   "status": "pass",
+   "ms": 48,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "lan",
+   "id": "L02",
+   "name": "two users edit the same object: host orders commands, last valid edit wins, state stays consistent",
+   "reqs": [
+    "LW-054",
+    "LW-121",
+    "LW-141",
+    "LW-116"
+   ],
+   "status": "pass",
+   "ms": 170,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "lan",
+   "id": "L03",
+   "name": "exclusive character control lease; owner controls the shared clock; lease expires on disconnect",
+   "reqs": [
+    "LW-055",
+    "LW-109",
+    "LW-153"
+   ],
+   "status": "pass",
+   "ms": 473,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "browser",
+   "id": "B01",
+   "name": "single file opens from file:// with the network denied; title screen shows a live 3D planet",
+   "reqs": [
+    "LW-001",
+    "LW-011",
+    "LW-066",
+    "LW-070",
+    "LW-114",
+    "LW-124",
+    "LW-154"
+   ],
+   "status": "pass",
+   "ms": 2263,
+   "error": null,
+   "note": "requests: 1 (all file://), storage: indexeddb, renderer: ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftSh"
+  },
+  {
+   "suite": "browser",
+   "id": "B02",
+   "name": "Quick Start creates a unique, editable, uninhabited world; Advanced setup regenerates the planet live",
+   "reqs": [
+    "LW-012",
+    "LW-072",
+    "LW-073",
+    "LW-125",
+    "LW-151",
+    "LW-147"
+   ],
+   "status": "pass",
+   "ms": 3631,
+   "error": null,
+   "note": "radius 632 km planet created from the advanced panel"
+  },
+  {
+   "suite": "browser",
+   "id": "B03",
+   "name": "continuous zoom from orbit to ground in ONE world/scene; LOD refines; floating-origin precision holds on an Earth-sized planet",
+   "reqs": [
+    "LW-002",
+    "LW-014",
+    "LW-060",
+    "LW-068",
+    "LW-074",
+    "LW-112",
+    "LW-130",
+    "LW-131",
+    "LW-148"
+   ],
+   "status": "pass",
+   "ms": 5554,
+   "error": null,
+   "note": "Orbit > Continent > Region > Landscape > Settlement > Home; quads 312736 m -> 1.19 m; float step at camera 0.000 mm vs 0.76 m without floating origin"
+  },
+  {
+   "suite": "browser",
+   "id": "B04",
+   "name": "mouse sculpting with visible brush: immediate terrain change, undo, redo, sea level, biome paint, protected regeneration",
+   "reqs": [
+    "LW-013",
+    "LW-063",
+    "LW-076",
+    "LW-077",
+    "LW-079",
+    "LW-082",
+    "LW-083",
+    "LW-086",
+    "LW-127",
+    "LW-128"
+   ],
+   "status": "pass",
+   "ms": 23803,
+   "error": null,
+   "note": "raised 195.7 m with 5 dabs; undo/redo exact; regeneration preserved the edit"
+  },
+  {
+   "suite": "browser",
+   "id": "B05",
+   "name": "touch: one-finger drag pans, pinch zooms, tap selects; phone layout keeps every control on screen",
+   "reqs": [
+    "LW-038",
+    "LW-049",
+    "LW-052",
+    "LW-126",
+    "LW-127"
+   ],
+   "status": "pass",
+   "ms": 17803,
+   "error": null,
+   "note": "22 controls checked on 360x640 (emulated touch, not a physical phone)"
+  },
+  {
+   "suite": "browser",
+   "id": "B06",
+   "name": "keyboard and mouse navigation alternatives: wheel zoom, right-drag rotate/tilt, keys, double-click focus",
+   "reqs": [
+    "LW-126",
+    "LW-130"
+   ],
+   "status": "pass",
+   "ms": 5603,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "browser",
+   "id": "B07",
+   "name": "integrated path by UI: plants -> home -> person -> command to use bed -> Play -> release -> autonomous life -> inspector",
+   "reqs": [
+    "LW-003",
+    "LW-015",
+    "LW-020",
+    "LW-029",
+    "LW-035",
+    "LW-038",
+    "LW-136",
+    "LW-137",
+    "LW-139",
+    "LW-050",
+    "LW-067"
+   ],
+   "status": "pass",
+   "ms": 49754,
+   "error": null,
+   "note": "Quamoib slept in the bed on command, then chose \"gatherFood\" on release"
+  },
+  {
+   "suite": "browser",
+   "id": "B08",
+   "name": "cause and effect in the app: terrain edit dries the river; inspector explains why",
+   "reqs": [
+    "LW-019",
+    "LW-050",
+    "LW-078",
+    "LW-092"
+   ],
+   "status": "pass",
+   "ms": 3598,
+   "error": null,
+   "note": "river.dried <- terrain.edited"
+  },
+  {
+   "suite": "browser",
+   "id": "B09",
+   "name": "dig site: carve by dragging; opening is rendered in the same space; underground view",
+   "reqs": [
+    "LW-081",
+    "LW-134",
+    "LW-150"
+   ],
+   "status": "pass",
+   "ms": 22345,
+   "error": null,
+   "note": "5 carve ops opened 24 surface columns"
+  },
+  {
+   "suite": "browser",
+   "id": "B10",
+   "name": "persistence across a real page reload: same planet, edits, home, resident, memories and history; world keeps advancing",
+   "reqs": [
+    "LW-056",
+    "LW-087",
+    "LW-090",
+    "LW-103",
+    "LW-109",
+    "LW-129",
+    "LW-133"
+   ],
+   "status": "pass",
+   "ms": 12670,
+   "error": null,
+   "note": "hash 4e46b56f745e891b identical after reload (Restored 1 edits made after the last snapshot.)"
+  },
+  {
+   "suite": "browser",
+   "id": "B11",
+   "name": "export/import between independent browser profiles; corrupted file refused and current world untouched",
+   "reqs": [
+    "LW-056",
+    "LW-123",
+    "LW-152"
+   ],
+   "status": "pass",
+   "ms": 4876,
+   "error": null,
+   "note": "archive 68 KB round-tripped; hash b623905aade3a56d"
+  },
+  {
+   "suite": "browser",
+   "id": "B12",
+   "name": "storage blocked: game still runs and truthfully warns that nothing is kept; export still works",
+   "reqs": [
+    "LW-056",
+    "LW-143"
+   ],
+   "status": "pass",
+   "ms": 1758,
+   "error": null,
+   "note": null
+  },
+  {
+   "suite": "browser",
+   "id": "B13",
+   "name": "frame timing and scene complexity at four scales (SOFTWARE renderer; not device evidence); adaptive quality reacts",
+   "reqs": [
+    "LW-069",
+    "LW-111",
+    "LW-142"
+   ],
+   "status": "pass",
+   "ms": 29664,
+   "error": null,
+   "note": "orbit: 37 ms median, 15556 tris, 81 draws, 15 chunks | region: 84 ms median, 83396 tris, 187 draws, 121 chunks | settlement: 160 ms median, 199526 tris, 463 draws, 179 chunks | home: 174 ms median, 193098 tris, 476 draws, 202 chunks | heap 14 MB | save 89 KB"
+  },
+  {
+   "suite": "browser",
+   "id": "B14",
+   "name": "WebGL context loss is survived; species editor and activity editor create validated content",
+   "reqs": [
+    "LW-023",
+    "LW-042",
+    "LW-089"
+   ],
+   "status": "pass",
+   "ms": 7565,
+   "error": null,
+   "note": null
+  }
+ ]
+}

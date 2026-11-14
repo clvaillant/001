@@ -27,9 +27,9 @@ input[type=text],input[type=number],select{background:#0f1320;color:#eef1f6;bord
 .speeds{display:flex;gap:3px}.sp{min-width:40px;padding:6px 6px;font-size:13px}
 #mode{position:fixed;top:calc(58px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);max-width:94%;padding:4px 10px;border-radius:12px;font-size:11px;letter-spacing:.03em;pointer-events:none;text-align:center;background:rgba(10,14,24,.6);color:#b9c3d6}
 #mode.edit{background:rgba(160,60,40,.85);color:#fff;font-weight:600}#mode.place{background:rgba(40,110,150,.85);color:#fff;font-weight:600}
-#hint{position:fixed;top:calc(88px + env(safe-area-inset-top));left:8px;right:60px;max-width:460px;background:rgba(20,26,44,.88);border:1px solid #3a4568;border-radius:12px;padding:6px 6px 6px 12px;display:flex;align-items:center;gap:6px;font-size:12.5px}
+#hint{position:fixed;top:calc(88px + env(safe-area-inset-top));left:8px;right:106px;max-width:460px;background:rgba(20,26,44,.88);border:1px solid #3a4568;border-radius:12px;padding:6px 6px 6px 12px;display:flex;align-items:center;gap:6px;font-size:12.5px}
 #hint span{flex:1}
-#nav{position:fixed;right:calc(6px + env(safe-area-inset-right));top:calc(96px + env(safe-area-inset-top));display:flex;flex-direction:column;gap:4px}#nav .b{background:rgba(20,26,44,.8);min-height:40px;min-width:40px}
+#nav{position:fixed;right:calc(6px + env(safe-area-inset-right));top:calc(96px + env(safe-area-inset-top));display:flex;flex-direction:column;flex-wrap:wrap-reverse;align-content:flex-start;gap:4px}#nav .b{background:rgba(20,26,44,.8);min-height:40px;min-width:40px}
 #scale{position:fixed;left:8px;bottom:calc(64px + env(safe-area-inset-bottom));font-size:11px;color:#dfe6f3;text-shadow:0 1px 3px #000;pointer-events:none}
 #toolbar{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;gap:2px;padding:4px 4px calc(4px + env(safe-area-inset-bottom));background:rgba(10,13,22,.92);border-top:1px solid #262d44;overflow-x:auto}
 .cat{appearance:none;flex:1 1 0;max-width:96px;min-width:46px;min-height:50px;border:1px solid transparent;border-radius:10px;background:transparent;color:#d6dcea;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;position:relative;font:inherit;touch-action:manipulation}

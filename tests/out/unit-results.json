@@ -16,7 +16,7 @@
     "LW-073"
    ],
    "status": "pass",
-   "ms": 4,
+   "ms": 5,
    "error": null,
    "note": null
   },
@@ -29,7 +29,7 @@
     "LW-015"
    ],
    "status": "pass",
-   "ms": 151,
+   "ms": 156,
    "error": null,
    "note": null
   },
@@ -83,7 +83,7 @@
     "LW-146"
    ],
    "status": "pass",
-   "ms": 144,
+   "ms": 122,
    "error": null,
    "note": null
   },
@@ -96,7 +96,7 @@
     "LW-121"
    ],
    "status": "pass",
-   "ms": 7,
+   "ms": 6,
    "error": null,
    "note": null
   },
@@ -108,7 +108,7 @@
     "LW-121"
    ],
    "status": "pass",
-   "ms": 12,
+   "ms": 11,
    "error": null,
    "note": null
   },
@@ -122,7 +122,7 @@
     "LW-009"
    ],
    "status": "pass",
-   "ms": 221,
+   "ms": 231,
    "error": null,
    "note": null
   },
@@ -136,7 +136,7 @@
     "LW-080"
    ],
    "status": "pass",
-   "ms": 118,
+   "ms": 143,
    "error": null,
    "note": null
   },
@@ -152,7 +152,7 @@
     "LW-149"
    ],
    "status": "pass",
-   "ms": 106,
+   "ms": 138,
    "error": null,
    "note": null
   },
@@ -169,7 +169,7 @@
     "LW-137"
    ],
    "status": "pass",
-   "ms": 103,
+   "ms": 165,
    "error": null,
    "note": null
   },
@@ -186,7 +186,7 @@
     "LW-099"
    ],
    "status": "pass",
-   "ms": 104,
+   "ms": 148,
    "error": null,
    "note": "chain: person.failed <- river.dried <- terrain.edited"
   },
@@ -202,7 +202,7 @@
     "LW-100"
    ],
    "status": "pass",
-   "ms": 102,
+   "ms": 131,
    "error": null,
    "note": null
   },
@@ -216,7 +216,7 @@
     "LW-037"
    ],
    "status": "pass",
-   "ms": 260,
+   "ms": 292,
    "error": null,
    "note": null
   },
@@ -232,7 +232,7 @@
     "LW-139"
    ],
    "status": "pass",
-   "ms": 175,
+   "ms": 181,
    "error": null,
    "note": null
   },
@@ -247,7 +247,7 @@
     "LW-152"
    ],
    "status": "pass",
-   "ms": 514,
+   "ms": 528,
    "error": null,
    "note": "archive 104 KB"
   },
@@ -259,7 +259,7 @@
     "LW-056"
    ],
    "status": "pass",
-   "ms": 25,
+   "ms": 26,
    "error": null,
    "note": null
   },
@@ -272,7 +272,7 @@
     "LW-129"
    ],
    "status": "pass",
-   "ms": 12,
+   "ms": 9,
    "error": null,
    "note": null
   },
@@ -285,7 +285,7 @@
     "LW-129"
    ],
    "status": "pass",
-   "ms": 340,
+   "ms": 307,
    "error": null,
    "note": "replayed 5 commands"
   },
@@ -298,7 +298,7 @@
     "LW-129"
    ],
    "status": "pass",
-   "ms": 16,
+   "ms": 13,
    "error": null,
    "note": null
   },
@@ -311,7 +311,7 @@
     "LW-033"
    ],
    "status": "pass",
-   "ms": 397,
+   "ms": 412,
    "error": null,
    "note": null
   },
@@ -343,7 +343,7 @@
     "LW-022"
    ],
    "status": "pass",
-   "ms": 286,
+   "ms": 299,
    "error": null,
    "note": "animals alive 1, hunts 7"
   },
@@ -355,7 +355,7 @@
     "LW-051"
    ],
    "status": "pass",
-   "ms": 129,
+   "ms": 137,
    "error": null,
    "note": null
   },
@@ -385,7 +385,7 @@
     "LW-141"
    ],
    "status": "pass",
-   "ms": 129,
+   "ms": 138,
    "error": null,
    "note": null
   },
@@ -400,7 +400,7 @@
     "LW-147"
    ],
    "status": "pass",
-   "ms": 380,
+   "ms": 412,
    "error": null,
    "note": null
   },
@@ -413,7 +413,7 @@
     "LW-085"
    ],
    "status": "pass",
-   "ms": 245,
+   "ms": 301,
    "error": null,
    "note": null
   },
@@ -424,7 +424,7 @@
     "LW-104"
    ],
    "status": "pass",
-   "ms": 5,
+   "ms": 7,
    "error": null,
    "note": null
   },
@@ -440,9 +440,9 @@
     "LW-106"
    ],
    "status": "pass",
-   "ms": 4,
+   "ms": 6,
    "error": null,
-   "note": "11 kernel modules, shipped file 286 KB"
+   "note": "11 kernel modules, shipped file 287 KB"
   },
   {
    "id": "U32",
@@ -477,9 +477,9 @@
     "LW-117"
    ],
    "status": "pass",
-   "ms": 2368,
+   "ms": 2587,
    "error": null,
-   "note": "152 people, 140 animals: mean 1.005 ms/tick (desktop Node, not a phone)"
+   "note": "152 people, 140 animals: mean 1.104 ms/tick (desktop Node, not a phone)"
   }
  ]
 }

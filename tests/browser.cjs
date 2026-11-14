@@ -20,7 +20,7 @@ async function open(opts){
   await pg.goto(FILE);await pg.waitForFunction(()=>globalThis.LW&&LW.app&&LW.app.booted,null,{timeout:30000});
   return {ctx,pg,reqs,errs};
 }
-const quick=async pg=>{await pg.click('text=Quick Start');await pg.waitForFunction(()=>LW.app.world&&LW.app.phase==='play');};
+const quick=async pg=>{await pg.click('text=Quick Start');await pg.waitForFunction(()=>LW.app.world&&LW.app.phase==='play'&&!document.getElementById('hud').hidden&&document.getElementById('toolbar').children.length>0);};
 const settle=(pg,ms)=>pg.waitForTimeout(ms||600);
 // put the camera over a temperate river cell and return its direction
 const toRiver=(pg,dist)=>pg.evaluate(dist=>{const A=LW.app,w=A.world,d=LW.env.d(w);LW.env.settle(w);let best=-1,bf=0;
@@ -105,7 +105,7 @@ const center={x:450,y:300};
   await test('B04','mouse sculpting with visible brush: immediate terrain change, undo, redo, sea level, biome paint, protected regeneration',['LW-013','LW-063','LW-076','LW-077','LW-079','LW-082','LW-083','LW-086','LW-127','LW-128'],async()=>{
     const {ctx,pg,errs}=await open();await quick(pg);await toRiver(pg,5000);await settle(pg,900);
     await pg.click('button[aria-label="Sculpt"]');
-    assert(/EDIT/.test(await pg.textContent('#mode')),'edit mode is indicated');assert(await pg.isVisible('input[aria-label="Brush radius"]'));
+    assert(/EDIT/.test(await pg.textContent('#mode')),'edit mode is indicated');assert(await pg.isVisible('input[aria-label="Brush radius"]'));await pg.click('button[aria-label="Sculpt"]');
     const before=await pg.evaluate(()=>{const A=LW.app,h=A.groundHit(450,300);globalThis.T_HIT=h.n;return {h:LW.planet.height(A.world,h.n),edits:A.world.terrainEdits.length,r:A.tool.r,built:A.terrain.built};});
     await pg.mouse.move(center.x,center.y);await pg.mouse.down();for(let i=1;i<=8;i++)await pg.mouse.move(center.x+i*14,center.y+i*4,{steps:2});await pg.mouse.up();await settle(pg,500);
     const after=await pg.evaluate(()=>{const A=LW.app;return {h:LW.planet.height(A.world,T_HIT),edits:A.world.terrainEdits.length,undo:A.world.undo.length,built:A.terrain.built,stale:[...A.terrain.nodes.values()].filter(n=>n.urgent).length};});
@@ -117,7 +117,7 @@ const center={x:450,y:300};
     // brush auto-scales with zoom
     const r2=await pg.evaluate(async()=>{LW.app.zoom(0.1);await new Promise(r=>setTimeout(r,700));return LW.app.tool.r;});assert(r2<before.r*0.5,'brush follows zoom: '+before.r.toFixed(0)+' -> '+r2.toFixed(0)+' m');
     // biome paint via keyboard-free UI path
-    await pg.click('button[aria-label="Paint"]');await pg.click('.chip.bio:has-text("Desert")');
+    await pg.click('button[aria-label="Paint"]');await pg.click('.chip.bio:has-text("Desert")');await pg.click('button[aria-label="Paint"]');
     await pg.mouse.click(center.x-60,center.y-40);await settle(pg,300);
     const bio=await pg.evaluate(()=>{const A=LW.app,e=A.world.terrainEdits[A.world.terrainEdits.length-1];return {tool:e.tool,b:LW.env.climate(A.world,e.n,LW.planet.height(A.world,e.n)).biome};});
     assert.strictEqual(bio.tool,'biome');assert(bio.b===4||bio.b===0,'painted biome is in effect');
@@ -137,7 +137,7 @@ const center={x:450,y:300};
 
   await test('B05','touch: one-finger drag pans, pinch zooms, tap selects; phone layout keeps every control on screen',['LW-038','LW-049','LW-052','LW-126','LW-127'],async()=>{
     const {ctx,pg,errs}=await open({ctx:{viewport:{width:360,height:640},hasTouch:true,isMobile:true,deviceScaleFactor:2}});
-    await pg.tap('text=Quick Start');await pg.waitForFunction(()=>LW.app.world&&LW.app.phase==='play');await toRiver(pg,4000);await settle(pg,800);
+    await pg.tap('text=Quick Start');await pg.waitForFunction(()=>LW.app.world&&LW.app.phase==='play'&&!document.getElementById('hud').hidden&&document.getElementById('toolbar').children.length>0);await toRiver(pg,4000);await settle(pg,800);
     const cdp=await ctx.newCDPSession(pg),touch=(type,pts)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:pts.map((p,i)=>({x:p[0],y:p[1],id:i}))});
     const c0=await pg.evaluate(()=>({n:LW.app.cam.n.slice(),d:LW.app.cam.dist}));
     await touch('touchStart',[[180,300]]);for(let i=1;i<=6;i++)await touch('touchMove',[[180+i*12,300+i*6]]);await touch('touchEnd',[]);
@@ -182,7 +182,7 @@ const center={x:450,y:300};
     const {ctx,pg,errs}=await open();await quick(pg);await toRiver(pg,1500);await settle(pg,900);
     assert(/sterile|Shape the land/.test(await pg.textContent('#hint')),'contextual hint shown');
     // 1. plants with the brush
-    await pg.click('button[aria-label="Life"]');await pg.mouse.move(center.x,center.y);await pg.mouse.down();await pg.mouse.move(center.x+40,center.y+10,{steps:3});await pg.mouse.up();
+    await pg.click('button[aria-label="Life"]');await pg.click('button[aria-label="Life"]');await pg.mouse.move(center.x,center.y);await pg.mouse.down();await pg.mouse.move(center.x+40,center.y+10,{steps:3});await pg.mouse.up();
     assert(await pg.evaluate(()=>LW.app.world.env.veg.some(v=>v>0)),'vegetation now exists');
     // 2. a home, placed by tapping the ground
     await pg.evaluate(()=>{LW.app.cam.dist=120;});await settle(pg,900);
@@ -232,17 +232,18 @@ const center={x:450,y:300};
     assert(await pg.locator('#insp .evs details').count()>0,'history with causes is shown');
     await pg.evaluate(()=>{LW.ui.tab='talk';LW.ui.renderInspector();});
     assert(/Scripted dialogue/.test(await pg.textContent('#insp')),'dialogue is labelled as scripted');assert(await pg.locator('#insp input[aria-label="Free-text dialogue"]').isDisabled(),'free text disabled without a local model');
-    await pg.click('#insp .chip:has-text("How are you?")',{force:true});assert(/scripted reply/.test(await pg.textContent('#insp .say')));
+    await pg.evaluate(()=>{LW.ui.touchT=Date.now();});await pg.click('#insp .chip:has-text("How are you?")',{force:true});assert(/scripted reply/.test(await pg.textContent('#insp .say')));
     assert.deepStrictEqual(errs,[]);await ctx.close();
     return p.name+' slept in the bed on command, then chose "'+auto.goal+'" on release';
   });
 
   await test('B08','cause and effect in the app: terrain edit dries the river; inspector explains why',['LW-019','LW-050','LW-078','LW-092'],async()=>{
     const {ctx,pg,errs}=await open();await quick(pg);await toRiver(pg,6000);
-    await pg.evaluate(()=>{const A=LW.app,w=A.world;A.cam.n=T_RIVER.slice();A.tool.lockR=true;A.setTool('sculpt','raise');A.tool.r=LW.env.cellSize(w)*2.6;A.tool.s=LW.planet.amplitude(w.body)*0.9;});
-    await settle(pg,800);await pg.mouse.click(center.x,center.y-25);await settle(pg,800);
-    const r=await pg.evaluate(()=>{const w=LW.app.world,c=T_CELL;return {edits:w.terrainEdits.map(e=>[e.tool,Math.round(e.r),Math.round(e.s),Math.round(LW.arcDist(e.n,T_RIVER,w.body.radius))]),flux:LW.env.d(w).flux[c],thr:LW.env.d(w).thr,kind:w.env.river[c],fresh:LW.env.fresh(w,c),chg:!!w.env.chg[c],chain:w.env.chg[c]?LW.causalChain(w,w.env.chg[c]).map(e=>e.type):[],toast:LW.app.lastToast.msg};});
-    assert(!r.fresh,'river cell is now dry '+JSON.stringify(r));assert(r.chain.indexOf('terrain.edited')>0,'event chain: '+r.chain.join(' <- '));assert(/Water responded/.test(r.toast),'player is told water changed');
+    await pg.evaluate(()=>{const A=LW.app,w=A.world;A.cam.n=T_RIVER.slice();A.tool.lockR=true;A.setTool('sculpt','raise');A.tool.r=LW.env.cellSize(w)*2.6;A.tool.s=LW.planet.amplitude(w.body)*0.9;LW.ui.stripHidden=true;LW.ui.renderTools();});
+    await settle(pg,800);const dbg=await pg.evaluate(()=>{const A=LW.app,e=document.elementFromPoint(450,275),h=A.groundHit(450,275);return {el:e&&(e.id||e.className||e.tagName),tool:A.tool.id+'/'+A.tool.cat,brush:A.isBrush(),hit:!!h,phase:A.phase,pending:!!A.pending};});
+    await pg.mouse.click(center.x,center.y-25);await settle(pg,800);
+    const r=await pg.evaluate(()=>{const w=LW.app.world,c=T_CELL;return {edits:w.terrainEdits.map(e=>[e.tool,Math.round(e.r),Math.round(e.s),Math.round(LW.arcDist(e.n,T_RIVER,w.body.radius))]),flux:LW.env.d(w).flux[c],thr:LW.env.d(w).thr,kind:w.env.river[c],fresh:LW.env.fresh(w,c),chg:!!w.env.chg[c],chain:w.env.chg[c]?LW.causalChain(w,w.env.chg[c]).map(e=>e.type):[],toast:LW.app.toastLog.join(' | ')};});
+    assert(!r.fresh,'river cell is now dry '+JSON.stringify(r)+JSON.stringify(dbg));assert(r.chain.indexOf('terrain.edited')>0,'event chain: '+r.chain.join(' <- '));assert(/Water responded/.test(r.toast),'player is told water changed: '+r.toast);
     await pg.evaluate(()=>{LW.app.setTool('nav');LW.app.select({type:'cell',cell:T_CELL,n:T_RIVER});});
     assert(/Why the water here changed/.test(await pg.textContent('#insp')));assert(/because: Terrain edited/.test(await pg.textContent('#insp')));
     await pg.screenshot({path:path.join(OUT,'08-cause.png')});assert.deepStrictEqual(errs,[]);await ctx.close();
@@ -251,7 +252,7 @@ const center={x:450,y:300};
 
   await test('B09','dig site: carve by dragging; opening is rendered in the same space; underground view',['LW-081','LW-134','LW-150'],async()=>{
     const {ctx,pg,errs}=await open();await quick(pg);await toRiver(pg,70);await settle(pg,1200);
-    await pg.click('button[aria-label="Dig"]');await pg.click('.chip:has-text("New dig site")');await pg.mouse.click(center.x,center.y);await settle(pg,900);
+    await pg.click('button[aria-label="Dig"]');await pg.click('.chip:has-text("New dig site")');await pg.click('button[aria-label="Dig"]');await pg.mouse.click(center.x,center.y);await settle(pg,900);
     const v=await pg.evaluate(()=>{const w=LW.app.world,v=Object.values(w.volumes)[0];return v?{id:v.id,tool:LW.app.tool.id}:null;});assert(v&&v.tool==='carve','dig site created, carve tool armed');
     await pg.mouse.move(center.x-10,center.y);await pg.mouse.down();for(let i=1;i<=6;i++)await pg.mouse.move(center.x-10+i*8,center.y+i*3,{steps:2});await pg.mouse.up();await settle(pg,900);
     const r=await pg.evaluate(()=>{const A=LW.app,w=A.world,v=Object.values(w.volumes)[0],g=LW.volumes.grid(w,v);let open=0;for(let i=0;i<g.nx;i++)for(let k=0;k<g.nz;k++){const x=(i+0.5-g.nx/2)*g.cs,z=(k+0.5-g.nz/2)*g.cs;if(LW.volumes.groundY(w,v,x,z,1e9)<g.colH[k*g.nx+i]-1)open++;}
@@ -259,7 +260,7 @@ const center={x:450,y:300};
       return {ops:v.ops.length,open,meshed:A.scene.vm.has(v.id)&&!!A.scene.vm.get(v.id).mesh,holes,undo:w.undo[w.undo.length-1].label};});
     assert(r.ops>=2,'carve operations recorded: '+r.ops);assert(r.open>0,'surface columns opened: '+r.open);assert(r.meshed,'volume mesh rendered');assert(r.holes,'fine terrain chunks cover the site');
     await pg.screenshot({path:path.join(OUT,'09a-dig.png')});
-    await pg.locator('input[aria-label="View depth"]').evaluate(e=>{e.value=6;e.dispatchEvent(new Event('input',{bubbles:true}));});await settle(pg,900);
+    await pg.click('button[aria-label="Dig"]');await pg.locator('input[aria-label="View depth"]').evaluate(e=>{e.value=6;e.dispatchEvent(new Event('input',{bubbles:true}));});await settle(pg,900);
     assert.strictEqual(await pg.evaluate(()=>LW.app.cam.depth),6);await pg.screenshot({path:path.join(OUT,'09b-underground.png')});
     assert.strictEqual(await pg.evaluate(()=>LW.gfx.gl.getError()),0);assert.deepStrictEqual(errs,[]);await ctx.close();
     return r.ops+' carve ops opened '+r.open+' surface columns';
@@ -338,7 +339,7 @@ const center={x:450,y:300};
     const {ctx,pg,errs}=await open();await quick(pg);await settle(pg,400);
     await pg.evaluate(async()=>{const ext=LW.gfx.gl.getExtension('WEBGL_lose_context');ext.loseContext();await new Promise(r=>setTimeout(r,300));ext.restoreContext();await new Promise(r=>setTimeout(r,900));});
     const ok=await pg.evaluate(()=>{LW.app.frame(performance.now());return !LW.app.glLost&&LW.app.terrain.visible.length>0&&LW.gfx.gl.getError()===0;});assert(ok,'rendering resumed after context loss');
-    await pg.click('button[aria-label="Life"]');await pg.click('text=Species editor…');await pg.fill('#modal input[type=text]','Glass Deer');await pg.click('#modal >> text=Create species');
+    await pg.click('button[aria-label="Life"]');await pg.click('text=Species editor…');await pg.fill('#modal input[type=text]','Glass Deer');await pg.click('#modal >> text=Create species');await pg.click('button[aria-label="Life"]');
     assert(await pg.evaluate(()=>Object.values(LW.app.world.species).some(s=>s.name==='Glass Deer')&&LW.app.tool.id==='creature'),'custom species defined and selected');
     await pg.mouse.click(center.x,center.y);await settle(pg,300);
     await pg.evaluate(()=>LW.ui.activityEditor());await pg.click('#modal >> text=Save activity');

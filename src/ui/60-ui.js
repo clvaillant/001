@@ -144,7 +144,8 @@ UI.renderTools=function(){
   set('toolbar',CATS.map(c=>h('button',{class:'cat'+(t.cat===c[0]?' on':'')+(sug.indexOf(c[0])>=0?' sug':''),onclick:()=>{if(t.cat===c[0]&&c[0]!=='nav'){UI.stripHidden=!UI.stripHidden;return UI.renderTools();}UI.stripHidden=false;App.setTool(c[0],c[0]==='sculpt'?'raise':c[0]==='paint'?'biome':c[0]==='life'?'plants':c[0]==='build'?'template':c[0]==='dig'?'carve':c[0]);},'aria-label':c[2]},h('span',{class:'ic',text:c[1]}),h('span',{class:'tx',text:c[2]}))));
   const editing=App.isBrush()||['carve','fill'].indexOf(t.id)>=0,placing=['creature','person','cohort','template','comp','digsite'].indexOf(t.id)>=0;
   const md=el('mode');md.className=editing?'edit':placing?'place':'navm';
-  const more=UI.stripHidden?' · tap the tool again for options':'';md.textContent=App.pending?App.pending.label:editing?'EDIT · drag on the world to '+t.id+' · two fingers / right-drag to move':placing?'PLACE · tap the world'+more:'NAVIGATE · drag to move · pinch / scroll to zoom · tap to inspect';
+  const more=UI.stripHidden?' · tap the tool again for options':'',narrow=innerWidth<560;
+  md.textContent=App.pending?App.pending.label:editing?'EDIT · drag to '+t.id+(narrow?'':' · two fingers / right-drag to move'):placing?'PLACE · tap the world'+(narrow?'':more):narrow?'NAVIGATE':'NAVIGATE · drag to move · pinch / scroll to zoom · tap to inspect';
   const tools=(list)=>h('div',{class:'chips'},list.map(x=>btn(x[1],()=>App.setTool(t.cat,x[0]),'chip'+(t.id===x[0]?' on':''))));
   const R=w.body.radius,rad=()=>slider('Brush radius',0,1,0.002,Math.log(t.r/2)/Math.log(R*0.6/2),v=>{t.r=2*Math.pow(R*0.6/2,v);t.lockR=true;},v=>fmtM(2*Math.pow(R*0.6/2,v)));
   const amp=P.amplitude(w.body),str=()=>slider('Strength',0,1,0.002,Math.log(t.s/0.2)/Math.log((amp+10)/0.2),v=>{t.s=0.2*Math.pow((amp+10)/0.2,v);t.lockR=true;},v=>fmtM(0.2*Math.pow((amp+10)/0.2,v)));
@@ -167,6 +168,7 @@ UI.renderTools=function(){
     h('p',{class:'note',text:'Dig sites are editable 3D volumes in the same planetary space. Carve from the surface to open an entrance, then raise View depth to look inside.'})];
   else if(t.cat==='planet')strip=UI.planetPanel();
   set('strip',strip?[h('div',{class:'stripin'},strip)]:[]);el('strip').hidden=!strip||!!UI.stripHidden;
+  UI.layout();
   UI.renderInspector();
 };
 UI.planetPanel=function(){
@@ -228,9 +230,14 @@ function evList(w,ids){
   if(!ev.length)return h('p',{class:'note',text:'No recorded events yet.'});
   return h('div',{class:'evs'},ev.map(e=>h('details',null,h('summary',{text:when(w,e.t)+' — '+evText(w,e)}),chain(w,e.id))));
 }
+// keep the scale readout and the navigation buttons clear of whatever bottom panel is open
+UI.layout=function(){
+  const s=el('strip'),i=el('insp'),open=!s.hidden?s:(!i.hidden&&innerWidth<900?i:null),hgt=open?open.getBoundingClientRect().height:0;
+  el('scale').style.bottom=(64+hgt)+'px';el('nav').style.maxHeight=Math.max(96,innerHeight-100-64-hgt)+'px';
+};
 UI.renderInspector=function(){
   const w=App.world,s=App.sel,box=el('insp');if(!w)return;
-  if(!s||App.tool.cat!=='nav'){box.hidden=true;return;}
+  if(!s||App.tool.cat!=='nav'){if(!box.hidden){box.hidden=true;UI.layout();}return;}
   if(box.contains(document.activeElement)&&/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)&&document.activeElement.type!=='checkbox')return;
   let body=null,title='',sub='';
   const close=btn('✕',()=>App.select(null),'icon ghost','Close');
@@ -323,7 +330,7 @@ UI.renderInspector=function(){
       w.env.chg[s.cell]?[h('h4',{text:'Why the water here changed'}),chain(w,w.env.chg[s.cell])]:null,
       h('div',{class:'row'},btn('Zoom here',()=>App.focusOn(s.n,Math.max(30,App.cam.dist*0.25))))];
   }
-  set('insp',[h('div',{class:'ihead'},h('div',null,h('b',{text:title}),h('span',{text:sub})),close)].concat(body||[]));box.hidden=false;
+  set('insp',[h('div',{class:'ihead'},h('div',null,h('b',{text:title}),h('span',{text:sub})),close)].concat(body||[]));box.hidden=false;UI.layout();
 };
 function actText(w,a){
   switch(a.a){case 'go':return 'walking';case 'use':return a.cap+(w.buildings[a.b]?' ('+((B.comp(w.buildings[a.b],a.c)||{}).kind||'?')+')':'');case 'talk':return 'talking to '+((w.persons[a.id]||{}).name||'someone');
@@ -428,7 +435,7 @@ UI.activityEditor=function(){
 UI.renderHint=function(){
   const w=App.world,box=el('hint');if(!w||!App.opts.hints){box.hidden=true;return;}
   const alive=Object.values(w.persons).some(p=>p.alive),plants=w.env.plants.length>0;
-  const step=!w.terrainEdits.length?'1 · Shape the land: choose ⛰ Sculpt and drag on the planet. Zoom in for finer tools.':
+  const step=!w.terrainEdits.length&&!plants&&!alive&&!Object.keys(w.buildings).length?'1 · Shape the land: choose ⛰ Sculpt and drag on the planet. Zoom in for finer tools.':
     !plants?'2 · This world is sterile. Choose 🌱 Life ▸ Plants and paint vegetation where the climate suits it.':
     !alive?'3 · Zoom toward a river (blue lines) and use 🌱 Life ▸ People to introduce someone.':
     !Object.keys(w.buildings).length?'4 · Give them shelter: 🏠 Build ▸ Cottage, tap near your people.':

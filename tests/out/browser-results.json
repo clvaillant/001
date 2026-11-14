@@ -1,12 +1,112 @@
 {
  "suite": "browser",
  "env": {
-  "chromium": "153.0.8010.12"
+  "chromium": "153.0.8010.12",
+  "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftSh"
  },
- "total": 1,
- "pass": 1,
+ "total": 14,
+ "pass": 14,
  "fail": 0,
  "results": [
+  {
+   "id": "B01",
+   "name": "single file opens from file:// with the network denied; title screen shows a live 3D planet",
+   "reqs": [
+    "LW-001",
+    "LW-011",
+    "LW-066",
+    "LW-070",
+    "LW-114",
+    "LW-124",
+    "LW-154"
+   ],
+   "status": "pass",
+   "ms": 2263,
+   "error": null,
+   "note": "requests: 1 (all file://), storage: indexeddb, renderer: ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftSh"
+  },
+  {
+   "id": "B02",
+   "name": "Quick Start creates a unique, editable, uninhabited world; Advanced setup regenerates the planet live",
+   "reqs": [
+    "LW-012",
+    "LW-072",
+    "LW-073",
+    "LW-125",
+    "LW-151",
+    "LW-147"
+   ],
+   "status": "pass",
+   "ms": 3631,
+   "error": null,
+   "note": "radius 632 km planet created from the advanced panel"
+  },
+  {
+   "id": "B03",
+   "name": "continuous zoom from orbit to ground in ONE world/scene; LOD refines; floating-origin precision holds on an Earth-sized planet",
+   "reqs": [
+    "LW-002",
+    "LW-014",
+    "LW-060",
+    "LW-068",
+    "LW-074",
+    "LW-112",
+    "LW-130",
+    "LW-131",
+    "LW-148"
+   ],
+   "status": "pass",
+   "ms": 5554,
+   "error": null,
+   "note": "Orbit > Continent > Region > Landscape > Settlement > Home; quads 312736 m -> 1.19 m; float step at camera 0.000 mm vs 0.76 m without floating origin"
+  },
+  {
+   "id": "B04",
+   "name": "mouse sculpting with visible brush: immediate terrain change, undo, redo, sea level, biome paint, protected regeneration",
+   "reqs": [
+    "LW-013",
+    "LW-063",
+    "LW-076",
+    "LW-077",
+    "LW-079",
+    "LW-082",
+    "LW-083",
+    "LW-086",
+    "LW-127",
+    "LW-128"
+   ],
+   "status": "pass",
+   "ms": 23803,
+   "error": null,
+   "note": "raised 195.7 m with 5 dabs; undo/redo exact; regeneration preserved the edit"
+  },
+  {
+   "id": "B05",
+   "name": "touch: one-finger drag pans, pinch zooms, tap selects; phone layout keeps every control on screen",
+   "reqs": [
+    "LW-038",
+    "LW-049",
+    "LW-052",
+    "LW-126",
+    "LW-127"
+   ],
+   "status": "pass",
+   "ms": 17803,
+   "error": null,
+   "note": "22 controls checked on 360x640 (emulated touch, not a physical phone)"
+  },
+  {
+   "id": "B06",
+   "name": "keyboard and mouse navigation alternatives: wheel zoom, right-drag rotate/tilt, keys, double-click focus",
+   "reqs": [
+    "LW-126",
+    "LW-130"
+   ],
+   "status": "pass",
+   "ms": 5603,
+   "error": null,
+   "note": null
+  },
   {
    "id": "B07",
    "name": "integrated path by UI: plants -> home -> person -> command to use bed -> Play -> release -> autonomous life -> inspector",
@@ -24,9 +124,104 @@
     "LW-067"
    ],
    "status": "pass",
-   "ms": 43784,
+   "ms": 49754,
    "error": null,
-   "note": "Kasa slept in the bed on command, then chose \"found\" on release"
+   "note": "Quamoib slept in the bed on command, then chose \"gatherFood\" on release"
+  },
+  {
+   "id": "B08",
+   "name": "cause and effect in the app: terrain edit dries the river; inspector explains why",
+   "reqs": [
+    "LW-019",
+    "LW-050",
+    "LW-078",
+    "LW-092"
+   ],
+   "status": "pass",
+   "ms": 3598,
+   "error": null,
+   "note": "river.dried <- terrain.edited"
+  },
+  {
+   "id": "B09",
+   "name": "dig site: carve by dragging; opening is rendered in the same space; underground view",
+   "reqs": [
+    "LW-081",
+    "LW-134",
+    "LW-150"
+   ],
+   "status": "pass",
+   "ms": 22345,
+   "error": null,
+   "note": "5 carve ops opened 24 surface columns"
+  },
+  {
+   "id": "B10",
+   "name": "persistence across a real page reload: same planet, edits, home, resident, memories and history; world keeps advancing",
+   "reqs": [
+    "LW-056",
+    "LW-087",
+    "LW-090",
+    "LW-103",
+    "LW-109",
+    "LW-129",
+    "LW-133"
+   ],
+   "status": "pass",
+   "ms": 12670,
+   "error": null,
+   "note": "hash 4e46b56f745e891b identical after reload (Restored 1 edits made after the last snapshot.)"
+  },
+  {
+   "id": "B11",
+   "name": "export/import between independent browser profiles; corrupted file refused and current world untouched",
+   "reqs": [
+    "LW-056",
+    "LW-123",
+    "LW-152"
+   ],
+   "status": "pass",
+   "ms": 4876,
+   "error": null,
+   "note": "archive 68 KB round-tripped; hash b623905aade3a56d"
+  },
+  {
+   "id": "B12",
+   "name": "storage blocked: game still runs and truthfully warns that nothing is kept; export still works",
+   "reqs": [
+    "LW-056",
+    "LW-143"
+   ],
+   "status": "pass",
+   "ms": 1758,
+   "error": null,
+   "note": null
+  },
+  {
+   "id": "B13",
+   "name": "frame timing and scene complexity at four scales (SOFTWARE renderer; not device evidence); adaptive quality reacts",
+   "reqs": [
+    "LW-069",
+    "LW-111",
+    "LW-142"
+   ],
+   "status": "pass",
+   "ms": 29664,
+   "error": null,
+   "note": "orbit: 37 ms median, 15556 tris, 81 draws, 15 chunks | region: 84 ms median, 83396 tris, 187 draws, 121 chunks | settlement: 160 ms median, 199526 tris, 463 draws, 179 chunks | home: 174 ms median, 193098 tris, 476 draws, 202 chunks | heap 14 MB | save 89 KB"
+  },
+  {
+   "id": "B14",
+   "name": "WebGL context loss is survived; species editor and activity editor create validated content",
+   "reqs": [
+    "LW-023",
+    "LW-042",
+    "LW-089"
+   ],
+   "status": "pass",
+   "ms": 7565,
+   "error": null,
+   "note": null
   }
  ]
 }
